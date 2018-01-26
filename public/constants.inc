@@ -2,7 +2,8 @@
 /*
  * Collection of constant declarations
  */
-define('BASE_DIR', '/meals_scheduling');
+define('BASE_DIR', ''); //SUNWARD
+# define('BASE_DIR', '/meals_scheduling');
 
 define('SKIP_EMAIL', FALSE); // set to true for debugging
 define('RESULTS_FILE', 'schedule.txt');
@@ -20,20 +21,21 @@ if (($this_month == 11) || ($this_month == 12)) {
 }
 define('SEASON_YEAR', $this_year);
 
-define('SEASON_ID', get_season_id());
+# define('SEASON_ID', get_season_id());
+define('SEASON_ID', 1); //SUNWARD
 define('SEASON_NAME', get_season_name()); // summer, fall, winter
 
-# -------- list of sqlite tables ---------
+# -------- list of sqlite tables --------- 
 # tables from the work survey (read-only)
-define('SURVEY_JOB_TABLE', 'work_app_job');
-define('ASSIGN_TABLE', 'work_app_assignment');
+define('SURVEY_JOB_TABLE', 'jobs'); //SUNWARD
+define('ASSIGN_TABLE', 'offers'); //SUNWARD
 
 # this is altered
-define('AUTH_USER_TABLE', 'auth_user');
+define('AUTH_USER_TABLE', 'workers'); //SUNWARD
 
 # tables for meals scheduling (read & write)
-define('SCHEDULE_COMMENTS_TABLE', 'schedule_comments');
-define('SCHEDULE_PREFS_TABLE', 'schedule_prefs');
-define('SCHEDULE_SHIFTS_TABLE', 'schedule_shifts');
+define('SCHEDULE_COMMENTS_TABLE', 'work_prefs'); //SUNWARD
+define('SCHEDULE_PREFS_TABLE', 'shift_prefs'); //SUNWARD
+define('SCHEDULE_SHIFTS_TABLE', 'shifts'); //SUNWARD
 
 ?>

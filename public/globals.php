@@ -50,6 +50,7 @@ global $all_jobs;
 $all_jobs = array();
 $all_jobs['all'] = 'all';
 $all_jobs += $mtg_jobs + $sunday_jobs + $weekday_jobs;
+if (0) {deb('globals.php: all_jobs =', $all_jobs);}
 
 global $all_cook_jobs;
 global $all_clean_jobs;
@@ -68,7 +69,7 @@ foreach($all_jobs as $jid=>$name) {
  * Get the list of the weekdays where meals are served.
  */
 function get_weekday_meal_days() {
-	return [MONDAY, TUESDAY, WEDNESDAY];
+	return [THURSDAY, SUNDAY]; //SUNWARD
 }
 
 global $mtg_nights;
@@ -95,7 +96,8 @@ function create_sqlite_connection() {
 			$relative_dir .= '/';
 		}
 
-		$db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
+		$db_fullpath = "../ww/wwa/db/development.sqlite3"; //SUNWARD.  A fragile attempt to connect directly to the ww app database
+#		$db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
 		$db_is_writable = is_writable($db_fullpath);
 		$db_file = "sqlite:{$db_fullpath}";
 		$dbh = new PDO($db_file);

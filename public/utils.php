@@ -169,4 +169,19 @@ function get_first_associative_key($dict) {
 	$tmp = array_keys($dict);
 	return array_shift($tmp);
 }
+
+/* 
+Print debug data to the web page
+*/
+//SUNWARD
+function deb($label, $data) {
+	$print_data = print_r($data, TRUE);
+	echo <<<EOHTML
+<tr>
+	<td colspan="4"> <br>{$label}
+		<pre>{$print_data}</pre>
+	</td>
+</tr>
+EOHTML;
+}
 ?>

@@ -217,6 +217,7 @@ $meals_summary = $calendar->getNumShifts();
 
 $shift_summary_rows = '';
 ksort($per_shift);
+if (0) {deb('report.php: $per_shift', $per_shift);}
 foreach($per_shift as $job_name=>$num_assn_shifts) {
 	// figure out how many shifts the schedule calls for on this type of meal
 	list($meal_type, $shift_type) = explode(' ', $job_name, 2);

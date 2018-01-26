@@ -583,7 +583,7 @@ EOSQL;
 
 					if (is_null($shift_id)) {
 						$insert = <<<EOSQL
-REPLACE INTO {$shifts_table} VALUES(NULL, '{$d}', {$task})"
+REPLACE INTO {$shifts_table} (id, string, job_id) VALUES(NULL, '{$d}', {$task})
 EOSQL;
 						$this->dbh->exec($insert);
 
@@ -597,9 +597,11 @@ EOSQL;
 							echo <<<EOHTML
 								<p class="error">
 									Couldn't retrieve shifts data after insert - is
-									the database writable?
+									the database writable? 
 								</p>
 EOHTML;
+							if (1) deb("survey.php: select statement:", $sql);
+							if (1) deb("survey.php: insert statement:", $insert);
 							exit;
 						}
 					}

@@ -96,7 +96,7 @@ function create_sqlite_connection() {
 			$relative_dir .= '/';
 		}
 
-		$db_fullpath = "../ww/wwa/db/development.sqlite3"; //SUNWARD.  A fragile attempt to connect directly to the ww app database
+		$db_fullpath = "../../../ww/wwa/db/development.sqlite3"; //SUNWARD.  A fragile attempt to connect directly to the ww app database
 #		$db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
 		$db_is_writable = is_writable($db_fullpath);
 		$db_file = "sqlite:{$db_fullpath}";

@@ -539,7 +539,7 @@ EOHTML;
 		$bundle = array_get($this->requests, 'bundle_shifts', '');
 		$table = SCHEDULE_COMMENTS_TABLE;
 		$sql = <<<EOSQL
-replace into {$table}
+replace into {$table} (worker_id, timestamp, comments, avoids, prefers, clean_after_self, bunch_shifts, bundle_shifts)
 	values(
 		{$this->worker_id},
 		datetime('now'),
@@ -551,6 +551,7 @@ replace into {$table}
 		'{$bundle}'
 	)
 EOSQL;
+		if (0) deb("SQL to insert work_prefs", $sql);
 		$this->dbh->exec($sql);
 	}
 
@@ -600,16 +601,17 @@ EOSQL;
 									the database writable? 
 								</p>
 EOHTML;
-							if (1) deb("survey.php: select statement:", $sql);
-							if (1) deb("survey.php: insert statement:", $insert);
+							if (0) deb("survey.php: select statement:", $sql);
+							if (0) deb("survey.php: insert statement:", $insert);
 							exit;
 						}
 					}
 
 					$prefs_table = SCHEDULE_PREFS_TABLE;
 					$replace = <<<EOSQL
-REPLACE INTO {$prefs_table} VALUES({$shift_id}, {$this->worker_id}, {$pref})
+REPLACE INTO {$prefs_table} (date_id, worker_id, pref) VALUES({$shift_id}, {$this->worker_id}, {$pref})
 EOSQL;
+					if (0) deb("SQL to insert shift_prefs", $replace);
 					$success = $this->dbh->exec($replace);
 					if ($success) {
 						$this->saved++;

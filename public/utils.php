@@ -16,7 +16,7 @@ function array_get($array, $key, $default=NULL) {
  * Get the upcoming season's ID.
  */
 function get_season_id() {
-	$start_date = 'September 1st, 2007, 12pm';
+	$start_date = 'March 1, 2018, 12pm';
 	$start = new DateTime($start_date);
 
 	$now = new DateTime();
@@ -33,18 +33,16 @@ function get_season_id() {
  */
 function get_current_season() {
 	switch(SEASON_NAME) {
-		case WINTER:
-			return [
-				1=>'January',
-				2=>'February',
-				3=>'March',
-				4=>'April',
-			];
 
 		case SPRING:
+			return [
+				3=>'March',
+				4=>'April',
+				5=>'May'
+			];
+
 		case SUMMER:
 			return [	
-				5=>'May',
 				6=>'June',
 				7=>'July',
 				8=>'August'
@@ -54,8 +52,14 @@ function get_current_season() {
 			return [
 				9=>'September',
 				10=>'October',
-				11=>'November',
-				12=>'December'
+				11=>'November'
+			];
+
+		case WINTER:
+			return [
+				12=>'December',
+				1=>'January',
+				2=>'February'
 			];
 
 		case 'test':
@@ -76,23 +80,26 @@ function get_season_name($date=NULL) {
 	$month = date('n', $date);
 
 	switch($month) {
+		case 3:
+		case 4:
+		case 5:
+			return SPRING;
+
+		case 6:
+		case 7:
+		case 8:
+			return SPRING;
+
+		case 9:
+		case 10:
 		case 11:
+			return FALL;
+
 		case 12:
 		case 1:
 		case 2:
 			return WINTER;
 
-		case 3:
-		case 4:
-		case 5:
-		case 6:
-			return SUMMER;
-
-		case 7:
-		case 8:
-		case 9:
-		case 10:
-			return FALL;
 	}
 }
 
@@ -154,6 +161,8 @@ function get_holidays() {
 	}
 
 	ksort($holidays);
+	$yr = SEASON_YEAR;
+	if (0) {deb("Holidays for {$yr}:", $holidays);}
 	return $holidays;
 }
 

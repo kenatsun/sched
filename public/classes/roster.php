@@ -185,7 +185,7 @@ EOSQL;
 				{$user_clause}
 			ORDER BY u.username
 EOSQL;
-
+		if (0) deb("roster.php: SQL to read offers:", $sql);
 		$count = 0;
 		foreach($this->dbh->query($sql) as $row) {
 			$count++;

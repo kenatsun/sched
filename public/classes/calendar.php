@@ -450,6 +450,7 @@ EOHTML;
 					AND worker_id={$worker_id}
 					ORDER BY s.string, s.job_id
 EOJS;
+		if (0) deb("calendar: SQL to read from shifts and shift_prefs:", $sql);
 
 		global $dbh;
 		$data = array();

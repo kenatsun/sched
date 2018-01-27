@@ -33,9 +33,9 @@ class CurrentSeasonIds {
 			'SUNDAY_HEAD_COOK' => 'Sunday head cook',
 			'SUNDAY_ASST_COOK' => 'Sunday meal ass',
 			'SUNDAY_CLEANER' => 'Sunday Meal Cleaner',
-			'WEEKDAY_HEAD_COOK' => 'Weekday head cook',
-			'WEEKDAY_ASST_COOK' => 'Weekday meal ass',
-			'WEEKDAY_CLEANER' => 'Weekday Meal cleaner',
+			'WEEKDAY_HEAD_COOK' => 'head cook',
+			'WEEKDAY_ASST_COOK' => 'asst cook',
+			'WEEKDAY_CLEANER' => 'cleaner',
 			'WEEKDAY_TABLE_SETTER' => 'Weekday Table Setter',
 		);
 

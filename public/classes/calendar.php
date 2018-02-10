@@ -4,7 +4,7 @@ if (!isset($relative_dir)) {
 	$relative_dir = './';
 }
 require_once $relative_dir . 'globals.php';
-
+require_once $relative_dir . 'utils.php';
 require_once 'WorkersList.php';
 
 class Calendar {
@@ -329,7 +329,11 @@ EOHTML;
 						}
 					}
 					else if (!is_null($worker)) {
+						if (0) deb("calendar.evalDates(): worker = ", $worker);
+						if (0) deb("calendar.evalDates(): worker['num_shifts_to_fill'] = ", $worker->num_shifts_to_fill);		
 						foreach($jobs as $key=>$name) {
+							if (0) deb("calendar.evalDates(): worker->num_shifts_to_fill['key'] = ", $worker->num_shifts_to_fill[$key]);
+							if ($worker->num_shifts_to_fill[$key] == 0) continue;
 							$saved_pref_val =
 								isset($saved_prefs[$key][$date_string]) ?
 									$saved_prefs[$key][$date_string] : NULL;
@@ -407,6 +411,11 @@ EOHTML;
 			$survey = ($this->is_report) ? '' : 'survey';
 			$quarterly_month_ord = ($month_num % 4);
 			$season_year = SEASON_YEAR;
+			if (0) deb("survey.evalDates(): day_labels =", '"'.$day_labels.'"');
+			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
+			if (0) deb("calendar.evalDates(): weekly_spacer = ", '"'.$weekly_spacer.'"');
+			if (0) deb("calendar.evalDates(): selectors = ", $selectors);
+			
 			$out .= <<<EOHTML
 			<div id="{$month_name}" class="month_wrapper">
 				<h3 class="month {$survey}">
@@ -420,6 +429,7 @@ EOHTML;
 				</div>
 			</div>
 EOHTML;
+			if (0) deb("calendar.evalDates(): out = ", $out);			
 		}
 
 		if (!$this->web_display) {
@@ -565,6 +575,7 @@ EOSQL;
 			$dates[$d['string']][$d['job_id']][$d['pref']][] = $d['username'];
 		}
 
+		if (0) deb("Calendar: dates array =", $dates);
 		return $dates;
 	}
 
@@ -693,10 +704,16 @@ EOHTML;
 				continue;
 			}
 
-			$visible_name = <<<EOTXT
+			if ($info['first_name'] . " " . $info['last_name'] == $username) {
+				$visible_name = <<<EOTXT
+{$info['first_name']} {$info['last_name']}
+EOTXT;
+			} else {
+				$visible_name = <<<EOTXT
 {$info['first_name']} {$info['last_name']} ({$username})
 EOTXT;
-
+			}
+			
 			$selected = isset($chosen[$username]) ? ' selected' : '';
 			$options .= <<<EOHTML
 			<option value="{$username}"{$selected}>{$visible_name}</option>

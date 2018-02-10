@@ -1,6 +1,7 @@
 <?php
 
 require_once 'globals.php';
+require_once 'utils.php';
 require_once 'display/includes/header.php';
 
 require_once 'classes/calendar.php';
@@ -149,11 +150,12 @@ class Survey {
 
 		$out = '';
 		foreach($shifts as $id=>$info) {
-			$out .= "<div>{$info['instances']} {$info['name']}</div>";
+			if ($info['instances'] > 0) $out .= "<div>{$info['instances']} {$info['name']}</div>";
 		}
+		$season_name = get_season_name_from_db();
 		return <<<EOHTML
 			<div class="shift_instances">
-				<h4>Assigned Meals:</h4>
+				<h4>You're signed up to do these shifts during {$season_name}:</h4>
 				{$out}
 			</div>
 EOHTML;
@@ -178,14 +180,16 @@ EOHTML;
 			$this->reportNoShifts();
 		}
 
+		if (1) deb("survey.toString(): _GET =", $_GET);
+		if (1) deb("survey.toString(): worker =", $worker);
 		return <<<EOHTML
 		<h2>Welcome, {$this->worker->getName()}</h2>
 		{$this->calendar->renderMonthsOverlay()}
 		<form method="POST" action="process.php">
 			<input type="hidden" name="username" value="{$_GET['worker']}">
 			<input type="hidden" name="posted" value="1">
-			{$this->renderRequests()}
 			{$shifts_summary}
+			{$this->renderRequests()}
 			{$this->calendar->toString($this->worker)}
 			<button class="pill" type="submit" value="Save" id="end">Save</button>
 		</form>
@@ -307,13 +311,14 @@ EOHTML;
 		$avoids = explode(',', array_get($comments_info, 'avoids', ''));
 		$avoids = array_flip($avoids);
 		$avoids = array_fill_keys(array_keys($avoids), 1);
-		$avoid_worker_selector = $this->getWorkerList('avoid_worker', FALSE,
+		if(0) deb("survey.renderRequests: avoids =", $avoids);
+		$avoid_worker_selector = $this->getWorkerList('avoid_worker', TRUE,
 			$this->worker->getUsername(), $avoids);
 
 		$prefers = explode(',', array_get($comments_info, 'prefers', ''));
 		$prefers = array_flip($prefers);
 		$prefers = array_fill_keys(array_keys($prefers), 1);
-		$prefer_worker_selector = $this->getWorkerList('prefer_worker', FALSE,
+		$prefer_worker_selector = $this->getWorkerList('prefer_worker', TRUE,
 			$this->worker->getUsername(), $prefers);
 
 		$bundle_checked = (array_get($comments_info, 'bundle_shifts') == 'on') ?
@@ -378,9 +383,13 @@ EOHTML;
 /* ------------------------------------------------ */
 
 	public function run() {
+		if (1) deb("survey.run: _POST =", $_POST);
 		$this->popUsername();
+		if (1) deb("survey.run: this->username =", $this->username);
 		$this->lookupWorkerId();
+		if (1) deb("survey.run: this->worker_id =", $this->worker_id);
 		$this->setWorker();
+		if (1) deb("survey.run: this->worker =", $this->worker);
 
 		$this->lookupAvoidList();
 		$this->lookupPreferList();

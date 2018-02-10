@@ -12,7 +12,7 @@ class Worker {
 	protected $assigned = array();
 
 	// job_id => count
-	protected $num_shifts_to_fill = array();
+	public $num_shifts_to_fill = array();
 
 	protected $requests = array();
 

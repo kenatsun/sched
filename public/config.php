@@ -8,8 +8,10 @@ require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/constants.inc";
 date_default_timezone_get('America/Detroit');
 
+define('COMMUNITY', 'Sunward');
+
 /* -------- seasonal config --------- */
-define('DEADLINE', strtotime('February 6, 2018, 8:00pm'));
+define('DEADLINE', strtotime('March 10, 2018, 8:00pm'));
 
 /* ----------- job ids --------------- */
 // define('MEETING_NIGHT_ORDERER', 4194);

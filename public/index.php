@@ -15,7 +15,7 @@ require_once 'participation.php';
 $survey = new Survey();
 
 echo <<<EOHTML
-<h1>Great Oak Meals Scheduling</h1>
+<h1>Sunward Meals Scheduling Survey</h1>
 EOHTML;
 
 // ----- check to see if the database is writable:

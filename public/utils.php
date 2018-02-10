@@ -26,6 +26,25 @@ function get_season_id() {
 	return $out;
 }
 
+/* 
+ * Get the season's name from database based on SEASON_ID
+ */
+function get_season_name_from_db() {
+	$season_table = SEASON_TABLE;
+	$season_id = SEASON_ID;
+	$sql = <<<EOSQL
+		SELECT description FROM {$season_table} WHERE id = {$season_id};
+EOSQL;
+	global $dbh;
+	$season_name = array();
+	foreach($dbh->query($sql) as $row) {
+		$season_name[] = $row['description'];
+		break;
+	}
+	if (0) deb("Utils: Season name from DB:", $season_name);
+	return $season_name[0];
+}
+
 /**
  * Get the months contained in the current season.
  *
@@ -36,30 +55,30 @@ function get_current_season() {
 
 		case SPRING:
 			return [
-				3=>'March',
 				4=>'April',
-				5=>'May'
+				5=>'May',
+				6=>'June',
 			];
 
 		case SUMMER:
 			return [	
-				6=>'June',
 				7=>'July',
-				8=>'August'
+				8=>'August',
+				9=>'September',
 			];
 
 		case FALL:
 			return [
-				9=>'September',
 				10=>'October',
-				11=>'November'
+				11=>'November',
+				12=>'December',
 			];
 
 		case WINTER:
 			return [
-				12=>'December',
 				1=>'January',
-				2=>'February'
+				2=>'February',
+				3=>'March',
 			];
 
 		case 'test':

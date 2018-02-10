@@ -5,7 +5,7 @@
 // define('BASE_DIR', ''); //SUNWARD
 define('BASE_DIR', '/go_meals_scheduling/public');
 
-define('SKIP_EMAIL', FALSE); // set to true for debugging
+define('SKIP_EMAIL', TRUE); // set to true for debugging
 define('RESULTS_FILE', 'schedule.txt');
 
 # ---------- date stuff -------------
@@ -31,6 +31,7 @@ if (0) {deb("constants.inc: SEASON_NAME:", SEASON_NAME);}
 # tables from the work survey (read-only)
 define('SURVEY_JOB_TABLE', 'jobs'); //SUNWARD
 define('ASSIGN_TABLE', 'offers'); //SUNWARD
+define('SEASON_TABLE', 'seasons'); //SUNWARD
 
 # this is altered
 define('AUTH_USER_TABLE', 'workers'); //SUNWARD

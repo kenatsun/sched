@@ -88,14 +88,17 @@ EOHTML;
 		$parts = array();
 		$hours = $seconds/60/60%24;
 		if ($hours > 0) {
-			$parts[] = $hours;
+			// $parts[] = $hours;
+			$hour_string = $hours . ' hours, ';
 		}
 
 		$mins = $seconds/60%60;
-		$parts[] = sprintf('%02d', $mins);
+		// $parts[] = sprintf('%02d', $mins);
+		$min_string = $mins . ' minutes, ';
 
 		$secs = $seconds%60;
-		$parts[] = sprintf('%02d', $secs);
+		// $parts[] = sprintf('%02d', $secs);
+		$sec_string = 'and ' . $secs . ' seconds';
 
 
 		// warning
@@ -108,11 +111,11 @@ EOHTML;
 			$color = '#eee';
 		}
 
-		$out = implode(':', $parts);
+		// $out = implode(':', $parts);
+		$out = $hour_string . $min_string . $sec_string;
 		return <<<EOHTML
-			<div class="remaining">
-				countdown: {$day_string} {$out} until <b>{$deadline}</b>
-			</div>
+			<p><i>Please respond ASAP, but by <b>{$deadline}</b> at the latest!</i><p> 
+			<p>Until that date, you can come back and change your answers at any time.
 EOHTML;
 	}
 

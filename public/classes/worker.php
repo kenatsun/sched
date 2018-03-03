@@ -1,31 +1,32 @@
 <?php
 class Worker {
-	protected $worker_id;
-	protected $username;
-	protected $first_name;
-	protected $last_name;
+	public $worker_id;
+	public $username;
+	public $first_name;
+	public $last_name;
+	public $email;
 
 	// job_id => date => pref
-	protected $avail_shifts = array();
+	public $avail_shifts = array();
 
 	// job_id => array(dates)
-	protected $assigned = array();
+	public $assigned = array();
 
 	// job_id => count
 	public $num_shifts_to_fill = array();
 
-	protected $requests = array();
+	public $requests = array();
 
-	protected $adjacency_limit = 8;
-	protected $avoids = array();
-	protected $prefers = array();
+	public $adjacency_limit = 8;
+	public $avoids = array();
+	public $prefers = array();
 
-	protected $tasks;
-	protected $comments;
+	public $tasks;
+	public $comments;
 
-	protected $dbh;
+	public $dbh;
 
-	protected $is_placeholder = FALSE;
+	public $is_placeholder = FALSE;
 
 	/**
 	 *
@@ -64,6 +65,11 @@ class Worker {
 		return ($this->first_name != '') ?
 			"{$this->first_name} {$this->last_name}" :
 			$this->username;
+	}
+
+	public function getFirstName() {
+		return ($this->first_name != '') ?
+			$this->first_name : $this->username;
 	}
 
 	public function setId($id) {
@@ -216,7 +222,6 @@ class Worker {
 	public function getUsername() {
 		return $this->username;
 	}
-
 
 	/**
 	 * Find out how many open slots this worker needs to fill yet for a given
@@ -529,7 +534,7 @@ EOTXT;
 		$jobs_table = SURVEY_JOB_TABLE;
 		$assn_table = ASSIGN_TABLE;
 		$task_sql = <<<EOSQL
-			select {$jobs_table}.description, {$jobs_table}.id
+			select {$jobs_table}.description, {$jobs_table}.id, {$assn_table}.instances
 				from {$jobs_table}, {$assn_table}
 				where {$jobs_table}.id={$assn_table}.job_id and
 					worker_id={$this->id} and
@@ -540,7 +545,8 @@ EOSQL;
 
 		$tasks = array();
 		foreach ($this->dbh->query($task_sql) as $row) {
-			$tasks[$row['id']] = $row['description'];
+			// $tasks[$row['id']] = $row['description'];
+			$tasks[$row['id']] = $row;
 		}
 
 		$addl_jobs = array();

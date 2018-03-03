@@ -63,8 +63,11 @@ EOSQL;
 		ksort($workers);
 		$dir = BASE_DIR;
 		foreach($workers as $name=>$unused) {
+			if (0) deb("workersList.getWorkersListAsLinks(): $dir =", $dir);
+			$urlname = urlencode($name);
+			if (0) deb("workersList.getWorkersListAsLinks(): href =", $urlname);
 			$lines .= <<<EOHTML
-				<li><a href="{$dir}/index.php?worker={$name}">{$name}</a></li>
+				<li><a href="{$dir}/index2.php?worker={$urlname}">{$name}</a></li>
 EOHTML;
 
 			$count++;

@@ -132,9 +132,9 @@ Survey = {
 		// add links to change all shifts in the entire month
 		$('.month_wrapper').each(function(i,e) {
 			$(this).find('h3').after(
-				'<p class="month_mark_all">mark entire month: \
+				'<p class="month_mark_all" style="text-align:center; ">mark entire month: \
 					<a class="prefer">prefer<\/a> \
-					<a class="ok">OK<\/a> \
+					<a class="ok">ok<\/a> \
 					<a class="avoid">avoid<\/a><\/p>'
 			);
 		});

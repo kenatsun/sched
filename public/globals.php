@@ -40,7 +40,7 @@ function get_days_of_week() {
 global $pref_names;
 $pref_names = array(
 	0 => 'avoid',
-	1 => 'OK',
+	1 => 'ok',
 	2 => 'prefer',
 );
 

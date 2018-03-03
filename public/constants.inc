@@ -2,8 +2,9 @@
 /*
  * Collection of constant declarations
  */
-// define('BASE_DIR', ''); //SUNWARD
-define('BASE_DIR', '/go_meals_scheduling/public');
+
+define('BASE_DIR', ''); //SUNWARD }
+// define('BASE_DIR', '/go_meals_scheduling/public');
 
 define('SKIP_EMAIL', TRUE); // set to true for debugging
 define('RESULTS_FILE', 'schedule.txt');

@@ -30,18 +30,18 @@ function get_season_id() {
  * Get the season's name from database based on SEASON_ID
  */
 function get_season_name_from_db() {
+	global $dbh;
 	$season_table = SEASON_TABLE;
 	$season_id = SEASON_ID;
 	$sql = <<<EOSQL
 		SELECT description FROM {$season_table} WHERE id = {$season_id};
 EOSQL;
-	global $dbh;
 	$season_name = array();
 	foreach($dbh->query($sql) as $row) {
 		$season_name[] = $row['description'];
 		break;
 	}
-	if (0) deb("Utils: Season name from DB:", $season_name);
+	if (0) deb("	Utils: Season name from DB:", $season_name);
 	return $season_name[0];
 }
 
@@ -211,5 +211,75 @@ function deb($label, $data) {
 	</td>
 </tr>
 EOHTML;
+}
+
+/*
+Print a headline for a page
+*/
+function renderHeadline($text) {
+	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
+	return <<<EOHTML
+	<table><tr>
+		<td><img src={$community_logo}></td>
+		<td class="headline">{$text}</td>
+	</tr></table>
+EOHTML;
+}
+
+// Generic SQL SELECT
+function sqlSelect($select, $from, $where, $order_by) {
+	global $dbh;
+	$sql = <<<EOSQL
+		SELECT {$select} 
+		FROM {$from} 
+EOSQL;
+	if ($where) {
+		$sql .= <<<EOSQL
+		
+		WHERE {$where}
+EOSQL;
+	}
+	if ($order_by) {
+		$sql .= <<<EOSQL
+		
+		ORDER_BY {$order_by}
+EOSQL;
+	}
+	$results = array();
+	foreach($dbh->query($sql) as $row) {
+		// Get rid of the numbered elements that get stuck into these row-arrays, 
+		// leaving only named attributes as elements in the results array
+		foreach($row as $key=>$value) {
+			if (is_int($key)) unset($row[$key]);
+		}
+		$results[] = $row;
+	}
+	if (0) deb("utils.sqlSelect: sql:", $sql);
+	if (0) deb("utils.sqlSelect: results:", $results);
+	return $results;
+}
+
+// Generic SQL REPLACE
+// REPLACE INTO apparently works with SQLite and MySQL but not PostgreSQL, 
+// so would have to rewrite this function for PostgreSQL
+function sqlReplace($table, $columns, $values) {
+	global $dbh;
+	$sql = <<<EOSQL
+		REPLACE INTO {$table} ({$columns})
+		VALUES ({$from}) 
+EOSQL;
+	$results = array();
+	foreach($dbh->query($sql) as $row) {
+		// Get rid of the numbered elements that get stuck into these row-arrays, 
+		// leaving only named attributes as elements in the results array
+		foreach($row as $key=>$value) {
+			if (is_int($key)) unset($row[$key]);
+		}
+		$results[] = $row;
+	}
+	if (0) deb("utils.sqlReplace: sql:", $sql);
+	$success = $this->dbh->exec($sql);
+	if (0) deb("utils.sqlSelect: success:", $success);
+	return $success;
 }
 ?>

@@ -1,9 +1,9 @@
 <?php
 
 require_once 'globals.php';
-require_once 'display/includes/header.php';
+require_once 'display/includes/header1.php';
 
-require_once 'classes/calendar.php';
+// require_once 'classes/calendar.php';
 // require_once 'classes/roster1.php';
 require_once 'classes/person.php';
 require_once 'classes/PeopleList.php';
@@ -11,7 +11,7 @@ require_once 'classes/OffersList.php';
 
 class Survey1 {
 	protected $person;
-	protected $calendar;
+	// protected $calendar;
 	// protected $roster;
 	// public $offers;
 	// protected $offers_list = array();
@@ -61,14 +61,11 @@ class Survey1 {
 	}
 
 	public function toString() {
-		// if (is_null($this->person)) {
-			// $this->reportNoShifts();
-		// }
-
 		if (0) deb("survey1.toString(): id:", $this->person->id);
 		// $jobs = $this->offers_list->getOffers($this->person->id);
 		if (0) deb("survey1.toString(): offers:", $this->offers);
-		if (0) deb("survey1.toString(): this->person['name']:", $this->person->name);
+		if (0) deb("survey1.toString(): this->person->username:", $this->person->username);
+		if (0) deb("survey1.toString(): _GET['person']:", $_GET['person']);
 		if ($this->is_save_request) {
 			$out = $this->renderSaved();
 			$this->sendEmail($this->person->username, $out);
@@ -76,18 +73,45 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs");
 		return <<<EOHTML
-		<h2>Welcome, {$this->person->name}</h2>
+		{$headline}
+		<p>Welcome, {$this->person->name}!</p>
 		<form method="POST" action="process_survey1.php">
 			<input type="hidden" name="person" value="{$_GET['person']}">
 			<input type="hidden" name="username" value="{$this->person->username}">
 			<input type="hidden" name="posted" value="0">
+			{$this->renderInstructions()}
+			{$this->renderHints()}
 			{$this->offers_list->toString($this->offers)}
-			<button class="pill" type="submit" value="Save" id="end">Save</button>
+			<button class="pill" type="submit" value="Save" id="end">Next</button>
 		</form>
 EOHTML;
 	}
 
+	protected function renderInstructions() {
+		$season_name = get_season_name_from_db();
+		$month_names = get_current_season();
+		return <<<EOHTML
+				<br>
+				<p class="question">How many times are you willing and able to do each of these meal jobs during {$season_name}?</p>  
+				<br>
+EOHTML;
+		}
+		
+	protected function renderHints() {
+		$season_name = get_season_name_from_db();
+		$month_names = get_current_season();
+		return <<<EOHTML
+<!--			<p>Hopefully helpful hints:</p> -->
+			<ul>
+				<li style="list-style-type:circle">We're scheduling for the {$season_name} season, which consists of {$month_names[4]}, {$month_names[5]}, and {$month_names[6]}.</li>
+				<li style="list-style-type:circle">The number you enter is how many times you will do this job in this whole three-month period.  So for example if you want to be an assistant cook once a month, enter a 3 next to "asst cook".</li>
+				<li style="list-style-type:circle">If you don't want to do a particular job at all this season, enter a 0.</li>
+			</ul>
+			<br>
+EOHTML;
+		}
 
 /* ------------------------------------------------ */
 
@@ -248,49 +272,19 @@ EOSQL;
 		return <<<EOHTML
 	<style>
 	li {
-		list-style-type: disc;
+		list-style-type: circle;
 	} 
 	</style>
 	<h2>Job Offers Summary</h2>
 	</div>
 	{$summary_text}
 	<br>
-	<p>You may <a href="{$dir}/index1.php?person={$this->person->id}">revise your offers</a>
+	<p>You may <a href="{$dir}/index.php?person={$this->person->id}">revise your offers</a>
 		or <a href="{$dir}/index.php?worker={$this->person->id}">proceed to your preferences survey</a>.</p>
 	<br><br>
 EOHTML;
 	}
 
-	/**
-	 * Send an email message with the results.
-	 * @param[in] content string the summary results.
-	 */
-	protected function sendEmail($user, $content) {
-		if (SKIP_EMAIL) {
-			return;
-		}
-
-		$person = $user . DOMAIN;
-		$sent = mail($person,
-			'Meal Scheduling Survey1 preferences saved',
-			strip_tags($content),
-			'From: ken@sunward.org');
-
-		if (!$sent) {
-			error_log("Unable to send email to: $to");
-		}
-
-		// if user is under pref level, then send warning email
-		if (!is_null($this->insufficient_prefs_msg)) {
-			$sent = mail('ken@sunward.org',
-				'Meal Scheduling Survey1 preferences saved under limit',
-				$person . "\n" . strip_tags($content . "\n" .
-					$this->insufficient_prefs_msg),
-				'From: ken@sunward.org');
-		}
-
-		return $sent;
-	}
 }
 
 ?>

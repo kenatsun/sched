@@ -28,6 +28,14 @@ define('WEEKDAY_CLEANER', 3); //SUNWARD
 // define('WEEKDAY_TABLE_SETTER', 4184);
 
 
+/* ----------- meals on holidays? -------------- */
+if (COMMUNITY == 'Sunward') {
+	define('MEALS_ON_HOLIDAYS', TRUE);
+} else {
+	define('MEALS_ON_HOLIDAYS', FALSE);
+}
+
+
 # Are Sunday meals treated separately from weeknights?
 // define('ARE_SUNDAYS_UNIQUE', TRUE);
 define('ARE_SUNDAYS_UNIQUE', FALSE); //SUNWARD

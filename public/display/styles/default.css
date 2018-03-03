@@ -5,7 +5,7 @@ body {
 	font-size: 11pt;
 }
 
-/* hack for a elements which don't have an href */
+/* hack for elements which don't have an href */
 a {
 	cursor: pointer;
 	text-decoration: underline;
@@ -16,9 +16,10 @@ a {
 h1 {
 	margin: 25px 0 10px;
 	font-family: 'Lobster', cursive;
-	font-size: 49px;
+	font-size: 36px;
 	font-weight: normal;
-	background: url('/display/images/great_oak_logo.png') no-repeat left center scroll;
+	/* background: url('/display/images/great_oak_logo.png') no-repeat left center scroll; */
+	background: url('/display/images/sunward_logo.png') no-repeat left center scroll;
 	padding: 7px 0 11px 60px;
 }
 h2 {
@@ -32,6 +33,16 @@ p {
 	margin: 6px 0px;
 }
 
+.headline {
+	margin: 25px 0 10px;
+	font-family: 'Lobster', cursive;
+	font-size: 36px;
+	font-weight: normal;
+	vertical-align: middle;
+	/* background: url('/display/images/great_oak_logo.png') no-repeat left center scroll; */
+	/* background: url('/display/images/sunward_logo.png') no-repeat left center scroll; */
+	/* padding: 7px 0 11px 60px; */
+}
 .explain {
 	margin-top: 15px;
 	color: #444;
@@ -62,16 +73,20 @@ td {
 }
 
 .surround.month_1 {
-	background: #30B336;
+	/* background: #30B336; */
+	background: Yellow;
 }
 .surround.month_2 {
-	background: #30B378;
+	/* background: #30B378; */
+	background: Yellow;
 }
 .surround.month_3 {
-	background: #30ACB3;
+/* 	background: #30ACB3; */
+	background: Yellow;
 }
 .surround.month_0 {
-	background: #408Af9;
+	/* background: #408Af9; */
+	background: Yellow;
 }
 
 .choice {
@@ -213,7 +228,7 @@ label span {
 	margin-right: 5px;
 }
 
-.prefer, .OK, .avoid {
+.prefer, .ok, .avoid {
 	padding: 3px;
 	margin: 0px;
 }
@@ -221,7 +236,7 @@ label span {
 a.prefer:hover {
 	background: #0f6;
 }
-a.OK:hover {
+a.ok:hover {
 	background: #ee6;
 }
 a.avoid:hover {
@@ -267,6 +282,11 @@ table tr.week .affecting {
 
 .summary_listing {
 	float: left;
+	margin-right: 25px;
+}
+
+.summary_listing_last {
+	float: none;
 	margin-right: 25px;
 }
 
@@ -378,4 +398,19 @@ svg {
 
 .striped tbody tr:nth-child(odd) {
 	background: #eee;
+}
+
+/* .weekday_selector, .week_selector, .month_selector { */
+	/* background: #d9ffb3; */
+/* } */
+
+.question {
+	font-size: 14pt;
+	font-style: italic;
+	font-weight: bold;
+}
+
+.multiselector, .blank_header_cell {
+	font-weight: bold;
+	background: #d9d9d9;
 }

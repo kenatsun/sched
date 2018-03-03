@@ -93,18 +93,23 @@ class OffersList {
 		
 		if (0) deb("OffersList->toString(): offers:", $offers);
 		$html = <<<EOHTML
-			<table cellspacing="1" border="0">
+		<table ><tr><td style="background:yellow">
+			<table style="border-spacing: 3px;" border="1" cellpadding="8"> 
+				<tr class="day_labels" style="background: Yellow; ">
+					<th class="day_of_week" style="text-align:center; ">job</th>
+					<th class="day_of_week" style="text-align:center">how many times?</th>
+				</tr>
 EOHTML;
 		foreach($offers as $offer) {
 			if (0) deb("OffersList->toString(): offer:", $offer);
 			$html .= <<<EOHTML
 				<tr>
-					<td style="text-align:right;">{$offer['description']}:</td> 
-					<td><input type:"number" name="{$offer['job_id']}" value="{$offer['instances']}"></td>
-				</tr>
+					<td style="text-align:right; vertical-align:middle; font-size:11pt;"><strong>{$offer['description']}</strong></td> 
+					<td><input style="width:80px" type:"number" name="{$offer['job_id']}" value="{$offer['instances']}"></td>
 EOHTML;
 		}
-		$html .= "</table>";
+		$html .= "</table>
+		</td></tr></table>";
 		if (0) deb("OffersList->toString():", $html);
 		return $html;
 	}

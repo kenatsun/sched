@@ -8,16 +8,16 @@ require_once $relative_dir . 'utils.php';
 require_once 'WorkersList.php';
 
 class Calendar {
-	protected $web_display = TRUE;
-	protected $key_filter = 'all';
+	public $web_display = TRUE;
+	public $key_filter = 'all';
 
-	protected $assignments = array();
+	public $assignments = array();
 
-	protected $holidays;
+	public $holidays;
 
-	protected $is_report = FALSE;
+	public $is_report = FALSE;
 
-	protected $num_shifts = array(
+	public $num_shifts = array(
 		'sunday' => 0,
 		'weekday' => 0,
 		'meeting' => 0,
@@ -59,7 +59,9 @@ class Calendar {
 	public function renderMonthsOverlay() {
 		$current_season = get_current_season();
 
-		$out = '';
+		$out = "";
+EOHTML;
+		
 		foreach($current_season as $month_num=>$month_name) {
 			$out .= <<<EOHTML
 				<li><a href="#{$month_name}">{$month_name}</a></li>
@@ -70,16 +72,17 @@ EOHTML;
 		if (!isset($_SESSION['access_type']) ||
 			($_SESSION['access_type'] != 'guest')) {
 			$out .= <<<EOHTML
-				<li><a href="#worker_comments">comments</a></li>
-				<li><a href="#confirm_checks">confirm checks</a></li>
+<!--				<li><a href="#confirm_checks">confirm checks</a></li> -->
+<!--				<li><a href="#special_requests">Special Requests</a></li> -->
 EOHTML;
 		}
 
 		return <<<EOHTML
 			<ul id="summary_overlay">
-				<li>Quick links:</li>
+				<li>Jump to:</li>
+				<li><a href="#top">Top of Page</a></li>
 				{$out}
-				<li><a href="#end">end</a></li>
+				<li><a href="#end">Bottom of Page</a></li>
 			</ul>
 EOHTML;
 	}
@@ -88,12 +91,12 @@ EOHTML;
 	/**
 	 * Get the weekly spacer html.
 	 */
-	protected function getWeeklySpacerHtml() {
+	protected function renderWeekSelector() {
 		return <<<EOHTML
-			<td class="week_selector">
-				This week:
+			<td class="week_selector multiselector">
+				mark this whole week:
 				<a class="prefer">prefer</a>
-				<a class="OK">OK</a>
+				<a class="ok">ok</a>
 				<a class="avoid">avoid</a>
 			</td>
 EOHTML;
@@ -106,18 +109,33 @@ EOHTML;
 	 *     e.g. 'Tue'.
 	 * @return string the rendered html.
 	 */
-	protected function getWeekdaySelectorHtml($day_num, $day_of_week) {
+	protected function renderWeekdaySelector($day_num, $day_of_week) {
+		if (0) deb ("calendar.renderWeekdaySelector: day_num, day_of_week", $day_num. ", " . $day_of_week);
 		$short_day = substr($day_of_week, 0, 3);
+		// $short_day = $day_of_week;
+		$day_of_week_name = date('l', $day_num);
 		return <<<EOHTML
-			<td class="weekday_selector weekday_num_{$day_num}">
-				{$short_day}:<br>
+			<td class="weekday_selector weekday_num_{$day_num} multiselector" >
+				mark every {$short_day}:<br>
 				<a class="prefer">prefer</a>
-				<a class="OK">OK</a>
+				<a class="ok">ok</a>
 				<a class="avoid">avoid</a>
 			</td>
 EOHTML;
 	}
 
+	protected function renderMonthSelector() {
+		return <<<EOHTML
+			<td class="month_selector multiselector"  colspan=8>
+				<p style="text-align:center; ">mark entire month: 
+				<a class="prefer">prefer</a> 
+				<a class="ok">ok</a> 
+				<a class="avoid">avoid</a></p>
+			</td>
+EOHTML;
+	}
+
+	
 	/**
 	 * Figure out which dates have which shifts applied to them.
 	 *
@@ -148,16 +166,18 @@ EOHTML;
 		$weekly_selector = '';
 		if (!is_null($worker)) {
 			$saved_prefs = $this->getSavedPrefs($worker->getId());
-			$weekly_spacer = '<td width="1%"><!-- weekly spacer --></td>';
-			$weekly_selector = $this->getWeeklySpacerHtml();
+			$day_spacer = '<td class="day_of_week" style="background:yellow;" width="1%"><!-- weekly spacer --></td>';
+			$weekly_spacer = '<td class="multiselector" width="1%"><!-- weekly spacer --></td>';
+			$weekly_selector = $this->renderWeekSelector();
 		}
 
-		$blank_day = '<td class="blank"></td>';
+		$blank_day = '<td></td>';
+		$blank_header_cell = '<td class="blank_header_cell"></td>';
 
 		$day_labels = '';
 		$day_num = 0;
+		
 		// set up the labels and selectors
-
 		$day_selectors = '';
 		foreach(get_days_of_week() as $dow) {
 			$day_labels .= <<<EOHTML
@@ -168,24 +188,24 @@ EOHTML;
 			// for survey mode
 			if (!is_null($worker)) {
 				if (in_array($day_num, array_merge(array(0), $meal_days))) {
-					$day_selectors .= $this->getWeekdaySelectorHtml($day_num, $dow);
+					$day_selectors .= $this->renderWeekdaySelector($day_num, $dow);
 				}
 				else {
-					$day_selectors .= $blank_day;
+					$day_selectors .= $blank_header_cell;
 				}
 			}
 			$day_num++;
 		}
 		$day_labels = <<<EOHTML
 			<tr class="day_labels">
-				{$weekly_spacer}
+				{$day_spacer}
 				{$day_labels}
 			</tr>
 EOHTML;
 
 		$selectors = '';
 		if (!is_null($worker)) {
-			$selectors =<<<EOHTML
+				$selectors .= <<<EOHTML
 				<tr class="weekdays">
 					{$weekly_spacer}
 					{$day_selectors}
@@ -246,10 +266,12 @@ EOHTML;
 				$cell = '';
 
 				$skip_dates = get_skip_dates();
-
+				
+				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
 				// check for holidays
 				if (isset($this->holidays[$month_num]) &&
-					in_array($i, $this->holidays[$month_num])) {
+					in_array($i, $this->holidays[$month_num]) &&
+					!MEALS_ON_HOLIDAYS) {
 					$cell = '<span class="skip">holiday</span>';
 				}
 				// check for manual skip dates
@@ -392,7 +414,8 @@ EOHTML;
 EOHTML;
 
 				// close the row at end of week (saturday)
-				if ($day_of_week == 6 || $i == $days_in_month) {
+				// if ($day_of_week == 6 || $i == $days_in_month) {
+				if ($day_of_week == 6) {
 					$table .= "\n</tr>\n";
 					$month_week_count++;
 				}
@@ -403,7 +426,16 @@ EOHTML;
 					$day_of_week = 0;
 				}
 			}
+			if (0) deb("Day of week after last day of {$month_name}:", $day_of_week);
 
+			// Fill out last cells of last week of month with blanks and end the calendar row
+			if (!$day_of_week == 0) {
+				for($dw = $day_of_week; $dw < 7; $dw++) {		
+					$table .= $blank_day;
+				}
+				$table .= "\n</tr>\n";
+			}
+	
 			if (!$this->web_display) {
 				continue;
 			}
@@ -411,6 +443,7 @@ EOHTML;
 			$survey = ($this->is_report) ? '' : 'survey';
 			$quarterly_month_ord = ($month_num % 4);
 			$season_year = SEASON_YEAR;
+			$month_selector = $this->renderMonthSelector(); 
 			if (0) deb("survey.evalDates(): day_labels =", '"'.$day_labels.'"');
 			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
 			if (0) deb("calendar.evalDates(): weekly_spacer = ", '"'.$weekly_spacer.'"');
@@ -418,15 +451,22 @@ EOHTML;
 			
 			$out .= <<<EOHTML
 			<div id="{$month_name}" class="month_wrapper">
-				<h3 class="month {$survey}">
-					{$month_name} {$season_year}</h3>
 				<div class="surround month_{$quarterly_month_ord}">
-					<table cellpadding="8" cellspacing="1" border="0" width="100%">
+					<table cellpadding="8" cellspacing="3" border="1" width="100%">
+						<tr>
+							<td colspan=8 style="text-align:center; background:yellow;">
+								<h2 class="month {$survey}" style="text-align:center;">{$month_name} {$season_year}</h2>
+							</td>
+						</tr>
+						<tr>
+							{$month_selector}
+						</tr>
 						{$day_labels}
 						{$selectors}
 						{$table}
 					</table>
 				</div>
+				<br>
 			</div>
 EOHTML;
 			if (0) deb("calendar.evalDates(): out = ", $out);			
@@ -607,7 +647,7 @@ EOSQL;
 				ORDER BY a.username, c.timestamp
 EOSQL;
 		$comments = array();
-		$out = "<h2 id=\"worker_comments\">Comments</h2>\n";
+		$out = '</a><h2>Comments</h2>\n';
 		$checks = array();
 		$check_separator = 'echo "-----------";';
 		global $dbh;
@@ -775,9 +815,9 @@ EOHTML;
 					"</li></ul></div>\n";
 			}
 
-			// next, list people who would be OK with it
+			// next, list people who would be ok with it
 			if (array_key_exists(1, $info)) {
-				$cell .= '<div class="OK">OK:<ul><li>' . 
+				$cell .= '<div class="ok">ok:<ul><li>' . 
 					implode("</li>\n<li>\n", $info[1]) . 
 					"</li></ul></div>\n";
 			}

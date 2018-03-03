@@ -14,32 +14,34 @@ session_start();
 
 require_once('display/includes/header.php');
 
-if (!isset($_SESSION['access_type'])) {
-	if (isset($_GET['guest'])) {
-		$_SESSION['access_type'] = 'guest';
-	}
-	else if (isset($_POST['password']) && ($_POST['password'] == 'robotron')) {
-		$_SESSION['access_type'] = 'admin';
-	}
-	else if (!isset($_SESSION['access_type'])) {
-		$dir = BASE_DIR;
-		print <<<EOHTML
-			<h2>Meals scheduling reporting</h2>
-			<h3>Please choose access type:</h3>
-			<div class="access_type">
-				<a href="{$dir}/report.php?guest=1">guest</a>
-			</div>
-			<div class="access_type">
-				admin
-				<form method="post" action="{$_SERVER['PHP_SELF']}">
-					<input type="password" name="password">
-					<input type="submit" value="go">
-				</form>
-			</div>
-EOHTML;
-		exit;
-	}
-}
+$_SESSION['access_type'] = 'guest';
+// // Temporarily disabling the following logic...
+// if (!isset($_SESSION['access_type'])) {
+	// if (isset($_GET['guest'])) {
+		// $_SESSION['access_type'] = 'guest';
+	// }
+	// else if (isset($_POST['password']) && ($_POST['password'] == 'robotron')) {
+		// $_SESSION['access_type'] = 'admin';
+	// }
+	// else if (!isset($_SESSION['access_type'])) {
+		// $dir = BASE_DIR;
+		// print <<<EOHTML
+			// <h2>Meals scheduling reporting</h2>
+			// <h3>Please choose access type:</h3>
+			// <div class="access_type">
+				// <a href="{$dir}/report.php?guest=1">guest</a>
+			// </div>
+			// <div class="access_type">
+				// admin
+				// <form method="post" action="{$_SERVER['PHP_SELF']}">
+					// <input type="password" name="password">
+					// <input type="submit" value="go">
+				// </form>
+			// </div>
+// EOHTML;
+		// exit;
+	// }
+// }
 
 require_once('classes/calendar.php');
 require_once('participation.php');
@@ -189,10 +191,12 @@ foreach($diffs as $key=>$diff) {
 <tr>
 	<td>{$row['username']}</td>
 	{$job_name}
-	<td align="right">{$shifts}</td>
-	<td align="right">{$num_prefs}</td>
+	<td align="left">{$shifts}</td>
+	<!--
+	<td align="left">{$num_prefs}</td>
 	<td align="right">{$diff}</td>
 	<td align="right">{$num_assigned}</td>
+	-->
 </tr>
 EOHTML;
 }
@@ -275,7 +279,7 @@ print <<<EOHTML
 <div class="responses">{$responses}</div>
 {$cal_string}
 {$comments}
-
+<!--
 <h2>Number of meals scheduled per-day type:</h2>
 
 <p>
@@ -296,17 +300,18 @@ Sundays: {$meals_summary['sunday']}
 	{$shift_summary_rows}
 </tbody>
 </table>
-
-<h2>Per-worker</h2>
-<table cellpadding="3" cellspacing="0" border="0" width="100%" id="per_worker">
+-->
+<h2>Job Sign-Ups So Far</h2>
+<table cellpadding="3" cellspacing="0" border="0" id="per_worker">
 <thead>
 	<tr>
-		<th>Name</th>
-		{$job_name}
-		<th style="text-align: right;">shifts</th>
-		<th style="text-align: right;">available</th>
+		<th>person</th>
+		<th style="text-align: left;">job</th>
+		<th style="text-align: left;">how many times</th>
+		<!--
 		<th style="text-align: right;">diff</th>
 		<th style="text-align: right; width: 40%;">assignments</th>
+		-->
 	</tr>
 </thead>
 <tbody>

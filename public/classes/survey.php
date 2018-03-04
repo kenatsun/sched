@@ -270,7 +270,7 @@ EOHTML;
 				<li style="list-style-type: circle"><strong>ok</strong> - This means you're willing to be assigned this job on this day.  As you'll see, "ok" is the default.  To give the Scheduler its best chance to generate a schedule that works well for everyone, please choose "ok" or "prefer" for as many jobs as possible.
 				<li style="list-style-type: circle"><strong>avoid</strong> - This means you can't do this job on this day.  The Scheduler will not assign you to any job that you have marked "avoid".
 			</ul>
-			<p>To speed your process of marking this calendar, the cells with a gray background provide selectors that you can use to choose a certain option for every job in an entire month, a whole week, or every weekday of a particular month.  For example, if you're going to be out of town for most of a particular month, you can click on "mark entire month: avoid".  Then you can go in and mark "ok" or "prefer" for the few jobs that you will be available to do that month.  For another example, if you prefer to cook on Sundays, you can select "mark every Sun: prefer" for any or every month.</p>
+			<p>To speed your process of marking this calendar, the cells with a gray background provide selectors that you can use to choose the same option for every job in an entire month, in a whole week, or for every weekday.  For example, if you're going to be out of town for most of a particular month, you can click on "mark entire month: avoid".  Then you can go in and mark "ok" or "prefer" for the few jobs that you will be available to do that month.  For another example, if you prefer to cook on Sundays, you can select "mark every Sun: prefer".</p>
 			<br>
 			{$this->calendar->toString($this->worker)} 
 EOHTML;

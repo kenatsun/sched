@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-	<title>Job Offers Survey</title>
+	<title>Sunward Meals Scheduling Survey</title>
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css">
 	<link rel="stylesheet" href="select2/select2.min.css" type="text/css">
 

@@ -5,7 +5,7 @@ require_once "classes/person.php";
 require_once "classes/survey.php";
 
 function finishSurvey($survey, $person_id) {
-	if (1) deb("finish.displayResultsPage(): survey:", $survey);
+	if (0) deb("finish.displayResultsPage(): survey:", $survey);
 	$dir = BASE_DIR;
 	$person = new Person($person_id);	
 	$person_email = $person->email;

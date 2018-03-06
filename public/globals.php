@@ -5,6 +5,7 @@ date_default_timezone_set('America/Detroit');
 
 require_once('utils.php');
 require_once('config.php');
+require_once('git_ignored.php');
 
 global $json_assignments_file;
 $json_assignments_file = 'results/' . SEASON_ID . '.json';
@@ -89,15 +90,22 @@ function create_sqlite_connection() {
 	// connect to SQLite database
 	try {
 		global $relative_dir;
-		if (!isset($relative_dir)) {
+		if (!isset($relative_dir)) { 
 			$relative_dir = '';
 		}
 		else {
 			$relative_dir .= '/';
 		}
+<<<<<<< HEAD
 
 		$db_fullpath = "../../../ww/wwa/db/production.sqlite3"; //SUNWARD.  A fragile attempt to connect directly to the ww app database
 #		$db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
+=======
+		
+		$db_fullpath = getDatabaseFullpath();
+		// $db_fullpath = "../../../ww/wwa/db/development.sqlite3"; //SUNWARD.  Connect directly to the ww app database
+		// $db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
+>>>>>>> f7a52f200a79ff747ff3fce2cb70c2b7c22174a6
 		$db_is_writable = is_writable($db_fullpath);
 		$db_file = "sqlite:{$db_fullpath}";
 		$dbh = new PDO($db_file);

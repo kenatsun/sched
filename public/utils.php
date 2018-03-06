@@ -1,5 +1,6 @@
 <?php
 require_once 'constants.inc';
+require_once 'git_ignored.php';
 
 /**
  * Get an element from an array, with a backup.
@@ -218,7 +219,11 @@ Print a headline for a page
 */
 function renderHeadline($text) {
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
+	$instance = INSTANCE;
+	$database = DATABASE;
+	$instance_header = ($instance ? "<p>This is from the {$instance} instance.  Database is {$database}.</p>" : "");
 	return <<<EOHTML
+	{$instance_header}
 	<table><tr>
 		<td><img src={$community_logo}></td>
 		<td class="headline">{$text}</td>
@@ -242,20 +247,20 @@ EOSQL;
 	if ($order_by) {
 		$sql .= <<<EOSQL
 		
-		ORDER_BY {$order_by}
+		ORDER BY {$order_by}
 EOSQL;
 	}
 	$results = array();
 	foreach($dbh->query($sql) as $row) {
-		// Get rid of the numbered elements that get stuck into these row-arrays, 
+		// Get rid of the numbered elements that get stuck into these row-arrays,  
 		// leaving only named attributes as elements in the results array
 		foreach($row as $key=>$value) {
 			if (is_int($key)) unset($row[$key]);
 		}
 		$results[] = $row;
 	}
-	if (0) deb("utils.sqlSelect: sql:", $sql);
-	if (0) deb("utils.sqlSelect: results:", $results);
+	if (1) deb("utils.sqlSelect: sql:", $sql);
+	if (1) deb("utils.sqlSelect: results:", $results);
 	return $results;
 }
 

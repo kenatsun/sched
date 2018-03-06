@@ -259,8 +259,8 @@ EOSQL;
 		}
 		$results[] = $row;
 	}
-	if (1) deb("utils.sqlSelect: sql:", $sql);
-	if (1) deb("utils.sqlSelect: results:", $results);
+	if (0) deb("utils.sqlSelect: sql:", $sql);
+	if (0) deb("utils.sqlSelect: results:", $results);
 	return $results;
 }
 

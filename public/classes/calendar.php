@@ -266,6 +266,8 @@ EOHTML;
 				$cell = '';
 
 				$skip_dates = get_skip_dates();
+				if (0) deb("calendar.evalDates(): skip_dates:", $skip_dates); 
+				if (0) deb("calendar.evalDates(): month_num:", $i); 
 				
 				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
 				// check for holidays
@@ -275,9 +277,11 @@ EOHTML;
 					$cell = '<span class="skip">holiday</span>';
 				}
 				// check for manual skip dates
+				// SUNWARD: using manual skip_dates for community meeting nights because the GO formula for CM nights is not true for us
 				else if (isset($skip_dates[$month_num]) &&
-					in_array($i, $skip_dates[$month_num])) {
-					$cell = '<span class="skip">skip</span>';
+					in_array($i, $skip_dates)) {
+					// in_array($i, $skip_dates[$month_num])) {
+					$cell = '<span class="skip">community meeting</span>';
 				}
 				// sundays
 				else if (ARE_SUNDAYS_UNIQUE && ($day_of_week == 0)) {

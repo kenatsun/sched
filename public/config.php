@@ -57,7 +57,11 @@ function get_num_shift_overrides() {
 }
 
 function get_skip_dates() {
-	return [];
+	$skip_dates = array(
+		"6" => 14,
+	);
+	if (0) deb("config.skip_dates() = ", $skip_dates);
+	return $skip_dates;
 }
 
 // If these names change, be sure to update the is_a_*_job() functions.

@@ -176,7 +176,8 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 		$email_body .= "You have told us that you won't be doing any meal jobs this season.\n";	
 	}
 	$deadline = date('g:ia l, F j', DEADLINE);
-	$email_body .= "\nYou may revise your responses to this questionnaire at any time until $deadline, when the survey closes, by going to http://meals.sunward.org.\n\n" .
+	$url = getSurveyURL();
+	$email_body .= "\nYou may revise your responses to this questionnaire at any time until $deadline, when the survey closes, by going to {$url}.\n\n" .
 	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)";
 	if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
 		$sent = mail($person_email,

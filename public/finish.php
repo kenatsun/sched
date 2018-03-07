@@ -3,6 +3,7 @@ require_once "globals.php";
 require_once "utils.php";
 require_once "classes/person.php";
 require_once "classes/survey.php";
+require_once "git_ignored.php";
 
 function finishSurvey($survey, $person_id) {
 	if (0) deb("finish.displayResultsPage(): survey:", $survey);
@@ -159,6 +160,10 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	$person_first_name = $person->first_name;
 	$community = COMMUNITY;
 	$timestamp = date("F j, Y, g:i a");
+	
+	$instance = INSTANCE;
+	$database = DATABASE;
+	$instance_label = (INSTANCE ? "\nThis is from the {$instance} instance.  Database = {$database}\n" : "");
 	if (0) deb("survey.sendEmail(): person:", $person);
 	if (0) deb("survey.sendEmail(): person_email:", $person_email);
 	if (0) deb("survey.sendEmail(): content:", $content . "<p>END</p>");
@@ -178,7 +183,8 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	$deadline = date('g:ia l, F j', DEADLINE);
 	$url = getSurveyURL();
 	$email_body .= "\nYou may revise your responses to this questionnaire at any time until $deadline, when the survey closes, by going to {$url}.\n\n" .
-	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)";
+	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)
+	{$instance_label}";
 	if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
 		$sent = mail($person_email,
 			'Meal Scheduling Survey preferences saved at ' . $timestamp,

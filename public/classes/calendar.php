@@ -126,12 +126,14 @@ EOHTML;
 
 	protected function renderMonthSelector() {
 		return <<<EOHTML
-			<td class="month_selector multiselector"  colspan=8>
-				<p style="text-align:center; ">mark entire month: 
-				<a class="prefer">prefer</a> 
-				<a class="ok">ok</a> 
-				<a class="avoid">avoid</a></p>
-			</td>
+			<tr>
+				<td class="month_selector multiselector"  colspan=8>
+					<p style="text-align:center; ">mark entire month: 
+					<a class="prefer">prefer</a> 
+					<a class="ok">ok</a> 
+					<a class="avoid">avoid</a></p>
+				</td>
+			</tr>
 EOHTML;
 	}
 
@@ -447,7 +449,7 @@ EOHTML;
 			$survey = ($this->is_report) ? '' : 'survey';
 			$quarterly_month_ord = ($month_num % 4);
 			$season_year = SEASON_YEAR;
-			$month_selector = $this->renderMonthSelector(); 
+			$month_selector = (!$this->is_report ? $this->renderMonthSelector() : ""); 
 			if (0) deb("survey.evalDates(): day_labels =", '"'.$day_labels.'"');
 			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
 			if (0) deb("calendar.evalDates(): weekly_spacer = ", '"'.$weekly_spacer.'"');
@@ -462,9 +464,7 @@ EOHTML;
 								<h2 class="month {$survey}" style="text-align:center;">{$month_name} {$season_year}</h2>
 							</td>
 						</tr>
-						<tr>
-							{$month_selector}
-						</tr>
+						{$month_selector}
 						{$day_labels}
 						{$selectors}
 						{$table}

@@ -74,7 +74,7 @@ function get_weekday_meal_days() {
 }
 
 global $mtg_nights;
-// key = day of week, value = ordinal occurence of day/week
+// key = day of week, value = ordinal occurrence of day/week
 $mtg_nights = array(
 	WEDNESDAY => 1,
 	MONDAY => 3,

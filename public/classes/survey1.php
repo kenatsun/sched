@@ -1,7 +1,7 @@
 <?php
 
 require_once 'globals.php';
-require_once 'display/includes/header1.php';
+require_once 'display/includes/header.php';
 
 // require_once 'classes/calendar.php';
 // require_once 'classes/roster1.php';
@@ -73,7 +73,7 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs");
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs"); 
 		return <<<EOHTML
 		{$headline}
 		<p>Welcome, {$this->person->name}!</p>

@@ -4,12 +4,12 @@ session_start();
 require_once 'utils.php';
 require_once 'globals.php';
 require_once 'classes/calendar.php';
-require_once 'classes/PeopleList.php';
+require_once 'classes/PeopleList.php'; 
 require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
 
-require_once 'display/includes/header1.php';
+require_once 'display/includes/header.php';
 require_once 'participation.php';
 
 $season_id = SEASON_ID;

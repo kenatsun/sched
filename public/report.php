@@ -269,14 +269,16 @@ EOHTML;
 EOHTML;
 }
 
+$headline = renderHeadline("Our Responses So Far");
 $months_overlay = $calendar->renderMonthsOverlay();
 
 // ---- toString section ----
 print <<<EOHTML
-<h2>Meals Schedule Reporting</h2>
+{$headline}
 {$months_overlay}
 <ul>{$jobs_html}</ul>
 <div class="responses">{$responses}</div>
+<h2>When We Can Work</h2>
 {$cal_string}
 {$comments}
 <!--
@@ -301,7 +303,7 @@ Sundays: {$meals_summary['sunday']}
 </tbody>
 </table>
 -->
-<h2>Job Sign-Ups So Far</h2>
+<h2>Jobs We've Signed Up For</h2>
 <table cellpadding="3" cellspacing="0" border="0" id="per_worker">
 <thead>
 	<tr>

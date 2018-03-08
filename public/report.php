@@ -49,7 +49,8 @@ require_once('participation.php');
 $calendar = new Calendar();
 $job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ?
 	intval($_GET['key']) : 'all';
-$jobs_html = $calendar->getJobsIndex($job_key);
+$jobs_html = "<p><em>Show these jobs:</em></p>
+	{$calendar->getJobsIndex($job_key)}";
 
 $calendar->loadAssignments();
 $calendar->setIsReport(TRUE);
@@ -271,14 +272,19 @@ EOHTML;
 
 $headline = renderHeadline("Our Responses So Far");
 $months_overlay = $calendar->renderMonthsOverlay();
+$signups = renderJobSignups();
 
 // ---- toString section ----
 print <<<EOHTML
 {$headline}
 {$months_overlay}
-<ul>{$jobs_html}</ul>
+<br>
+<h2>Jobs we've signed up to do</h2>
+{$signups}
 <div class="responses">{$responses}</div>
-<h2>When We Can Work</h2>
+<br>
+<h2>When we can work</h2>
+<ul>{$jobs_html}</ul>
 {$cal_string}
 {$comments}
 <!--
@@ -303,29 +309,122 @@ Sundays: {$meals_summary['sunday']}
 </tbody>
 </table>
 -->
-<h2>Jobs We've Signed Up For</h2>
-<table cellpadding="3" cellspacing="0" border="0" id="per_worker">
-<thead>
-	<tr>
-		<th>person</th>
-		<th style="text-align: left;">job</th>
-		<th style="text-align: left;">how many times</th>
-		<!--
-		<th style="text-align: right;">diff</th>
-		<th style="text-align: right; width: 40%;">assignments</th>
-		-->
-	</tr>
-</thead>
-<tbody>
-	{$rows}
-</tbody>
-</table>
 
 <ul id="end">{$jobs_html}</ul>
 
 </body>
 </html>
 EOHTML;
+
+// ------------------------------- functions
+
+function renderJobSignups() {
+	$jobs = getJobs();
+	$job_names_header = "";
+	foreach($jobs as $index=>$job) {
+		if (0) deb ("report.renderJobSignups(): name['description']) =", $job['description']);
+		$job_names_header .= "<th>" . $job['description'] . "</th>
+		";
+		if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header);
+	}
+	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header);
+
+	$signups = getJobSignups();
+	// $prev_person_id = 0;
+	$signup_rows = "";
+	foreach($signups as $index=>$signup) {
+		// If this is a new person, start a new row
+		if ($signup['person_id'] != $prev_person_id) {
+			if ($signup_rows != "") $signup_rows .= "</tr>";
+			$signup_rows .= "
+			<tr>
+				<td>{$signup['first_name']} {$signup['last_name']}</td>";
+			$prev_person_id = $signup['person_id'];
+		}
+		// Render the number of times this person will do this job
+		if (0) deb("report.renderJobSignups(): signup['person_id'] =? prev_person_id) AFTER =", $signup['person_id'] . "=?" . $prev_person_id);
+		$signup_rows .= "
+			<td>{$signup['instances']}</td>";
+		// Increment the total number of signups for this job
+		if (0) deb ("report.renderJobSignups(): signup['job_id']) =", $signup['job_id']);
+		$job = array_search($signup['job_id'], array_column($jobs, 'job_id'));
+		$jobs[$job]['signups'] += $signup['instances'];
+		if (0) deb ("report.renderJobSignups(): jobs[job]['signups'] =", $jobs[$job]['signups']);
+	}
+	$signup_rows .= "</tr>";
+	if (0) deb ("report.renderJobSignups(): signup_rows =", $signup_rows);
+	$background = ' style="background:lightgreen;" ';
+	// $background = ' style="background:#ffff80;" ';
+
+	// Render a row showing total signups for each job
+	// $job = 
+	// $job['signups'] = array_search($, array_column);
+	$totals_row = "<tr>
+		<td {$background}><strong>signups so far</strong></td>";
+	foreach($jobs as $index=>$job) {
+		$totals_row .= "<td {$background}><strong>{$job['signups']}</strong></td>";
+	}
+	$totals_row .= "</tr>";
+	
+	// Render a row showing total signups needed for each job
+	$needed_row = "<tr>
+		<td {$background}><strong>jobs to fill</strong></td>";
+	foreach($jobs as $index=>$job) {
+		$needed_row .= "<td {$background}><strong>{$job['instances']}</strong></td>";
+	}
+	$needed_row .= "</tr>";
+
+	// Render a row showing total signups needed for each job
+	$shortfall_row = "<tr>
+		<td {$background}><strong>signups still needed</strong></td>";
+	foreach($jobs as $index=>$job) {
+		$shortfall = max($job['instances'] - $job['signups'], 0);
+		if ($shortfall == 0) $shortfall = '';
+		$shortfall_row .= "<td {$background}><strong>{$shortfall}</strong></td>";
+	}
+	$shortfall_row .= "</tr>";
+
+	$out = <<<EOHTML
+	<table><tr><td style="background:Yellow">
+		<table border="1" cellspacing="3">
+			<tr>
+				<th></th>
+				{$job_names_header}
+				{$totals_row}
+				{$needed_row}
+				{$shortfall_row}
+				{$signup_rows}
+			</tr>
+		</table>
+	</td></tr></table>
+EOHTML;
+	if (0) deb ("report.renderJobSignups(): out =", $out);
+	return $out;
+}
+
+function getJobs() {
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "j.description, j.id as job_id, j.instances, 0 as signups";
+	$from = "{$jobs_table} as j";
+	$where = "";
+	$order_by = "j.display_order";
+	$jobs = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb ("report.getJobSignups(): jobs =", $jobs);
+	return $jobs;
+}
+
+function getJobSignups() {
+	$person_table = AUTH_USER_TABLE;
+	$offers_table = ASSIGN_TABLE;
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "p.id as person_id, p.first_name, p.last_name, o.instances, j.id as job_id, j.description";
+	$from = "{$person_table} as p, {$offers_table} as o, {$jobs_table} as j";
+	$where = "p.id = o.worker_id and o.job_id = j.id";
+	$order_by = "p.first_name, p.last_name, j.display_order";
+	$signups = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb ("report.getJobSignups(): signups =", $signups);
+	return $signups;
+}
 
 //display_shift_count($shift_coverage);
 

@@ -128,7 +128,7 @@ EOHTML;
 		return <<<EOHTML
 			<tr>
 				<td class="month_selector multiselector"  colspan=8>
-					<p style="text-align:center; ">mark entire month: 
+					<p style="text-align:center;" class="month_mark_all">mark entire month: 
 					<a class="prefer">prefer</a> 
 					<a class="ok">ok</a> 
 					<a class="avoid">avoid</a></p>
@@ -575,8 +575,9 @@ EOHTML;
 				continue;
 			}
 			$dir = BASE_DIR;
+			$only = ($label == 'all' ? "" : "only");
 			$jobs_html .= <<<EOHTML
-<li><a href="{$dir}/report.php?key={$key}">{$label}</a></li>
+<li><a href="{$dir}/report.php?key={$key}">{$label} {$only}</a></li>
 EOHTML;
 		}
 		return $jobs_html;

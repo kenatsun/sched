@@ -6,6 +6,7 @@ if (!strlen($relative_dir)) {
     $relative_dir = '.';
 }
 
+require_once "{$relative_dir}/classes/PeopleList.php";
 require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/constants.inc";
 require_once "{$relative_dir}/config.php";
@@ -208,8 +209,10 @@ if ($_SESSION['access_type'] != 'guest') {
 	$responses = $r->getSummary((time() < DEADLINE));
 }
 
+if (0) deb("report: Hello", '');
 $worker_dates = $calendar->getWorkerDates();
 $cal_string = $calendar->toString(NULL, $worker_dates);
+
 
 $comments = '';
 if ($_SESSION['access_type'] == 'admin') {
@@ -273,19 +276,25 @@ EOHTML;
 $headline = renderHeadline("Our Responses So Far");
 $months_overlay = $calendar->renderMonthsOverlay();
 $signups = renderJobSignups();
+$non_responders = renderNonResponders();
 
-// ---- toString section ----
+// ----------------------------------- toString section
 print <<<EOHTML
 {$headline}
 {$months_overlay}
 <br>
-<h2>Jobs we've signed up to do</h2>
+<h2>Jobs we've signed up for</h2>
 {$signups}
 <div class="responses">{$responses}</div>
 <br>
 <h2>When we can work</h2>
 <ul>{$jobs_html}</ul>
 {$cal_string}
+<ul id="end">{$jobs_html}</ul>
+<br>
+<h2>Who hasn't responded yet</h2>
+{$non_responders}
+
 {$comments}
 <!--
 <h2>Number of meals scheduled per-day type:</h2>
@@ -310,7 +319,6 @@ Sundays: {$meals_summary['sunday']}
 </table>
 -->
 
-<ul id="end">{$jobs_html}</ul>
 
 </body>
 </html>
@@ -330,7 +338,6 @@ function renderJobSignups() {
 	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header);
 
 	$signups = getJobSignups();
-	// $prev_person_id = 0;
 	$signup_rows = "";
 	foreach($signups as $index=>$signup) {
 		// If this is a new person, start a new row
@@ -343,8 +350,9 @@ function renderJobSignups() {
 		}
 		// Render the number of times this person will do this job
 		if (0) deb("report.renderJobSignups(): signup['person_id'] =? prev_person_id) AFTER =", $signup['person_id'] . "=?" . $prev_person_id);
+		$person_signups_for_job = ($signup['instances'] == 0 ? '' : $signup['instances']);
 		$signup_rows .= "
-			<td>{$signup['instances']}</td>";
+			<td>{$person_signups_for_job}</td>";
 		// Increment the total number of signups for this job
 		if (0) deb ("report.renderJobSignups(): signup['job_id']) =", $signup['job_id']);
 		$job = array_search($signup['job_id'], array_column($jobs, 'job_id'));
@@ -354,11 +362,8 @@ function renderJobSignups() {
 	$signup_rows .= "</tr>";
 	if (0) deb ("report.renderJobSignups(): signup_rows =", $signup_rows);
 	$background = ' style="background:lightgreen;" ';
-	// $background = ' style="background:#ffff80;" ';
 
 	// Render a row showing total signups for each job
-	// $job = 
-	// $job['signups'] = array_search($, array_column);
 	$totals_row = "<tr>
 		<td {$background}><strong>signups so far</strong></td>";
 	foreach($jobs as $index=>$job) {
@@ -424,6 +429,52 @@ function getJobSignups() {
 	$signups = sqlSelect($select, $from, $where, $order_by);
 	if (0) deb ("report.getJobSignups(): signups =", $signups);
 	return $signups;
+}
+
+function renderNonResponders() {
+	$non_responders = getNonResponders();
+	if (0) deb("report.renderNonResponders: non_responders =", $non_responders);
+	foreach($non_responders as $id=>$name) {
+		$non_responder_names .= "<tr><td>{$name}</td></tr>
+			";
+	}
+	$out = <<<EOHTML
+	<table>
+	{$non_responder_names} 
+	</table>
+EOHTML;
+	
+	if (0) deb("report.renderNonResponders: out =", $out);
+	return $out;
+}
+
+function getNonResponders() {
+	$signups_table = ASSIGN_TABLE;
+	$everybody = new PeopleList("");
+	$responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
+	if (0) deb("report.getNonResponders: everybody =", $everybody);
+	if (0) deb("report.getNonResponders: responders =", $responders);
+	$non_responder_ids = array();
+	$responders_list = $responders->people;
+	foreach($responders_list as $index=>$person) {
+		if (0) deb("report.getNonResponders: person[id] =", $person['id']); 
+		$responder_ids[] = $person['id'];
+	}
+	if (0) deb("report.getNonResponders: responder_ids =", $responder_ids);
+	$everybody_list = $everybody->people;
+	foreach($everybody_list as $index=>$person) {
+		if (0) deb("report.getNonResponders: person[id] =", $person['id']); 
+		$everybody_ids[] = $person['id'];
+		if (!(in_array($person['id'], $responder_ids))){
+			$non_responder_ids[] = $person['id'];
+			$non_responder_names[] = $person['first_name'] . " " . $person['last_name'];
+		}
+	}
+	if (0) deb("report.getNonResponders: everybody_ids =", $everybody_ids);
+	if (0) deb("report.getNonResponders: non_responder_ids =", $non_responder_ids);
+	if (0) deb("report.getNonResponders: non_responder_names =", $non_responder_names);
+	
+	return $non_responder_names;
 }
 
 //display_shift_count($shift_coverage);

@@ -221,7 +221,8 @@ function renderHeadline($text) {
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
 	$instance = INSTANCE;
 	$database = DATABASE;
-	$instance_header = ($instance ? "<p>This is from the {$instance} instance.  Database is {$database}.</p>" : "");
+	$color = '"color:red"';
+	$instance_header = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
 	return <<<EOHTML
 	{$instance_header}
 	<table><tr>

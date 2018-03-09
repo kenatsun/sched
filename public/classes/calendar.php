@@ -47,6 +47,7 @@ class Calendar {
 
 	public function loadAssignments() {
 		global $json_assignments_file;
+		$dir = BASE_DIR;
 		$file = $json_assignments_file;
 
 		if (!file_exists($file)) {
@@ -83,6 +84,7 @@ EOHTML;
 				<li><a href="#top">Top of Page</a></li>
 				{$out}
 				<li><a href="#end">Bottom of Page</a></li>
+				<li><a href="{$dir}/index.php">Survey Home Page</a></li>
 			</ul>
 EOHTML;
 	}

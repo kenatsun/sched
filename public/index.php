@@ -8,6 +8,7 @@ require_once 'classes/PeopleList.php';
 require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
+// require_once 'display/images';
 
 require_once 'display/includes/header.php';
 require_once 'participation.php';
@@ -37,7 +38,6 @@ if ($now <= DEADLINE) {
 	$respondent_id = array_get($_GET, 'person');
 	if (0) deb("index: person from array_get:", $respondent_id);
 	if (0) deb("index: array dollarsign_get:", $_GET);
-	
 	if (!is_null($respondent_id)) {
 		build_survey($survey, $respondent_id);
 	} else {
@@ -141,12 +141,14 @@ function display_person_menu() {
 		echo "<h2>No respondents configured</h2>\n";
 		return;
 	}
+	$gold_star = '<img src="/display/images/goldstar02.png" height="12">&nbsp';
 	$html = <<<EOHTML
 		<table  class="workers_list"  style="font-size:11pt">
 			<tr>
 			{$respondents}
 			</tr>
 		</table>
+		{$gold_star} marks the wonderful people who have responded to the questionnaire so far
 	<br><br>
 EOHTML;
 	print $html;
@@ -164,8 +166,9 @@ EOHTML;
 
 function display_report_link() {
 	$dir = BASE_DIR;
+	$community = COMMUNITY;
 	echo <<<EOHTML
-<p class="summary_report">See <a href="{$dir}/report.php">what others have signed up for</a>.</p>
+<p class="summary_report"><strong><a href="{$dir}/report.php">Take a look at {$community}'s responses so far</a></strong></p>
 EOHTML;
 }
 
@@ -173,16 +176,22 @@ EOHTML;
  * Render the list of people as links in order to select their survey.
  */
 function renderPeopleListAsLinks() {
+	$dir = BASE_DIR;
 	$list = new PeopleList();
 	$respondents = $list->getPeople();
-	if (0) deb("index.getPeopleAsLinks: respondents:", $respondents);
+	if (0) deb("index.getPeopleAsLinks: respondents:", $respondents); 
 	$lines = '';
 	$count = 0;
+	$signups_table = ASSIGN_TABLE;
+	$responder_ids = getResponders(); 
+	if (0) deb("index.renderPeopleListAsLinks(): responder_ids =", $responder_ids); 
+	$gold_star = '&nbsp<img src="/display/images/goldstar02.png" height="12">';
 
-	$dir = BASE_DIR;
 	foreach($respondents as $respondent) {
+		
+		$responded = (in_array($respondent['id'], $responder_ids) ? $gold_star : "");
 		$line = <<<EOHTML
-			<li><a href="{$dir}/index.php?person={$respondent["id"]}">{$respondent["name"]}</a></li>
+			<li><a href="{$dir}/index.php?person={$respondent["id"]}">{$respondent["name"]}</a>{$responded}</li>
 EOHTML;
 		$lines .= $line;
 		if (0) deb("index.getPeopleAsLinks: html line:", $line);
@@ -199,6 +208,7 @@ EOHTML;
 	if ($lines != '') {
 		$out .= "<td><ol>{$lines}</ol></td>\n";
 	}
+
 	if (0) deb("PeopleList.renderPeopleListAsLinks(): out:", $out);
 	return $out;
 }

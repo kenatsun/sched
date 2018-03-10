@@ -232,6 +232,71 @@ function renderHeadline($text) {
 EOHTML;
 }
 
+function getJobs() {
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "j.description, j.id as job_id, j.instances, 0 as signups";
+	$from = "{$jobs_table} as j";
+	$where = "";
+	$order_by = "j.display_order";
+	$jobs = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb ("utils.getJobSignups(): jobs =", $jobs);
+	return $jobs;
+}
+
+function getJobSignups() {
+	$person_table = AUTH_USER_TABLE;
+	$offers_table = ASSIGN_TABLE;
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "p.id as person_id, p.first_name, p.last_name, o.instances, j.id as job_id, j.description";
+	$from = "{$person_table} as p, {$offers_table} as o, {$jobs_table} as j";
+	$where = "p.id = o.worker_id and o.job_id = j.id";
+	$order_by = "p.first_name, p.last_name, j.display_order";
+	$signups = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb ("utils.getJobSignups(): signups =", $signups);
+	return $signups;
+}
+
+function getResponders() {
+	$signups_table = ASSIGN_TABLE;
+	$responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
+	$responders_list = $responders->people;
+	foreach($responders_list as $index=>$person) {
+		if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
+		$responder_ids[] = $person['id'];
+	}
+	if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids); 
+	return $responder_ids;
+}
+
+function getNonResponders() {
+	// $signups_table = ASSIGN_TABLE;
+	// $responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
+	// if (0) deb("utils.getNonResponders: everybody =", $everybody);
+	// if (0) deb("utils.getNonResponders: responders =", $responders);
+	// $non_responder_ids = array();
+	// $responders_list = $responders->people;
+	// foreach($responders_list as $index=>$person) {
+		// if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
+		// $responder_ids[] = $person['id'];
+	// }
+	$responder_ids = getResponders();
+	if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids);
+	$everybody = new PeopleList("");
+	$everybody_list = $everybody->people;
+	foreach($everybody_list as $index=>$person) {
+		if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
+		$everybody_ids[] = $person['id'];
+		if (!(in_array($person['id'], $responder_ids))){
+			$non_responder_ids[] = $person['id'];
+			$non_responder_names[] = $person['first_name'] . " " . $person['last_name'];
+		}
+	}
+	if (0) deb("utils.getNonResponders: everybody_ids =", $everybody_ids);
+	if (0) deb("utils.getNonResponders: non_responder_ids =", $non_responder_ids);
+	if (0) deb("utils.getNonResponders: non_responder_names =", $non_responder_names);
+	
+	return $non_responder_names;
+}
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where, $order_by) {
 	global $dbh;

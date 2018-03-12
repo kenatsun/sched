@@ -197,10 +197,10 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 
 		// if user is under pref level, then send warning email
 		if (!is_null($insufficient_prefs_msg)) {
-			$sent = mail('willie@gocoho.org',
+			$sent = mail('ken@sunward.org',
 				'Meal Scheduling Survey preferences saved under limit at ' . $timestamp,
 				$person_name . "\n" . strip_tags($content . "\n" .
-					$this->insufficient_prefs_msg),
+					$insufficient_prefs_msg),
 				'From: moremeals@sunward.org');
 		}
 	}

@@ -31,33 +31,33 @@ EOHTML;
 $dir = BASE_DIR;
 
 // ----- deadline check ----
+global $extended;
 $now = time();
-if ($now <= DEADLINE) {
+if ($now <= DEADLINE || $extended) {
 	// If a person has been specified in the request, do their survey
 	// else display the list of all respondents as links
 	$respondent_id = array_get($_GET, 'person');
 	if (0) deb("index: person from array_get:", $respondent_id);
 	if (0) deb("index: array dollarsign_get:", $_GET);
-	if (!is_null($respondent_id)) {
-		build_survey($survey, $respondent_id);
-	} else {
+	if (is_null($respondent_id)) {
 		display_headline();
-		// display_introduction();
 		display_countdown();
+		if ($extended) echo "...but briefly re-opened to admit a few last-minute responses!";
 		display_instructions();
 		// display_respondents();
 		display_person_menu();
 		display_footer();
-		display_report_link();		
+		$community = COMMUNITY;
+		display_report_link("Take a look at {$community}'s responses so far");		
+	} else {
+		build_survey($survey, $respondent_id);
 	}
 }
 else {
 	$formatted_date = date('r', DEADLINE);
-	echo <<<EOHTML
-		<h2>Survey has closed</h2>
-		<p>As of {$formatted_date}</p>
-		{$report_link}
-EOHTML;
+	display_headline();
+	display_countdown();
+	display_report_link("View the schedule");		
 }
 print <<<EOHTML
 </body>
@@ -70,29 +70,6 @@ function display_headline() {
 	$season_name = get_season_name_from_db($season_id);
 	$headline = renderHeadline("Sunward Meals Scheduling - {$season_name} Questionnaire");
 	echo $headline;
-}
-
-function display_introduction() {
-	$season_name = get_season_name_from_db($season_id);
-	$month_names = get_current_season();
-	$deadline = date('l, F j', DEADLINE);
-	if (0) deb("index.display_introduction(): deadline = ", $deadline);
-	echo <<<EOHTML
-<h2>Introduction</h2>
-<p>This is an experiment to get Sunward dinners staffed and scheduled <em>in advance</em> for every Thursday and Sunday of the {$season_name} season ({$month_names[4]}, {$month_names[5]}, and {$month_names[6]}).</p>
-<p>To help the community accomplish this, please fill out this questionnaire.  In doing so, you will tell us:</p>
-<ul style="list-style-type:circle">
-<li style="list-style-type:circle"><em>What</em> Sunward dinner jobs (if any) you are willing and able to do during the {$season_name} season, </li>
-<li style="list-style-type:circle"><em>How many times</em> you're available to do each job during this season,</li>
-<li style="list-style-type:circle"><em>When</em> you would prefer to do these jobs,</li> 
-<li style="list-style-type:circle"><em>Who</em> you would and wouldn't like to work with, and</li> 
-<li style="list-style-type:circle">Any other work preferences you may have.</li> 
-</ul>
-<p>From the questionnaire results, a computer program created by Willie Northway and used for several years at Great Oak will do its best to generate a full schedule of {$season_name} dinners that honors all of our availabilities and preferences. </p>
-<p>Then we'll negotiate person-to-person as needed to optimize the schedule.</p>
-<p>Then we'll post the finalized meals to <a href="https://gather.coop/meals">Gather</a>, so we can all kick back, sign up, and chow down!</p>
-</ul>
-EOHTML;
 }
 
 function display_instructions() {
@@ -123,17 +100,17 @@ function display_countdown() {
 EOHTML;
 }
 
-function display_respondents() {
-	// display the responders summary
-	$r = new Respondents();
-	if (0) deb("inex1.display_respondents: Respondents =", $r);
-	echo <<<EOHTML
-		<div class="special_info">
-			{$r->getTimeRemaining()}
-			{$r->getSummary()}
-		</div>
-EOHTML;
-}
+// function display_respondents() {
+	// // display the responders summary
+	// $r = new Respondents();
+	// if (0) deb("inex1.display_respondents: Respondents =", $r);
+	// echo <<<EOHTML
+		// <div class="special_info">
+			// {$r->getTimeRemaining()}
+			// {$r->getSummary()}
+		// </div>
+// EOHTML;
+// }
 
 function display_person_menu() {
 	$respondents = renderPeopleListAsLinks();
@@ -164,11 +141,10 @@ EOHTML;
 	print $html;
 }
 
-function display_report_link() {
+function display_report_link($text) {
 	$dir = BASE_DIR;
-	$community = COMMUNITY;
 	echo <<<EOHTML
-<p class="summary_report"><strong><a href="{$dir}/report.php">Take a look at {$community}'s responses so far</a></strong></p>
+<p class="summary_report"><strong><a href="{$dir}/report.php">{$text}</a></strong></p>
 EOHTML;
 }
 

@@ -12,6 +12,7 @@ class Calendar {
 	public $key_filter = 'all';
 
 	public $assignments = array();
+	private $cur_date_assignments = array();
 
 	public $holidays;
 
@@ -22,6 +23,9 @@ class Calendar {
 		'weekday' => 0,
 		'meeting' => 0,
 	);
+	
+	public $job_key = 'all';
+	public $data_key = 'all';
 
 	public function __construct() {
 		// 'all' is the default, so only change if it's numeric
@@ -254,6 +258,9 @@ EOHTML;
 			// for each day in the current month
 			for ($i=1; $i<=$days_in_month; $i++) {
 				$tally = '';
+				$this_year = SEASON_YEAR;
+				if (0) deb("calendar.evalDate(): month={$month_num}, date={$i}, year={$this_year}");
+				// $today =  $month_num . "/" . $i . "/" . SEASON_YEAR;
 
 				// if this is sunday... add the row start
 				if (($day_of_week == 0) && ($i != 1)) {
@@ -268,17 +275,33 @@ EOHTML;
 				#!# need to fix the validity of this id value
 				$date_string = "{$month_num}/{$i}/" . SEASON_YEAR;
 				$cell = '';
+				
 
 				$skip_dates = get_skip_dates();
 				if (0) deb("calendar.evalDates(): skip_dates:", $skip_dates); 
-				if (0) deb("calendar.evalDates(): month_num:", $i); 
-				
+				if (0) deb("calendar.evalDates(): date_string: <b>$date_string</b>"); 				
+				if (0) deb("calendar.evalDates(): month_num:", $i); 				
 				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
+				
+				// #!# suppress this display unless it's report mode...
+				// list the assigned workers
+				if (isset($this->assignments[$date_string])) {
+					if (0) deb("calendar.evalDates(): this->assignments[date_string]:", $this->assignments[$date_string]); 				
+					$select = "w.first_name || ' ' || w.last_name as worker_name, a.shift_id, a.worker_id, a.scheduler_timestamp, s.id as shift_id, s.string as meal_date, j.id as job_id, j.description";
+					$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
+					$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id and s.string = '{$date_string}' and j.season_id = " . SEASON_ID . 
+						" and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . ")";
+					$order_by = "j.display_order";
+					$this->cur_date_assignments = sqlSelect($select, $from, $where, $order_by);
+					if (0) deb("calendar.evalDates(): cur_date_assignments:", $this->cur_date_assignments); 
+				}
+
+				
 				// check for holidays
 				if (isset($this->holidays[$month_num]) &&
 					in_array($i, $this->holidays[$month_num]) &&
 					!MEALS_ON_HOLIDAYS) {
-					$cell = '<span class="skip">holiday</span>';
+					$cell .= '<span class="skip">holiday</span>';
 				}
 				// check for manual skip dates
 				// SUNWARD: using manual skip_dates for community meeting nights because the GO formula for CM nights is not true for us
@@ -392,24 +415,8 @@ EOHTML;
 EOHTML;
 
 						// report the available workers
-						$cell = $this->list_available_workers($date_string,
+						$cell .= $this->list_available_workers($date_string,
 							$dates[$date_string]);
-					}
-				}
-
-				// #!# suppress this display unless it's report mode...
-				// list the auto-assigned workers
-				if (isset($this->assignments[$date_string])) {
-					$assn = '';
-					if ($this->key_filter == 'all') {
-						$assn = $this->assignments[$date_string];
-					}
-					else if (isset($this->assignments[$date_string][$this->key_filter])) {
-						$assn = $this->assignments[$date_string][$this->key_filter];
-					}
-
-					if ($assn != '') {
-						$cell .= '<pre>' . print_r($assn, true) . '</pre>';
 					}
 				}
 
@@ -418,8 +425,8 @@ EOHTML;
 					<div class="date_number">{$i}{$tally}</div>
 					{$cell}
 				</td>
-
 EOHTML;
+				if (0) deb("calendar.list_available_workers(): cell = ", $cell);
 
 				// close the row at end of week (saturday)
 				// if ($day_of_week == 6 || $i == $days_in_month) {
@@ -456,6 +463,7 @@ EOHTML;
 			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
 			if (0) deb("calendar.evalDates(): weekly_spacer = ", '"'.$weekly_spacer.'"');
 			if (0) deb("calendar.evalDates(): selectors = ", $selectors);
+			if (0) deb("calendar.evalDates(): table = ", $table);
 			
 			$out .= <<<EOHTML
 			<div id="{$month_name}" class="month_wrapper">
@@ -562,29 +570,86 @@ EOHTML;
 	}
 
 	/**
-	 * Return the list of jobs as special links to filter the results.
+	 * Return HTML to select what info to display in calendar day cells.
 	 * @param[in] job_key string Either an int representing the unique ID
 	 *     for the job to report on, or 'all' to show all jobs.
-	 * @return string HTML for displaying the list of job/links.
+	 * @param[in] data_key string Either an int representing the type of data
+	 *     to report on, or 'all' to show all data.
+	 * @return string HTML for displaying the display selectors.
 	 */
-	public function getJobsIndex($job_key) {
+	public function renderDisplaySelectors($job_key, $data_key) {
 		global $all_jobs;
-
-		$jobs_html = '';
+		$dir = BASE_DIR;
+		$selector_html = '';
+		if (0) deb("report.renderDisplaySelectors(): _GET = ", $_GET);
+		if (0) deb("report.renderDisplaySelectors(): job_key = $job_key, data_key = $data_key");
+		
+		// What jobs to display?
+		$selector_html .= "<p><em>show these jobs: </em>";		
 		foreach($all_jobs as $key=>$label) {
+			$only = ($label == 'all' ? "" : " only");
 			if (isset($_GET['key']) && ($key == $job_key)) {
-				$jobs_html .= "<li><b>{$label}</b></li>\n";
+				$selector_html .= "&nbsp;&nbsp;<b>{$label}{$only}</b>";
 				continue;
 			}
-			$dir = BASE_DIR;
-			$only = ($label == 'all' ? "" : "only");
-			$jobs_html .= <<<EOHTML
-<li><a href="{$dir}/report.php?key={$key}">{$label} {$only}</a></li>
+			$selector_html .= <<<EOHTML
+&nbsp;&nbsp;<a href="{$dir}/report.php?key={$key}&show={$data_key}">{$label}{$only}</a>
 EOHTML;
 		}
-		return $jobs_html;
+		
+		// What data to display for each job?
+		$selector_html .= "<p><em>show these data: </em>";
+		$data_types = array('all', 'assignments', 'preferences');
+		foreach($data_types as $key=>$data_type) {
+			$only = ($data_type == 'all' ? "" : " only");
+			if (0) deb("report.renderDisplaySelectors(): key = $key, data_type = $data_type, data_key = $data_key");
+			if (isset($_GET['show']) && ($data_type == $data_key)) {
+				$selector_html .= "&nbsp;&nbsp;<b>{$data_type}{$only}</b>";
+				continue;
+			}
+			$selector_html .= <<<EOHTML
+&nbsp;&nbsp;<a href="{$dir}/report.php?key={$job_key}&show={$data_type}">{$data_type}{$only}</a>
+EOHTML;
+		}
+		return $selector_html;
 	}
 
+	// public function getJobsIndex($job_key, $data_key) {
+		// global $all_jobs;
+		// $jobs_html = '';
+		// foreach($all_jobs as $key=>$label) {
+			// $only = ($label == 'all' ? "" : " only");
+			// if (isset($_GET['key']) && ($key == $job_key)) {
+				// $jobs_html .= " <b>&nbsp;&nbsp;{$label}{$only}</b>";
+				// continue;
+			// }
+			// $dir = BASE_DIR;
+			// $jobs_html .= <<<EOHTML
+ // &nbsp;&nbsp;<a href="{$dir}/report.php?key={$key}&show={$data_key}">{$label}{$only}</a>
+// EOHTML;
+		// }
+		// return $jobs_html;
+	// }
+
+	/**
+	 * Return the types of data to show in calendar cells: all, assignments, preferences
+	 */
+	// public function getDataIndex($data_key, $jobs_key) {
+		// $data_types = array('all', 'assignments', 'preferences');
+		// $data_html = '';
+		// foreach($data_types as $key=>$data_type) {
+			// if (isset($_GET['show']) && ($data_type == $_GET['show'])) {
+				// $data_html .= " <b>&nbsp;&nbsp;{$data_type}</b>";
+				// continue;
+			// }
+			// $dir = BASE_DIR;
+			// $only = ($data_type == 'all' ? "" : " only");
+			// $data_html .= <<<EOHTML
+ // &nbsp;&nbsp;<a href="{$dir}/report.php?show={$data_type}&key={$jobs_key}">{$data_type}{$only}</a>
+// EOHTML;
+		// }
+		// return $data_html; 
+	// }
 
 	/**
 	 * Load which dates the workers have marked as being available.
@@ -777,7 +842,7 @@ EOHTML;
 	/*
 	 * reporting feature - list the workers available for this day
 	 */
-	private function list_available_workers($date_string, $cur_date, $is_sunday=FALSE) {
+	private function list_available_workers($date_string, $cur_date_prefs, $is_sunday=FALSE) {
 		$cell = '';
 
 		$job_titles = array();
@@ -793,43 +858,67 @@ EOHTML;
 
 		if ($this->key_filter != 'all') {
 			// don't figure out a listing for a non-supported day of week
-			if (!isset($cur_date[$this->key_filter])) {
+			if (!isset($cur_date_prefs[$this->key_filter])) {
 				return;
 			}
 
-			$cur_date = array($this->key_filter =>
-				$cur_date[$this->key_filter]);
+			$cur_date_prefs = array($this->key_filter =>
+				$cur_date_prefs[$this->key_filter]);
 		}
 
-		foreach($cur_date as $job=>$info) {
+		if (0) deb("calendar.list_available_workers(): cur_date (pre-sort) = ", $cur_date_prefs);
+		ksort($cur_date_prefs);
+		if (0) deb("calendar.list_available_workers(): cur_date_prefs (sorted) = ", $cur_date_prefs);
+		if (0) deb("calendar.list_available_workers(): cur_date_assignments (sorted) = ", $this->cur_date_assignments);
+		
+		foreach($cur_date_prefs as $job=>$info) {
 			// don't report anything for an empty day
 			if (empty($info)) {
 				if (isset($job_titles[$job])) {
 					$cell .= '<div class="warning">empty!<div>';
 				}
 				continue;
+			} 
+
+			// show job title
+			$cell .= "<h3 class=\"jobname\">{$job_titles[$job]}</h3>\n";
+
+			// // include a title if not filtered
+			// if ($this->key_filter == 'all') {
+				// $cell .= "<h3 class=\"jobname\">{$job_titles[$job]}</h3>\n";
+			// }
+
+			// list people assigned to this job on this date
+			if ($this->data_key == 'all' || $this->data_key == 'assignments') {
+				$cell .= '<ul style="background:lightgreen;">';
+				foreach($this->cur_date_assignments as $key=>$assignment) {
+					// if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
+					if ($job == $assignment['job_id']) {
+						if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
+						$cell .= "<li><strong>{$assignment['worker_name']}</strong></li>"; 
+					}
+				}
+				$cell .= "</ul>";
 			}
 
-			// include a title if not filtered
-			if ($this->key_filter == 'all') {
-				$cell .= "<h3 class=\"jobname\">{$job_titles[$job]}</h3>\n";
-			}
+			if (0) deb("calendar.list_available_workers(): job_key = $job_key, job = $job");			
+			if ($this->data_key == 'all' || $this->data_key == 'preferences') {
+				// list people who prefer the job first
+				if (array_key_exists(2, $info)) {
+					$cell .= '<div class="highlight">prefer:<ul><li>' . 
+						implode("</li>\n<li>\n", $info[2]) . 
+						"</li></ul></div>\n";
+				}
 
-			// list people who prefer the job first
-			if (array_key_exists(2, $info)) {
-				$cell .= '<div class="highlight">prefer:<ul><li>' . 
-					implode("</li>\n<li>\n", $info[2]) . 
-					"</li></ul></div>\n";
-			}
-
-			// next, list people who would be ok with it
-			if (array_key_exists(1, $info)) {
-				$cell .= '<div class="ok">ok:<ul><li>' . 
-					implode("</li>\n<li>\n", $info[1]) . 
-					"</li></ul></div>\n";
+				// next, list people who would be ok with it
+				if (array_key_exists(1, $info)) {
+					$cell .= '<div class="ok">ok:<ul><li>' . 
+						implode("</li>\n<li>\n", $info[1]) . 
+						"</li></ul></div>\n";
+				}
 			}
 		}
-
+		if (0) deb("calendar.list_available_workers(): cell = ", $cell); 
 		return $cell;
 	}
 

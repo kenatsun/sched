@@ -75,7 +75,7 @@ EOSQL;
 
 		if ($seconds <= 0) {
 			return <<<EOHTML
-				<div class="remaining">closed at {$deadline}</div>
+				<span class="remaining">The survey closed at {$deadline}</span>
 EOHTML;
 		}
 

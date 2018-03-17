@@ -15,7 +15,9 @@ session_start();
 
 require_once('display/includes/header.php');
 
-$_SESSION['access_type'] = 'guest';
+if (0) deb("report: _SESSION = ", $_SESSION);
+if (0) deb("report: userIsAdmin() = " . userIsAdmin());
+// $_SESSION['access_type'] = 'guest';
 // // Temporarily disabling the following logic...
 // if (!isset($_SESSION['access_type'])) {
 	// if (isset($_GET['guest'])) {
@@ -48,10 +50,9 @@ require_once('classes/calendar.php');
 require_once('participation.php');
 
 $calendar = new Calendar();
-$job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ?
-	intval($_GET['key']) : 'all';
-$jobs_html = "<p><em>Show these jobs:</em></p>
-	{$calendar->getJobsIndex($job_key)}";
+$calendar->job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ? intval($_GET['key']) : 'all';
+$calendar->data_key = (isset($_GET['show'])) ? $_GET['show'] : 'all';
+$selector_html = $calendar->renderDisplaySelectors($calendar->job_key, $calendar->data_key);
 
 $calendar->loadAssignments();
 $calendar->setIsReport(TRUE);
@@ -69,7 +70,7 @@ $sql = <<<EOSQL
 		FROM {$prefs_table} as p, {$auth_user_table} as u, {$shifts_table} as s
 		WHERE u.id = p.worker_id
 			AND p.date_id=s.id
-			{$job_key_clause}
+			{$job_key_clause} 
 			AND p.pref > 0
 		GROUP BY p.worker_id, s.job_id
 EOSQL;
@@ -205,9 +206,10 @@ EOHTML;
 
 $r = new Respondents();
 $responses = '';
-if ($_SESSION['access_type'] != 'guest') {
-	$responses = $r->getSummary((time() < DEADLINE));
-}
+// if ($_SESSION['access_type'] != 'guest') {
+// if (userIsAdmin()) {
+	// $responses = $r->getSummary((time() < DEADLINE));
+// }
 
 if (0) deb("report: Hello", '');
 $worker_dates = $calendar->getWorkerDates();
@@ -215,7 +217,8 @@ $cal_string = $calendar->toString(NULL, $worker_dates);
 
 
 $comments = '';
-if ($_SESSION['access_type'] == 'admin') {
+// if ($_SESSION['access_type'] == 'admin') {
+if (userIsAdmin()) {
 	$comments = $calendar->getWorkerComments($job_key_clause);
 }
 
@@ -284,19 +287,22 @@ print <<<EOHTML
 {$headline}
 {$months_overlay}
 <br>
+<h2>When we can work</h2>
+<ul>{$selector_html}</ul>
+{$cal_string}
+<ul id="end">{$jobs_html}</ul>
+<ul>{$selector_html}</ul>
+<br>
+<!--
 <h2>Jobs we've signed up for</h2>
 {$signups}
 <div class="responses">{$responses}</div>
-<br>
-<h2>When we can work</h2>
-<ul>{$jobs_html}</ul>
-{$cal_string}
-<ul id="end">{$jobs_html}</ul>
 <br>
 <h2>Who hasn't responded yet</h2>
 {$non_responders}
 
 {$comments}
+-->
 <!--
 <h2>Number of meals scheduled per-day type:</h2>
 

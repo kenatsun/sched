@@ -47,6 +47,8 @@ class Survey1 {
 		}
 		if (0) deb("survey1.__construct(): Person data:", $this->person);
 		if (0) deb("survey1.__construct(): this->offers:", $this->offers);
+		if (0) deb("survey1.__construct(): _SESSION = ", $_SESSION);
+		if (0) deb("survey1.__construct(): userIsAdmin() = " . userIsAdmin());
 	}
 
 	/**

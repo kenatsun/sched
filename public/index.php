@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+
 require_once 'utils.php';
 require_once 'globals.php';
 require_once 'classes/calendar.php';
@@ -13,10 +14,10 @@ require_once 'classes/survey1.php';
 require_once 'display/includes/header.php';
 require_once 'participation.php';
 
+$dir = BASE_DIR;
+
 $season_id = SEASON_ID;
 $season_name = get_season_name_from_db($season_id);
-
-
 
 // ----- check to see if the database is writable:
 global $db_is_writable;
@@ -28,17 +29,20 @@ if (!$db_is_writable) {
 EOHTML;
 }
 
-$dir = BASE_DIR;
+// global $user_is_admin;
+// $user_is_admin = ($_SESSION['access_type'] == 'admin' ? TRUE : FALSE);
+// if (0) deb("index: user_is_admin =", $user_is_admin);
 
 // ----- deadline check ----
 global $extended;
+if (0) deb("index: userIsAdmin() = " . userIsAdmin());
 $now = time();
-if ($now <= DEADLINE || $extended) {
+if ($now <= DEADLINE || $extended  || userIsAdmin()) {
 	// If a person has been specified in the request, do their survey
 	// else display the list of all respondents as links
 	$respondent_id = array_get($_GET, 'person');
-	if (0) deb("index: person from array_get:", $respondent_id);
-	if (0) deb("index: array dollarsign_get:", $_GET);
+	if (0) deb("index: person from array_GET:", $respondent_id);
+	if (0) deb("index: array dollarsign_GET:", $_GET);
 	if (is_null($respondent_id)) {
 		display_headline();
 		display_countdown();
@@ -50,7 +54,8 @@ if ($now <= DEADLINE || $extended) {
 		$community = COMMUNITY;
 		display_report_link("Take a look at {$community}'s responses so far");		
 	} else {
-		build_survey($survey, $respondent_id);
+		build_survey($respondent_id);
+		// build_survey($survey, $respondent_id);
 	}
 }
 else {
@@ -192,9 +197,10 @@ EOHTML;
 
 /**
  * @param[in] survey Survey for this respondent to take
- * @param[in] respondent string person's id from the _GET array
+ * @param[in] respondent_id string person's id from the _GET array
  */
-function build_survey($survey, $respondent_id) {
+// function build_survey($survey, $respondent_id) {
+function build_survey($respondent_id) {
 	if (0) deb("index.build_survey: respondent_id = ", $respondent_id);
 	$survey = new Survey1($respondent_id);
 	// $survey->setRespondent($respondent_id);

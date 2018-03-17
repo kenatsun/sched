@@ -1,4 +1,4 @@
-<?php
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?php
 ini_set('display_errors', 1);
 
 # set the include path to be the top-level of the meals scheduling project
@@ -12,13 +12,14 @@ require_once 'public/utils.php';
  */
 $start = microtime(TRUE);
 
-$options = getopt('cijsxwqu');
+$options = getopt('cijdsxwqu');
 if (empty($options)) {
 	echo <<<EOTXT
 Usage:
 	-c	output as CSV
 	-i	output as SQL insert statements
 	-j	output to json format
+	-d	write output to database assignments table
 	-s	display schedule
 	-u	only unfulfilled workers
 	-w	display workers
@@ -67,6 +68,11 @@ if (array_key_exists('c', $options)) {
 
 if (!empty($options)) {
 	$assignments->printResults($options);
+}
+
+// write assignments in ASSIGNMENTS database table
+if (array_key_exists('d', $options)) {
+	$assignments->outputToDatabase();
 }
 
 $end = microtime(TRUE);
@@ -166,7 +172,8 @@ EOSQL;
 	 */
 	public function makeAssignments() {
 		global $all_jobs;
-
+		if (0) debt("assignments.makeAssignments(): all_jobs:", $all_jobs);
+		// For each job
 		foreach(array_keys($all_jobs) as $job_id) {
 			$this->schedule->setJobId($job_id);
 			$this->roster->setJobId($job_id);
@@ -175,7 +182,8 @@ EOSQL;
 			// keep assigning until all the meals have been assigned
 			$success = TRUE;
 			while (!$this->schedule->isFinished() && $success) {
-				$worker_freedom = $this->roster->sortAvailable();
+				$worker_freedom = $this->roster->sortAvailable();  // get the workers available for this job
+				if (0) debt("assignments.makeAssignments: worker_freedom =", $worker_freedom);
 				$success = $this->schedule->fillMeal($worker_freedom);
 			}
 		}
@@ -226,10 +234,19 @@ EOSQL;
 
 
 	/**
-	 * Output the schedule as a series of SQL insert statements
+	 * Output the schedule as CSV
 	 */
 	public function outputCSV() {
 		$this->schedule->printResults('csv');
 	}
+
+	/**
+	 * Write results to ASSIGNMENTS_TABLE
+	 */
+	public function outputToDatabase() {
+		$this->schedule->printResults('db');
+	}
+
+
 }
 ?>

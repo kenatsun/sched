@@ -207,4 +207,5 @@ function get_job_name($job_id) {
 function is_a_group_clean_job($job_id) {
 	return is_a_clean_job($job_id) && !is_a_mtg_night_job($job_id);
 }
+
 ?>

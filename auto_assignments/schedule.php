@@ -13,6 +13,8 @@ class Schedule {
 	protected $roster;
 	protected $job_id;
 	protected $calendar;
+	
+	protected $jobs_from_db;
 
 	protected $point_factors = array(
 		'hobart' => DEFAULT_HOBART_SCORE,
@@ -33,6 +35,8 @@ class Schedule {
 
 	public function __construct() {
 		$this->calendar = new Calendar();
+		$this->jobs_from_db = getJobsFromDB(SEASON_ID);
+		if (0) debt("schedule.__construct(): this->jobs_from_db =", $this->jobs_from_db);
 	}
 
 	/**

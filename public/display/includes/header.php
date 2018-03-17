@@ -1,5 +1,12 @@
+<?php
+session_start();
+if (0) deb("header: gonna call determineUserStatus()",'');
+determineUserStatus();
+if (0) deb("header: called determineUserStatus()",'');
+?>
+
 <!doctype html>
-<html>
+<html> 
 <head>
 	<title>Sunward Meals Scheduling Survey</title>
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css">
@@ -17,6 +24,7 @@
 	</script>
 
 <?php
+
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 // if (isset($_REQUEST['worker'])) {
 	echo <<<EOHTML

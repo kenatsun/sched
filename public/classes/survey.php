@@ -233,8 +233,6 @@ class Survey {
 			$this->reportNoShifts();
 		}
 
-		if (0) deb("survey.toString(): _GET =", $_GET);
-		if (0) deb("survey.toString(): this->worker->getUsername() =", $this->worker->getUsername());
 		$headline = renderHeadline("Step 2: Tell Us Your Preferences");
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();

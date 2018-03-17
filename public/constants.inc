@@ -27,18 +27,21 @@ define('SEASON_ID', 1); //SUNWARD
 define('SEASON_NAME', SPRING); //SUNWARD
 if (0) {deb("constants.inc: SEASON_NAME:", SEASON_NAME);}
 
-# -------- list of sqlite tables --------- 
-# tables from the work survey (read-only)
+// -------- sqlite tables --------- 
+// tables from the work survey (read-only)
 define('SURVEY_JOB_TABLE', 'jobs'); //SUNWARD
 define('ASSIGN_TABLE', 'offers'); //SUNWARD
 define('SEASON_TABLE', 'seasons'); //SUNWARD
 
-# this is altered
+// this is altered
 define('AUTH_USER_TABLE', 'workers'); //SUNWARD
 
-# tables for meals scheduling (read & write)
+// tables for meals scheduling (read & write)
 define('SCHEDULE_COMMENTS_TABLE', 'work_prefs'); //SUNWARD
 define('SCHEDULE_PREFS_TABLE', 'shift_prefs'); //SUNWARD
 define('SCHEDULE_SHIFTS_TABLE', 'shifts'); //SUNWARD
+
+// table capturing output of the Scheduler (assignments.php)
+define('ASSIGNMENTS_TABLE', 'assignments'); //SUNWARD
 
 ?>

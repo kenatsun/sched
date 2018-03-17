@@ -2,6 +2,53 @@
 require_once 'constants.inc';
 require_once 'git_ignored.php';
 
+
+function determineUserStatus() {
+	if (isset($_GET['admin']) || isset($_GET['a'])) { 
+		// if (isset($_COOKIE["admin"])) setcookie("admin", FALSE, time()+86400,"/");
+		promptForAdminPassword();
+	}
+	// else {
+		// if (!$_SESSION['access_type'] == 'admin') $_SESSION['access_type'] = 'guest';	
+	// }
+	// if (0) deb("utils.determineUserStatus: isset(_COOKIE['admin']) before = ", isset($_COOKIE['admin']));
+	if (isset($_POST['password'])) { 
+		// if ($_POST['password'] == 'robotron') {  
+		if ($_POST['password'] == 'r') {  
+			if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
+			$_SESSION['access_type'] = 'admin';
+			// setcookie("admin", TRUE, time()+86400,"/");
+		} else {
+			$_SESSION['access_type'] = 'guest';
+			// setcookie("admin", FALSE, time()+86400,"/");
+			print "Wrong password for 'admin' access.  You're in this session as a 'guest'.";
+		}
+	}
+	if (0) deb("utils.determineUserStatus: _GET = ", $_GET);
+	if (0) deb("utils.determineUserStatus: _POST = ", $_POST);
+	// if (0) deb("utils.determineUserStatus: isset(_COOKIE['admin']) after = " . isset($_COOKIE["admin"]));
+	if (0) deb("utils.determineUserStatus: _COOKIE = ", $_COOKIE);
+	if (0) deb("utils.determineUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
+	if (0) deb("utils.determineUserStatus: _SESSION = ", $_SESSION);
+	// return $_SESSION['access_type'];
+}
+
+function promptForAdminPassword() {
+	$_SESSION['access_type'] = 'guest';
+	print <<<EOHTML
+		<form method="post" action="{$_SERVER['PHP_SELF']}">
+			<p>For administrator access, enter password:</p>
+			<input type="password" name="password">
+			<input type="submit" value="go">
+		</form>
+EOHTML;
+}
+
+function userIsAdmin() {
+	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
+	return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
+}
+
 /**
  * Get an element from an array, with a backup.
  */
@@ -155,7 +202,7 @@ function get_holidays() {
 	// sunday, day before
 	$holidays[5][] = ($mem_day - 1);
 	// monday, memorial day
-	$holidays[5][] = $mem_day;
+	$holidays[5][] = $mem_day; 
 
 	// sunday before labor day
 	// if last day of aug is sunday, then next day is labor day... skip
@@ -203,15 +250,28 @@ function get_first_associative_key($dict) {
 Print debug data to the web page
 */
 //SUNWARD
-function deb($label, $data) {
-	$print_data = print_r($data, TRUE);
+function deb($label, $data=NULL) {
+	$print_data = ($data ? "<pre> " . print_r($data, TRUE) . "</pre>" : '<p> </p>');
 	echo <<<EOHTML
 <tr>
 	<td colspan="4"> <br>{$label}
-		<pre>{$print_data}</pre>
+		{$print_data}
 	</td>
 </tr>
 EOHTML;
+}
+
+/* 
+Print debug data to the terminal
+*/
+//SUNWARD
+function debt($label, $data=NULL) {
+	$print_data = print_r($data, TRUE);
+	print "
+	" . $label . "
+	";
+	if ($data) print $print_data . "
+	";
 }
 
 /*
@@ -222,9 +282,22 @@ function renderHeadline($text) {
 	$instance = INSTANCE;
 	$database = DATABASE;
 	$color = '"color:red"';
-	$instance_header = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
+	$instance_notice = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
+	$end_session_label = "End this session and start a new one.";
+	$sign_in_as_guest_label = "Sign in as a guest";
+	$admin_notice = (userIsAdmin() ? "<div style={$color}>
+		<p><strong>You're signed into this session as an admin.</strong></p>
+		</div>"
+		: "");
+	// Note: I was trying to put this into the above, but it got an html error about 'Unexpected Post"
+				// <form method="post" action="{$_SERVER['PHP_SELF']}">
+				// <input type="hidden" name="guest">
+				// <li><input type="submit" value="{$sign_in_as_guest_label}"></li>
+			// </form>
+
 	return <<<EOHTML
-	{$instance_header}
+	{$instance_notice}
+	{$admin_notice}
 	<table><tr>
 		<td><img src={$community_logo}></td>
 		<td class="headline">{$text}</td>
@@ -297,6 +370,20 @@ function getNonResponders() {
 	
 	return $non_responder_names;
 }
+
+// Get descriptions of all jobs for the specified season from the database.
+// This function coexists uneasily with the "defines" in constants.inc, which also specify the job ids as global constants.
+function getJobsFromDB($season_id) {
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "*";
+	$from = $jobs_table;
+	$where = "season_id = " . $season_id;
+	$order_by = "display_order";
+	$out = sqlSelect($select, $from, $where, $order_by);
+	if (0) debt("utils.getJobsFromDB: jobs", $out);
+	return $out;
+}
+
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where, $order_by) {
 	global $dbh;
@@ -337,20 +424,11 @@ function sqlReplace($table, $columns, $values) {
 	global $dbh;
 	$sql = <<<EOSQL
 		REPLACE INTO {$table} ({$columns})
-		VALUES ({$from}) 
+		VALUES ({$values}) 
 EOSQL;
-	$results = array();
-	foreach($dbh->query($sql) as $row) {
-		// Get rid of the numbered elements that get stuck into these row-arrays, 
-		// leaving only named attributes as elements in the results array
-		foreach($row as $key=>$value) {
-			if (is_int($key)) unset($row[$key]);
-		}
-		$results[] = $row;
-	}
 	if (0) deb("utils.sqlReplace: sql:", $sql);
-	$success = $this->dbh->exec($sql);
-	if (0) deb("utils.sqlSelect: success:", $success);
-	return $success;
+	$rows_affected = $dbh->exec($sql);
+	if (0) deb("utils.sqlSelect: rows_affected:", $rows_affected);
+	return $rows_affected;
 }
 ?>

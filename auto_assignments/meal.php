@@ -377,7 +377,7 @@ EOTXT;
 		// don't add anymore workers, this meal is fully assigned
 		if (!$this->hasOpenShifts($job_id)) {
 			echo "this meal {$this->date} $job_id is filled\n";
-			sleep(1);
+			sleep(1 );
 			return NULL;
 		}
 
@@ -412,36 +412,36 @@ EOTXT;
 		if (!$worker->wantsBundling()) {
 			unset($this->possible_workers[$job_id][$username]);
 		}
-/* #!# disabled for now... not sure this works properly
-		// if the first assignment, consider bundling
-		else if ($key == 0) {
-			$num_needed = count($this->assigned[$job_id]) - ($key + 1);
-			// first, skip if this job is fully staffed already
-			if ($num_needed < 1) {
-				return $username;
-			}
+// /* #!# disabled for now... not sure this works properly
+		// // if the first assignment, consider bundling
+		// else if ($key == 0) {
+			// $num_needed = count($this->assigned[$job_id]) - ($key + 1);
+			// // first, skip if this job is fully staffed already
+			// if ($num_needed < 1) {
+				// return $username;
+			// }
 
-			// Make sure the worker needs enough shifts to fulfill the bundle
-			$to_fill = $worker->getNumShiftsOpen($job_id);
-			if ($to_fill < $num_needed) {
-				return $username;
-			}
+			// // Make sure the worker needs enough shifts to fulfill the bundle
+			// $to_fill = $worker->getNumShiftsOpen($job_id);
+			// if ($to_fill < $num_needed) {
+				// return $username;
+			// }
 
-#!# update remaining shifts left
-			// do the bundling
-			foreach($this->assigned[$job_id] as $num=>$w) {
-				if ($num == $key) {
-					continue;
-				}
+// #!# update remaining shifts left
+			// // do the bundling
+			// foreach($this->assigned[$job_id] as $num=>$w) {
+				// if ($num == $key) {
+					// continue;
+				// }
 
-				$this->assigned[$job_id][$num] = $username;
+				// $this->assigned[$job_id][$num] = $username;
 
-				// #!# this breaks shit... but without it, people get
-				// over-assigned.
-				// $worker->setAssignedShift($job_id, $this->date);
-			}
-		}
-*/
+				// // #!# this breaks shit... but without it, people get
+				// // over-assigned.
+				// // $worker->setAssignedShift($job_id, $this->date);
+			// }
+		// }
+// */
 
 		return $username;
 	}
@@ -508,7 +508,10 @@ EOTXT;
 
 		$is_mtg_night_job = FALSE;
 		$out_jobs = array();
+		global $all_jobs;
+
 		// check to make sure that all of the required instances are filled
+		// $all_jobs_from_db = getJobsFromDB(SEASON_ID);
 		foreach($this->assigned as $job_id=>$assignments) {
 			// check for un-assigned names
 			foreach($assignments as $shift_num=>$name) {
@@ -561,8 +564,18 @@ EOTXT;
 				break;
 			case 'sql':
 			case 'csv':
+				if (0) debt("meal.printResults(): assignments = ", $assignments);
+				if (0) debt("meal.printResults(): out_jobs before = ", $out_jobs);
 				$out_jobs = array_merge($out_jobs, $assignments);
+				if (0) debt("meal.printResults(): out_jobs after = ", $out_jobs);
 				break;
+			case 'db':
+				if (0) debt("meal.printResults(): assignments = ", $assignments);				
+				$out_jobs = array_merge($out_jobs, $assignments);
+				if (0) debt("meal.printResults(): out_jobs = ", $out_jobs);
+				// $assignments_for_db[$db_job_id] = 
+				break;
+				
 			}
 		}
 		ksort($out_jobs);
@@ -586,8 +599,11 @@ EOTXT;
 
 		case 'csv':
 			print "$this->date," . implode(',', $out_jobs) . "\n";
+			
+		case 'db':
+			$this->insertAssignmentIntoDB();			
 		}
-
+	
 		// did a hobart shift go unfilled?
 		return (!$has_clean_job || $hobarter_found);
 	}
@@ -650,6 +666,41 @@ EOTXT;
 			}
 		}
 		return $workers;
+	}
+	
+	public function insertAssignmentIntoDB() {
+		global $all_jobs;
+		$now = date("Y/m/d H:i:s");
+		// for each job
+		foreach($this->assigned as $job_id=>$assignments) {
+			$job_description = $all_jobs[$job_id];
+			if (0) debt("meal.insertAssignmentIntoDB(): job_id =", $job_id);
+			if (0) debt("meal.insertAssignmentIntoDB(): job_description =", $job_description);
+			if (0) debt("meal.insertAssignmentIntoDB(): assignments =", $assignments);
+			// for each assignment to that job
+			foreach($assignments as $assignment_key=>$person) {
+				// Get id of job from database based on description
+				$db_job_id = sqlSelect("id", "jobs", "description = '{$job_description}'", "")[0]['id'];
+				if (!db_job_id) debt("meal.insertAssignmentIntoDB(): ERROR no job id found for job named '{$job_description}'.");
+				// Get id of shift from database based on db_job_id and meal date ('string')
+				$db_shift_id = sqlSelect("id", "shifts", "job_id = '{$db_job_id}' and string = '{$this->date}'", "")[0]['id'];
+				if (!db_shift_id) debt("meal.insertAssignmentIntoDB(): ERROR no shift id found for shift with job_id = '{$db_job_id}' and string = '{$this->date}'.");
+				// Get id of worker from database based on username
+				$db_worker_id = sqlSelect("id", "workers", "username = '{$person}'", "")[0]['id'];	
+				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker usernamed '{$person}'.");
+				$rows_affected = sqlReplace("assignments", "shift_id, worker_id, scheduler_timestamp", "{$db_shift_id}, {$db_worker_id}, '{$now}'");
+				if (0) debt("meal.insertAssignmentIntoDB(): now =", $now);
+				if (0) debt("meal.insertAssignmentIntoDB(): this->date =", $this->date);
+				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key =", $assignment_key);
+				if (0) debt("meal.insertAssignmentIntoDB(): job_id =", $job_id);
+				if (0) debt("meal.insertAssignmentIntoDB(): person =", $person);
+				if (0) debt("meal.insertAssignmentIntoDB(): db_job_id =", $db_job_id);
+				if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id =", $db_shift_id);
+				if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id =", $db_worker_id);
+				if (0) debt("meal.insertAssignmentIntoDB(): rows_affected =", $rows_affected);
+			}
+		}
+		if (0) debt("meal.insertAssignmentIntoDB(): rows in table =", sqlSelect("count(*)", "assignments", "", "")[0]['count(*)']);
 	}
 }
 

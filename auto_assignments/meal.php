@@ -564,18 +564,8 @@ EOTXT;
 				break;
 			case 'sql':
 			case 'csv':
-				if (0) debt("meal.printResults(): assignments = ", $assignments);
-				if (0) debt("meal.printResults(): out_jobs before = ", $out_jobs);
 				$out_jobs = array_merge($out_jobs, $assignments);
-				if (0) debt("meal.printResults(): out_jobs after = ", $out_jobs);
-				break;
-			case 'db':
-				if (0) debt("meal.printResults(): assignments = ", $assignments);				
-				$out_jobs = array_merge($out_jobs, $assignments);
-				if (0) debt("meal.printResults(): out_jobs = ", $out_jobs);
-				// $assignments_for_db[$db_job_id] = 
-				break;
-				
+				break;			
 			}
 		}
 		ksort($out_jobs);
@@ -599,6 +589,7 @@ EOTXT;
 
 		case 'csv':
 			print "$this->date," . implode(',', $out_jobs) . "\n";
+			break;
 			
 		case 'db':
 			$this->insertAssignmentIntoDB();			
@@ -671,6 +662,7 @@ EOTXT;
 	public function insertAssignmentIntoDB() {
 		global $all_jobs;
 		global $scheduler_timestamp;
+		if (0) debt("meal.insertAssignmentIntoDB(): this->assigned =", $this->assigned);
 		// for each job
 		foreach($this->assigned as $job_id=>$assignments) {
 			$job_description = $all_jobs[$job_id];

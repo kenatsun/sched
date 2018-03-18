@@ -1,4 +1,4 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <?php
+<?php
 ini_set('display_errors', 1);
 
 # set the include path to be the top-level of the meals scheduling project
@@ -42,6 +42,8 @@ require_once 'meal.php';
 
 global $dbh;
 global $job_key_clause;
+global $scheduler_timestamp;
+$scheduler_timestamp = date("Y/m/d H:i:s");
 
 // remove special case...
 unset($all_jobs['all']);

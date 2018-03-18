@@ -670,7 +670,7 @@ EOTXT;
 	
 	public function insertAssignmentIntoDB() {
 		global $all_jobs;
-		$now = date("Y/m/d H:i:s");
+		global $scheduler_timestamp;
 		// for each job
 		foreach($this->assigned as $job_id=>$assignments) {
 			$job_description = $all_jobs[$job_id];
@@ -688,7 +688,7 @@ EOTXT;
 				// Get id of worker from database based on username
 				$db_worker_id = sqlSelect("id", "workers", "username = '{$person}'", "")[0]['id'];	
 				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker usernamed '{$person}'.");
-				$rows_affected = sqlReplace("assignments", "shift_id, worker_id, scheduler_timestamp", "{$db_shift_id}, {$db_worker_id}, '{$now}'");
+				$rows_affected = sqlReplace("assignments", "shift_id, worker_id, scheduler_timestamp", "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}'");
 				if (0) debt("meal.insertAssignmentIntoDB(): now =", $now);
 				if (0) debt("meal.insertAssignmentIntoDB(): this->date =", $this->date);
 				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key =", $assignment_key);

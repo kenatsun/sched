@@ -2,6 +2,13 @@
 require_once 'constants.inc';
 require_once 'git_ignored.php';
 
+function surveyIsClosed() {
+	$is_closed = (DEADLINE < time() ? TRUE : FALSE);
+	$deadline = DEADLINE;
+	$time = time();
+	if (0) deb("utils:surveyIsClosed(): is_closed = $is_closed, DEADLINE = $deadline, time() = $time");
+	return DEADLINE < time();
+}
 
 function determineUserStatus() {
 	if (isset($_GET['admin']) || isset($_GET['a'])) { 

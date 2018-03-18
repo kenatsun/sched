@@ -272,34 +272,17 @@ EOHTML;
 EOHTML;
 				}
 
-				#!# need to fix the validity of this id value
 				$date_string = "{$month_num}/{$i}/" . SEASON_YEAR;
-				$cell = '';
-				
-
+				$cell = '';		
 				$skip_dates = get_skip_dates();
 				if (0) deb("calendar.evalDates(): skip_dates:", $skip_dates); 
 				if (0) deb("calendar.evalDates(): date_string: <b>$date_string</b>"); 				
 				if (0) deb("calendar.evalDates(): month_num:", $i); 				
 				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
 				
-				// #!# suppress this display unless it's report mode...
-				// list the assigned workers
-				if (isset($this->assignments[$date_string])) {
-					if (0) deb("calendar.evalDates(): this->assignments[date_string]:", $this->assignments[$date_string]); 				
-					$select = "w.first_name || ' ' || w.last_name as worker_name, a.shift_id, a.worker_id, a.scheduler_timestamp, s.id as shift_id, s.string as meal_date, j.id as job_id, j.description";
-					$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
-					$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id and s.string = '{$date_string}' and j.season_id = " . SEASON_ID . 
-						" and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . ")";
-					$order_by = "j.display_order";
-					$this->cur_date_assignments = sqlSelect($select, $from, $where, $order_by);
-					if (0) deb("calendar.evalDates(): cur_date_assignments:", $this->cur_date_assignments); 
-				}
-
-				
 				// check for holidays
 				if (isset($this->holidays[$month_num]) &&
-					in_array($i, $this->holidays[$month_num]) &&
+					in_array($i, $this->holidays[$month_num]) && 
 					!MEALS_ON_HOLIDAYS) {
 					$cell .= '<span class="skip">holiday</span>';
 				}
@@ -614,43 +597,6 @@ EOHTML;
 		return $selector_html;
 	}
 
-	// public function getJobsIndex($job_key, $data_key) {
-		// global $all_jobs;
-		// $jobs_html = '';
-		// foreach($all_jobs as $key=>$label) {
-			// $only = ($label == 'all' ? "" : " only");
-			// if (isset($_GET['key']) && ($key == $job_key)) {
-				// $jobs_html .= " <b>&nbsp;&nbsp;{$label}{$only}</b>";
-				// continue;
-			// }
-			// $dir = BASE_DIR;
-			// $jobs_html .= <<<EOHTML
- // &nbsp;&nbsp;<a href="{$dir}/report.php?key={$key}&show={$data_key}">{$label}{$only}</a>
-// EOHTML;
-		// }
-		// return $jobs_html;
-	// }
-
-	/**
-	 * Return the types of data to show in calendar cells: all, assignments, preferences
-	 */
-	// public function getDataIndex($data_key, $jobs_key) {
-		// $data_types = array('all', 'assignments', 'preferences');
-		// $data_html = '';
-		// foreach($data_types as $key=>$data_type) {
-			// if (isset($_GET['show']) && ($data_type == $_GET['show'])) {
-				// $data_html .= " <b>&nbsp;&nbsp;{$data_type}</b>";
-				// continue;
-			// }
-			// $dir = BASE_DIR;
-			// $only = ($data_type == 'all' ? "" : " only");
-			// $data_html .= <<<EOHTML
- // &nbsp;&nbsp;<a href="{$dir}/report.php?show={$data_type}&key={$jobs_key}">{$data_type}{$only}</a>
-// EOHTML;
-		// }
-		// return $data_html; 
-	// }
-
 	/**
 	 * Load which dates the workers have marked as being available.
 	 */
@@ -870,6 +816,8 @@ EOHTML;
 		ksort($cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_prefs (sorted) = ", $cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_assignments (sorted) = ", $this->cur_date_assignments);
+		ksort($this->assignments[$date_string]);
+		if (0) deb("calendar.list_available_workers(): this->assignments[date_string] (sorted) = ", $this->assignments[$date_string]);
 		
 		foreach($cur_date_prefs as $job=>$info) {
 			// don't report anything for an empty day
@@ -883,19 +831,17 @@ EOHTML;
 			// show job title
 			$cell .= "<h3 class=\"jobname\">{$job_titles[$job]}</h3>\n";
 
-			// // include a title if not filtered
-			// if ($this->key_filter == 'all') {
-				// $cell .= "<h3 class=\"jobname\">{$job_titles[$job]}</h3>\n";
-			// }
-
 			// list people assigned to this job on this date
 			if ($this->data_key == 'all' || $this->data_key == 'assignments') {
 				$cell .= '<ul style="background:lightgreen;">';
-				foreach($this->cur_date_assignments as $key=>$assignment) {
+				$assignments = $this->render_assignments($date_string, $job_key);
+				if (0) deb("calendar.list_available_workers(): assignments = ", $assignments);
+				if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
+				foreach($assignments as $key=>$assignment) {
 					// if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
 					if ($job == $assignment['job_id']) {
 						if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
-						$cell .= "<li><strong>{$assignment['worker_name']}</strong></li>"; 
+						$cell .= "<li><strong>{$assignment['worker_name']}</strong></li>";  
 					}
 				}
 				$cell .= "</ul>";
@@ -920,6 +866,21 @@ EOHTML;
 		}
 		if (0) deb("calendar.list_available_workers(): cell = ", $cell); 
 		return $cell;
+	}
+
+	private function render_assignments($date_string=NULL, $job_id=NULL) {
+		// list the assigned workers
+		$date_clause = ($date_string ? "and s.string = '{$date_string}'" : "");
+		$job_id_clause = ($job_id ? "and j.id = '{$job_id}'" : "");
+		if (0) deb("calendar.evalDates(): this->assignments[date_string]:", $this->assignments[$date_string]); 				
+		$select = "w.first_name || ' ' || w.last_name as worker_name, a.shift_id, a.worker_id, a.scheduler_timestamp, s.id as shift_id, s.string as meal_date, j.id as job_id, j.description";
+		$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
+		$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id {$date_clause} and j.season_id = " . SEASON_ID . 
+			" and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . ") {$job_id_clause}";
+		$order_by = "j.display_order";
+		$cur_date_assignments = sqlSelect($select, $from, $where, $order_by);
+		if (0) deb("calendar.evalDates(): cur_date_assignments:", cur_date_assignments);
+		return $cur_date_assignments;
 	}
 
 	public function getNumShifts() {
@@ -947,11 +908,10 @@ EOHTML;
 	 * @return string html to display.
 	 */
 	public function toString($worker=NULL, $dates=NULL, $show_counts=FALSE) {
-		if (is_null($worker) && empty($dates)) {
-			return;
-		}
-
-		return $this->evalDates($worker, $dates, TRUE);
+		if (is_null($worker) && empty($dates)) return;
+		
+		$out = $this->evalDates($worker, $dates, TRUE);		
+		return $out;
 	}
 }
 ?>

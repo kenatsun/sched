@@ -17,34 +17,6 @@ require_once('display/includes/header.php');
 
 if (0) deb("report: _SESSION = ", $_SESSION);
 if (0) deb("report: userIsAdmin() = " . userIsAdmin());
-// $_SESSION['access_type'] = 'guest';
-// // Temporarily disabling the following logic...
-// if (!isset($_SESSION['access_type'])) {
-	// if (isset($_GET['guest'])) {
-		// $_SESSION['access_type'] = 'guest';
-	// }
-	// else if (isset($_POST['password']) && ($_POST['password'] == 'robotron')) {
-		// $_SESSION['access_type'] = 'admin';
-	// }
-	// else if (!isset($_SESSION['access_type'])) {
-		// $dir = BASE_DIR;
-		// print <<<EOHTML
-			// <h2>Meals scheduling reporting</h2>
-			// <h3>Please choose access type:</h3>
-			// <div class="access_type">
-				// <a href="{$dir}/report.php?guest=1">guest</a>
-			// </div>
-			// <div class="access_type">
-				// admin
-				// <form method="post" action="{$_SERVER['PHP_SELF']}">
-					// <input type="password" name="password">
-					// <input type="submit" value="go">
-				// </form>
-			// </div>
-// EOHTML;
-		// exit;
-	// }
-// }
 
 require_once('classes/calendar.php');
 require_once('participation.php');
@@ -52,7 +24,6 @@ require_once('participation.php');
 $calendar = new Calendar();
 $calendar->job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ? intval($_GET['key']) : 'all';
 $calendar->data_key = (isset($_GET['show'])) ? $_GET['show'] : 'all';
-$selector_html = $calendar->renderDisplaySelectors($calendar->job_key, $calendar->data_key);
 
 $calendar->loadAssignments();
 $calendar->setIsReport(TRUE);
@@ -214,7 +185,16 @@ $responses = '';
 if (0) deb("report: Hello", '');
 $worker_dates = $calendar->getWorkerDates();
 $cal_string = $calendar->toString(NULL, $worker_dates);
-
+$selector_html = $calendar->renderDisplaySelectors($calendar->job_key, $calendar->data_key);
+$calendar_body = $calendar->toString(NULL, $worker_dates);
+$calendar_headline = (surveyIsClosed() ? "Calendar" : "When we can work");
+$cal_string = <<<EOHTML
+	<br>
+	<h2>{$calendar_headline}</h2>
+	<ul>{$selector_html}</ul>
+		{$calendar_body}
+	<ul>{$selector_html}</ul>
+EOHTML;
 
 $comments = '';
 // if ($_SESSION['access_type'] == 'admin') {
@@ -287,22 +267,13 @@ print <<<EOHTML
 {$headline}
 {$months_overlay}
 <br>
-<h2>When we can work</h2>
-<ul>{$selector_html}</ul>
 {$cal_string}
-<ul id="end">{$jobs_html}</ul>
-<ul>{$selector_html}</ul>
 <br>
-<!--
-<h2>Jobs we've signed up for</h2>
 {$signups}
-<div class="responses">{$responses}</div>
 <br>
-<h2>Who hasn't responded yet</h2>
 {$non_responders}
-
 {$comments}
--->
+
 <!--
 <h2>Number of meals scheduled per-day type:</h2>
 
@@ -399,6 +370,7 @@ function renderJobSignups() {
 	$shortfall_row .= "</tr>";
 
 	$out = <<<EOHTML
+	<h2>Jobs we've signed up for</h2>
 	<table><tr><td style="background:Yellow">
 		<table border="1" cellspacing="3">
 			<tr>
@@ -417,30 +389,6 @@ EOHTML;
 	return $out;
 }
 
-// function getJobs() {
-	// $jobs_table = SURVEY_JOB_TABLE;
-	// $select = "j.description, j.id as job_id, j.instances, 0 as signups";
-	// $from = "{$jobs_table} as j";
-	// $where = "";
-	// $order_by = "j.display_order";
-	// $jobs = sqlSelect($select, $from, $where, $order_by);
-	// if (0) deb ("report.getJobSignups(): jobs =", $jobs);
-	// return $jobs;
-// }
-
-// function getJobSignups() {
-	// $person_table = AUTH_USER_TABLE;
-	// $offers_table = ASSIGN_TABLE;
-	// $jobs_table = SURVEY_JOB_TABLE;
-	// $select = "p.id as person_id, p.first_name, p.last_name, o.instances, j.id as job_id, j.description";
-	// $from = "{$person_table} as p, {$offers_table} as o, {$jobs_table} as j";
-	// $where = "p.id = o.worker_id and o.job_id = j.id";
-	// $order_by = "p.first_name, p.last_name, j.display_order";
-	// $signups = sqlSelect($select, $from, $where, $order_by);
-	// if (0) deb ("report.getJobSignups(): signups =", $signups);
-	// return $signups;
-// }
-
 function renderNonResponders() {
 	$non_responders = getNonResponders();
 	if (0) deb("report.renderNonResponders: non_responders =", $non_responders);
@@ -450,6 +398,7 @@ function renderNonResponders() {
 	}
 	$non_responders_count = count($non_responders);	
 	$out = <<<EOHTML
+	<h2>Who hasn't responded yet</h2>
 	<table><tr><td style="background:Yellow">
 		<table border="1" cellspacing="3">
 		{$non_responder_names} 
@@ -461,68 +410,5 @@ EOHTML;
 	if (0) deb("report.renderNonResponders: out =", $out);
 	return $out;
 }
-
-// function getResponders() {
-	// $signups_table = ASSIGN_TABLE;
-	// $responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
-	// $responders_list = $responders->people;
-	// foreach($responders_list as $index=>$person) {
-		// if (0) deb("report.getNonResponders: person[id] =", $person['id']); 
-		// $responder_ids[] = $person['id'];
-	// }
-// }
-
-// function getNonResponders() {
-	// // $signups_table = ASSIGN_TABLE;
-	// // $responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
-	// // if (0) deb("report.getNonResponders: everybody =", $everybody);
-	// // if (0) deb("report.getNonResponders: responders =", $responders);
-	// // $non_responder_ids = array();
-	// // $responders_list = $responders->people;
-	// // foreach($responders_list as $index=>$person) {
-		// // if (0) deb("report.getNonResponders: person[id] =", $person['id']); 
-		// // $responder_ids[] = $person['id'];
-	// // }
-	// $responder_ids = getResponders();
-	// if (0) deb("report.getNonResponders: responder_ids =", $responder_ids);
-	// $everybody = new PeopleList("");
-	// $everybody_list = $everybody->people;
-	// foreach($everybody_list as $index=>$person) {
-		// if (0) deb("report.getNonResponders: person[id] =", $person['id']); 
-		// $everybody_ids[] = $person['id'];
-		// if (!(in_array($person['id'], $responder_ids))){
-			// $non_responder_ids[] = $person['id'];
-			// $non_responder_names[] = $person['first_name'] . " " . $person['last_name'];
-		// }
-	// }
-	// if (0) deb("report.getNonResponders: everybody_ids =", $everybody_ids);
-	// if (0) deb("report.getNonResponders: non_responder_ids =", $non_responder_ids);
-	// if (0) deb("report.getNonResponders: non_responder_names =", $non_responder_names);
-	
-	// return $non_responder_names;
-// }
-
-//display_shift_count($shift_coverage);
-
-/*
-function display_shift_count($shift_coverage) {
-	$shift_count = array();
-	// XXX not a great way of implementing this...
-	foreach($shift_coverage as $job=>$count) {
-		if (stristr($job, 'sunday')) {
-			$shift_count['sunday'] += $count;	
-		}
-		if (stristr($job, 'weekday')) {
-			$shift_count['weekday'] += $count;	
-		}
-		if (stristr($job, 'meeting')) {
-			$shift_count['meeting'] += $count;	
-		}
-		$shift_count['total'] += $count;
-	}
-
-	print_r($shift_count);
-}
-*/
 
 ?>

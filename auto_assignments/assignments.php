@@ -19,7 +19,6 @@ Usage:
 	-c	output as CSV
 	-i	output as SQL insert statements
 	-j	output to json format
-	-d	write output to database assignments table
 	-s	display schedule
 	-u	only unfulfilled workers
 	-w	display workers
@@ -44,6 +43,7 @@ global $dbh;
 global $job_key_clause;
 global $scheduler_timestamp;
 $scheduler_timestamp = date("Y/m/d H:i:s");
+if (0) debt("assignments: scheduler_timestamp = $scheduler_timestamp");
 
 // remove special case...
 unset($all_jobs['all']);
@@ -73,9 +73,9 @@ if (!empty($options)) {
 }
 
 // write assignments in ASSIGNMENTS database table
-if (array_key_exists('d', $options)) {
+// if (array_key_exists('d', $options)) {
 	$assignments->outputToDatabase();
-}
+// }
 
 $end = microtime(TRUE);
 echo "elapsed time: " . ($end - $start) . "\n";

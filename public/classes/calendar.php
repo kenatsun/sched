@@ -872,14 +872,14 @@ EOHTML;
 		// list the assigned workers
 		$date_clause = ($date_string ? "and s.string = '{$date_string}'" : "");
 		$job_id_clause = ($job_id ? "and j.id = '{$job_id}'" : "");
-		if (0) deb("calendar.evalDates(): this->assignments[date_string]:", $this->assignments[$date_string]); 				
+		if (0) deb("calendar.render_assignments(): this->assignments[date_string]:", $this->assignments[$date_string]); 				
 		$select = "w.first_name || ' ' || w.last_name as worker_name, a.shift_id, a.worker_id, a.scheduler_timestamp, s.id as shift_id, s.string as meal_date, j.id as job_id, j.description";
 		$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
 		$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id {$date_clause} and j.season_id = " . SEASON_ID . 
 			" and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . ") {$job_id_clause}";
 		$order_by = "j.display_order";
 		$cur_date_assignments = sqlSelect($select, $from, $where, $order_by);
-		if (0) deb("calendar.evalDates(): cur_date_assignments:", cur_date_assignments);
+		if (0) deb("calendar.render_assignments(): cur_date_assignments:", $cur_date_assignments);
 		return $cur_date_assignments;
 	}
 

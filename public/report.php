@@ -194,6 +194,7 @@ $cal_string = <<<EOHTML
 	<ul>{$selector_html}</ul>
 EOHTML;
 // $comments = (userIsAdmin() ? $calendar->getWorkerComments($job_key_clause) : "");
+$comments = (userIsAdmin() ? renderWorkerComments() : "");
 
 $job_name = ($job_key != 0) ? '' : '<th>Job</th>';
 
@@ -265,6 +266,7 @@ print <<<EOHTML
 {$signups}
 <br>
 {$non_responders}
+<br>
 {$comments}
 
 <!--
@@ -300,14 +302,11 @@ EOHTML;
 function renderJobSignups() {
 	$jobs = getJobs();
 	$signups = getJobSignups();
-	$num_jobs = count($jobs);
 
 	// Make header rows for the table
 	$job_names_header = '<tr style="text-align:center;"><th></th>';
 	$data_types_header = '<tr style="text-align:center;"><th></th>';
-	$first_job = TRUE;
-	foreach($jobs as $index=>$job) {
-		
+	foreach($jobs as $index=>$job) {		
 		if (0) deb ("report.renderJobSignups(): job['description']) = {$job['description']}");
 		$job_names_header .= '<th colspan="' . (UserIsAdmin() ? 3 : 1) . '" style="text-align:center;">' . $job['description'] . "</th>";
 		$data_types_header .= '<th style="text-align:center;">signups</th>';
@@ -327,25 +326,16 @@ function renderJobSignups() {
 	foreach($signups as $index=>$signup) {
 		// If this is a new person, start a new row
 		if ($signup['person_id'] != $prev_person_id) {
-			$cells = array();
-			$job_index = 0;
 			if ($prev_person_id != "") $signup_rows .= "</tr>";
 			$signup_rows .= "
 			<tr>
 				<td>{$signup['first_name']} {$signup['last_name']}</td>";
-			// if ($prev_person_id != "") $cells[0] .= "</tr>";
-			// $cells[0] .= "
-			// <tr>
-				// <td>{$signup['first_name']} {$signup['last_name']}</td>";
 			$prev_person_id = $signup['person_id'];
 			$responders_count++;
 		}
 		
 		if (0) deb ("report.renderJobSignups(): signup['job_id']) = {$signup['job_id']}");
 		if (0) deb ("report.renderJobSignups(): signup) =", $signup);
-		if (0) deb ("report.renderJobSignups(): job_index) = $job_index");
-		if (0) deb ("report.renderJobSignups(): last_row_num) = $last_row_num");
-		if (0) deb ("report.renderJobSignups(): num_jobs) = $num_jobs");
 		if (0) deb ("report.renderJobSignups(): availability_index) = $availability_index");
 			
 		// Render the number of times this person will do this job
@@ -368,18 +358,8 @@ function renderJobSignups() {
 			$available_count = ($available_count > 0 ? $available_count : '');
 			$assignments_count = ($assignments_count > 0 ? $assignments_count : '');
 			$available_background = ($available_count != '' ? 'style="background:lightpink;" ' : '');
-			if ($signup['person_id'] == 0) {
-				if (0) deb ("report.renderJobSignups(): signup =", $signup);				
-				if (0) deb ("report.renderJobSignups(): assignments =", $assignments);
-				if (0) deb ("report.renderJobSignups(): signup['instances'] = {$signup['instances']}");
-				if (0) deb ("report.renderJobSignups(): assignments_count = $assignments_count");
-				if (0) deb ("report.renderJobSignups(): available_count = $available_count");
-				if (0) deb ("report.renderJobSignups(): available_count = $available_count, display = ", "<td>{$available_count}</td>");
-			} 
-			$job_index++;
 			$signup_rows .= "
 				<td>{$assignments_count}</td>";
-			$job_index++;
 			$signup_rows .= "
 				<td {$available_background}>{$available_count}</td>";
 		}
@@ -460,4 +440,67 @@ EOHTML;
 	return $out;
 }
 
+function renderWorkerComments() {
+	
+	// Get the worker comments from database
+	$select = "w.first_name || ' ' || w.last_name as worker_name, c.avoids, c.prefers, c.clean_after_self, c.comments";
+	$from = SCHEDULE_COMMENTS_TABLE . " as c, " . AUTH_USER_TABLE . " as w";
+	$where = "c.worker_id = w.id";
+	$order_by = "w.first_name, w.last_name";
+	$comments = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb ("report.renderWorkerComments(): comments =", $comments); 
+
+	$attributes = array(
+		"avoids" => "avoid scheduling with", 
+		"prefers" => "prefer scheduling with", 
+		"clean_after_self" => "clean after cooking?",
+		"comments" => "comments",
+	);
+	if (0) deb("report.renderWorkerComments(): attributes = ", $attributes);
+
+	// Make header row for the table
+	$header = '<tr style="text-align:center;"><th></th>';
+	foreach($attributes as $key=>$label) {		
+		if (0) deb ("report.renderWorkerComments(): attribute = $key, label = $label");
+		$header .= '<th style="text-align:center;">' . $label . "</th>";
+	}
+	$header .= "</tr>";
+	if (0) deb ("report.renderWorkerComments(): header =", $header); 
+
+	// Make data rows
+	$prev_person_id = 0;
+	$rows = '';
+	foreach($comments as $index=>$worker) {
+		// If this is a new person, start a new row
+		if ($signup['person_id'] != $prev_person_id) {
+			if ($prev_person_id != "") $rows .= "</tr><tr>";
+			$rows .= "
+			<tr>
+				<td>{value['worker_name']}</td>";
+			$prev_person_id = $value['person_id'];
+			if (0) deb ("report.renderWorkerComments(): key = $key, value = $value");
+		}		
+		if (0) deb ("report.renderWorkerComments(): signup['job_id']) = {$value['job_id']}");
+		if (0) deb ("report.renderWorkerComments(): key = $key, value = $value");
+		if (0) deb ("report.renderWorkerComments(): availability_index) = $availability_index");
+		
+		// Render the value of each attribute (including worker name)
+		foreach	($worker as $key=>$value) {
+			$rows .= " <td>{$value}</td>";
+		}
+		$rows .= "</tr>";
+	}
+	$out = <<<EOHTML
+	<h2>Other Preferences</h2>
+	<table style="table-layout:auto; width:100%"><tr><td style="background:Yellow">
+		<table style="table-layout:auto; width:100%" border="1" cellspacing="3">
+			<tr>
+				{$header}
+				{$rows}
+			</tr>
+		</table>
+	</td></tr></table>
+EOHTML;
+	return $out;
+}
 ?>

@@ -451,7 +451,7 @@ EOHTML;
 			$out .= <<<EOHTML
 			<div id="{$month_name}" class="month_wrapper">
 				<div class="surround month_{$quarterly_month_ord}">
-					<table cellpadding="8" cellspacing="3" border="1" width="100%">
+					<table cellpadding="8" cellspacing="3" border="1" width="100%" style="table-layout:auto">
 						<tr>
 							<td colspan=8 style="text-align:center; background:yellow;">
 								<h2 class="month {$survey}" style="text-align:center;">{$month_name} {$season_year}</h2>

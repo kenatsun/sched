@@ -52,6 +52,10 @@ table {
 	font-size: 9pt;
 }
 
+table .absorbing_column {
+	width: 100%;
+}
+
 th {
 	width: 85px;
 	text-align: left;

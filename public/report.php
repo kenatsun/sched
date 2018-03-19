@@ -182,9 +182,7 @@ $responses = '';
 	// $responses = $r->getSummary((time() < DEADLINE));
 // }
 
-if (0) deb("report: Hello", '');
 $worker_dates = $calendar->getWorkerDates();
-$cal_string = $calendar->toString(NULL, $worker_dates);
 $selector_html = $calendar->renderDisplaySelectors($calendar->job_key, $calendar->data_key);
 $calendar_body = $calendar->toString(NULL, $worker_dates);
 $calendar_headline = (surveyIsClosed() ? "Calendar" : "When we can work");
@@ -195,12 +193,7 @@ $cal_string = <<<EOHTML
 		{$calendar_body}
 	<ul>{$selector_html}</ul>
 EOHTML;
-
-$comments = '';
-// if ($_SESSION['access_type'] == 'admin') {
-if (userIsAdmin()) {
-	$comments = $calendar->getWorkerComments($job_key_clause);
-}
+// $comments = (userIsAdmin() ? $calendar->getWorkerComments($job_key_clause) : "");
 
 $job_name = ($job_key != 0) ? '' : '<th>Job</th>';
 
@@ -259,7 +252,7 @@ EOHTML;
 $headline = renderHeadline("Our Responses So Far");
 $months_overlay = $calendar->renderMonthsOverlay();
 $signups = renderJobSignups();
-$non_responders = renderNonResponders();
+$non_responders = (!surveyIsClosed() ? renderNonResponders() : "");
 
 
 // ----------------------------------- toString section
@@ -306,41 +299,93 @@ EOHTML;
 
 function renderJobSignups() {
 	$jobs = getJobs();
-	$job_names_header = "";
-	foreach($jobs as $index=>$job) {
-		if (0) deb ("report.renderJobSignups(): name['description']) =", $job['description']);
-		$job_names_header .= "<th>" . $job['description'] . "</th>
-		";
-		if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header);
-	}
-	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header);
-
 	$signups = getJobSignups();
-	$signup_rows = "";
+	$num_jobs = count($jobs);
+
+	// Make header rows for the table
+	$job_names_header = '<tr style="text-align:center;"><th></th>';
+	$data_types_header = '<tr style="text-align:center;"><th></th>';
+	$first_job = TRUE;
+	foreach($jobs as $index=>$job) {
+		
+		if (0) deb ("report.renderJobSignups(): job['description']) = {$job['description']}");
+		$job_names_header .= '<th colspan="' . (UserIsAdmin() ? 3 : 1) . '" style="text-align:center;">' . $job['description'] . "</th>";
+		$data_types_header .= '<th style="text-align:center;">signups</th>';
+		if (userIsAdmin()) {
+				$data_types_header .= '<th style="text-align:center;">assigned</th>';
+				$data_types_header .= '<th style="text-align:center;">available</th>';
+			}
+	}
+	$job_names_header .= "</tr>";
+	$data_types_header .= "</tr>";
+	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header); 
+	
+	// Make data rows
 	$responders_count = 0;
+	$prev_person_id = 0;
+	$signup_rows = '';
 	foreach($signups as $index=>$signup) {
 		// If this is a new person, start a new row
 		if ($signup['person_id'] != $prev_person_id) {
-			if ($signup_rows != "") $signup_rows .= "</tr>";
+			$cells = array();
+			$job_index = 0;
+			if ($prev_person_id != "") $signup_rows .= "</tr>";
 			$signup_rows .= "
 			<tr>
 				<td>{$signup['first_name']} {$signup['last_name']}</td>";
+			// if ($prev_person_id != "") $cells[0] .= "</tr>";
+			// $cells[0] .= "
+			// <tr>
+				// <td>{$signup['first_name']} {$signup['last_name']}</td>";
 			$prev_person_id = $signup['person_id'];
 			$responders_count++;
 		}
+		
+		if (0) deb ("report.renderJobSignups(): signup['job_id']) = {$signup['job_id']}");
+		if (0) deb ("report.renderJobSignups(): signup) =", $signup);
+		if (0) deb ("report.renderJobSignups(): job_index) = $job_index");
+		if (0) deb ("report.renderJobSignups(): last_row_num) = $last_row_num");
+		if (0) deb ("report.renderJobSignups(): num_jobs) = $num_jobs");
+		if (0) deb ("report.renderJobSignups(): availability_index) = $availability_index");
+			
 		// Render the number of times this person will do this job
 		if (0) deb("report.renderJobSignups(): signup['person_id'] =? prev_person_id) AFTER =", $signup['person_id'] . "=?" . $prev_person_id);
-		$person_signups_for_job = ($signup['instances'] == 0 ? '' : $signup['instances']);
+		$person_signups_for_job = ($signup['instances'] > 0 ? $signup['instances'] : '');
 		$signup_rows .= "
 			<td>{$person_signups_for_job}</td>";
+
 		// Increment the total number of signups for this job
 		if (0) deb ("report.renderJobSignups(): signup['job_id']) =", $signup['job_id']);
 		$job = array_search($signup['job_id'], array_column($jobs, 'job_id'));
 		$jobs[$job]['signups'] += $signup['instances'];
 		if (0) deb ("report.renderJobSignups(): jobs[job]['signups'] =", $jobs[$job]['signups']);
+
+		if (userIsAdmin()) {
+			// Render the number of times this person is available for this job (signups - assignments)
+			$assignments = getJobAssignments(NULL, $signup['job_id'], $signup['person_id']);
+			$assignments_count = count($assignments);
+			$available_count = $signup['instances'] - $assignments_count;
+			$available_count = ($available_count > 0 ? $available_count : '');
+			$assignments_count = ($assignments_count > 0 ? $assignments_count : '');
+			$available_background = ($available_count != '' ? 'style="background:lightpink;" ' : '');
+			if ($signup['person_id'] == 0) {
+				if (0) deb ("report.renderJobSignups(): signup =", $signup);				
+				if (0) deb ("report.renderJobSignups(): assignments =", $assignments);
+				if (0) deb ("report.renderJobSignups(): signup['instances'] = {$signup['instances']}");
+				if (0) deb ("report.renderJobSignups(): assignments_count = $assignments_count");
+				if (0) deb ("report.renderJobSignups(): available_count = $available_count");
+				if (0) deb ("report.renderJobSignups(): available_count = $available_count, display = ", "<td>{$available_count}</td>");
+			} 
+			$job_index++;
+			$signup_rows .= "
+				<td>{$assignments_count}</td>";
+			$job_index++;
+			$signup_rows .= "
+				<td {$available_background}>{$available_count}</td>";
+		}
 	}
 	$signup_rows .= "</tr>";
-	if (0) deb ("report.renderJobSignups(): signup_rows =", $signup_rows);
+	
 	$background = ' style="background:lightgreen;" ';
 
 	// Render a row showing total signups for each job
@@ -348,6 +393,7 @@ function renderJobSignups() {
 		<td {$background}><strong>signups so far</strong></td>";
 	foreach($jobs as $index=>$job) {
 		$totals_row .= "<td {$background}><strong>{$job['signups']}</strong></td>";
+		if (userIsAdmin()) $totals_row .= "<td {$background}></td><td {$background}></td>";
 	}
 	$totals_row .= "</tr>";
 	
@@ -356,6 +402,7 @@ function renderJobSignups() {
 		<td {$background}><strong>jobs to fill</strong></td>";
 	foreach($jobs as $index=>$job) {
 		$needed_row .= "<td {$background}><strong>{$job['instances']}</strong></td>";
+		if (userIsAdmin()) $needed_row .= "<td {$background}></td><td {$background}></td>";
 	}
 	$needed_row .= "</tr>";
 
@@ -363,9 +410,11 @@ function renderJobSignups() {
 	$shortfall_row = "<tr>
 		<td {$background}><strong>signups still needed</strong></td>";
 	foreach($jobs as $index=>$job) {
-		$shortfall = max($job['instances'] - $job['signups'], 0);
+		$shortfall = $job['instances'] - $job['signups'];
+		// $shortfall = max($job['instances'] - $job['signups'], 0);
 		if ($shortfall == 0) $shortfall = '';
 		$shortfall_row .= "<td {$background}><strong>{$shortfall}</strong></td>";
+		if (userIsAdmin()) $shortfall_row .= "<td {$background}></td><td {$background}></td>";
 	}
 	$shortfall_row .= "</tr>";
 
@@ -374,8 +423,8 @@ function renderJobSignups() {
 	<table><tr><td style="background:Yellow">
 		<table border="1" cellspacing="3">
 			<tr>
-				<th></th>
 				{$job_names_header}
+				{$data_types_header}
 				{$totals_row}
 				{$needed_row}
 				{$shortfall_row}

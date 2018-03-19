@@ -336,6 +336,21 @@ function getJobSignups() {
 	return $signups;
 }
 
+function getJobAssignments($date_string=NULL, $job_id=NULL, $worker_id=NULL) {
+	// list the assigned workers
+	$date_clause = ($date_string ? " and s.string = '{$date_string}'" : "");
+	$job_id_clause = ($job_id ? " and j.id = '{$job_id} '" : "");
+	$worker_id_clause = ($worker_id ? " and w.id = '{$worker_id} '" : "");
+	$select = "w.first_name || ' ' || w.last_name as worker_name, w.first_name, w.last_name, a.*, s.string as meal_date, s.job_id, j.description";
+	$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
+	$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id and j.season_id = " . SEASON_ID . " {$date_clause} {$job_id_clause} {$worker_id_clause}
+		and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . ") {$job_id_clause}";
+	$order_by = "j.display_order";
+	$assignments = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb("utils.getJobAssignments(): assignments:", $assignments);
+	return $assignments;
+}
+
 function getResponders() {
 	$signups_table = ASSIGN_TABLE;
 	$responders =  new PeopleList("where id in (select worker_id from {$signups_table})");

@@ -834,11 +834,11 @@ EOHTML;
 			// list people assigned to this job on this date
 			if ($this->data_key == 'all' || $this->data_key == 'assignments') {
 				$cell .= '<ul style="background:lightgreen;">';
-				$assignments = $this->render_assignments($date_string, $job_key);
+				// $assignments = $this->render_assignments($date_string, $job_key);
+				$assignments = getJobAssignments($date_string, $job_key);
 				if (0) deb("calendar.list_available_workers(): assignments = ", $assignments);
 				if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
 				foreach($assignments as $key=>$assignment) {
-					// if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
 					if ($job == $assignment['job_id']) {
 						if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
 						$cell .= "<li><strong>{$assignment['worker_name']}</strong></li>";  

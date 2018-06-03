@@ -22,9 +22,26 @@ if (0) deb("header: called determineUserStatus()",'');
 			});
 		} );
 	</script>
+	<script>
+        var unsaved = false;
+        $(document).on('submit', 'form', function () {
+            unsaved = false;
+        });
+        $(document).on('change', 'form', function () {
+            unsaved = true;
+        });
+        $(document).on('click', 'select, textarea, .multiselector', function () {
+           unsaved = true;
+        });
+        function unloadPage() {
+            if (unsaved) {
+                return "You have unsaved changes on this page."; 
+            }
+        }
+		window.onbeforeunload = unloadPage;
+    </script>
 
 <?php
-
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 // if (isset($_REQUEST['worker'])) {
 	echo <<<EOHTML
@@ -37,3 +54,6 @@ EOHTML;
 </head>
 
 <body>
+
+
+

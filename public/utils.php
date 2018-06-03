@@ -106,40 +106,41 @@ EOSQL;
  * @return array list of month names contained in the requested season.
  */
 function get_current_season() {
+	if (0) deb("utils.get_current_season: SEASON_NAME = ", SEASON_NAME);
 	switch(SEASON_NAME) {
-
-		case SPRING:
+		case "SPRING":
 			return [
 				4=>'April',
 				5=>'May',
 				6=>'June',
 			];
-
-		case SUMMER:
+			break;		
+		case "SUMMER":
 			return [	
 				7=>'July',
 				8=>'August',
 				9=>'September',
 			];
-
-		case FALL:
+			break;
+		case "FALL":
 			return [
 				10=>'October',
 				11=>'November',
 				12=>'December',
 			];
-
-		case WINTER:
+			break;
+		case "WINTER":
 			return [
 				1=>'January',
 				2=>'February',
 				3=>'March',
 			];
-
+			break;
 		case 'test':
 			return [
 				1=>'January',
 			];
+			break;
 	}
 }
 
@@ -352,28 +353,23 @@ function getJobAssignments($date_string=NULL, $job_id=NULL, $worker_id=NULL) {
 }
 
 function getResponders() {
+	$responder_ids = array();
 	$signups_table = ASSIGN_TABLE;
-	$responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
+	$season_id = SEASON_ID;
+	$where = "id IN (select worker_id from {$signups_table} WHERE season_id = {$season_id})";
+	$responders =  new PeopleList($where);
 	$responders_list = $responders->people;
-	foreach($responders_list as $index=>$person) {
-		if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
-		$responder_ids[] = $person['id'];
+	if ($responders_list) {
+		foreach($responders_list as $index=>$person) {
+			if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
+			$responder_ids[] = $person['id'];
+		}
 	}
 	if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids); 
-	return $responder_ids;
+	return $responder_ids; 
 }
 
 function getNonResponders() {
-	// $signups_table = ASSIGN_TABLE;
-	// $responders =  new PeopleList("where id in (select worker_id from {$signups_table})");
-	// if (0) deb("utils.getNonResponders: everybody =", $everybody);
-	// if (0) deb("utils.getNonResponders: responders =", $responders);
-	// $non_responder_ids = array();
-	// $responders_list = $responders->people;
-	// foreach($responders_list as $index=>$person) {
-		// if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
-		// $responder_ids[] = $person['id'];
-	// }
 	$responder_ids = getResponders();
 	if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids);
 	$everybody = new PeopleList("");

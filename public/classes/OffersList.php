@@ -26,11 +26,12 @@ class OffersList {
 		$this->offers_table = ASSIGN_TABLE;
 		$jobs_table = SURVEY_JOB_TABLE;
 		$sql = "
-			SELECT j.description, j.id as job_id, o.id, o.instances, {$person_id} as person_id
+			SELECT j.description, j.id as job_id, o.id, o.instances, o.season_id, {$person_id} as person_id
 			FROM {$jobs_table} j LEFT JOIN {$this->offers_table} o 
 				ON j.id = o.job_id
 				AND o.season_id = {$season_id} 
-				AND o.worker_id = {$person_id}";
+				AND o.worker_id = {$person_id}
+			WHERE j.season_id = {$season_id}";
 
 		if (0) deb("OffersList->__construct(): SQL for offers:", $sql);
 
@@ -48,46 +49,11 @@ class OffersList {
 				'job_id' => $offer['job_id'],
 				'person_id' => $offer['person_id'],
 				'instances' => $offer['instances'],
+				'season_id' => $offer['season_id'],
 			);
 		}
 		if (0) deb("OffersList->__construct(): offers array:", $this->offers);
 		}
-	
-	// public function getOffers($person_id) {
-		// $season_id = SEASON_ID;
-		// $this->offers_table = ASSIGN_TABLE;
-		// $jobs_table = SURVEY_JOB_TABLE;
-		// $sql = "
-			// SELECT j.description, j.id as job_id, o.id, o.instances, {$person_id} as person_id
-			// FROM {$jobs_table} j LEFT JOIN {$this->offers_table} o 
-				// ON j.id = o.job_id
-				// AND o.season_id = {$season_id} 
-				// AND o.worker_id = {$person_id}";
-
-		// if (0) deb("OffersList->getOffers(): SQL for offers:", $sql);
-
-		// $this->offers = array();
-		// global $dbh;
-		// foreach($dbh->query($sql) as $row) {
-			// $this->offers[] = $row;
-		// }
-		
-		// $this->offers = array();
-		// foreach($this->offers as $offer) {
-			// if (!array_key_exists($offer['description'], $this->offers)) {
-				// $this->offers[$key] = array(
-					// 'description' = $offer['description'];
-				// );
-			// }
-			// 'description' = $offer['description'],
-			// 'job_id'] = $offer['job_id'];
-			// 'person_id'] = $offer['person_id'];
-			// 'instances'] = $offer['instances'];
-		// }
-		// if (0) deb("OffersList->getOffers(): offers array:", $this->offers);
-		
-		// return $this->offers;
-	// }
 	
 	public function toString($offers) {
 		

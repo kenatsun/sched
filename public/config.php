@@ -11,7 +11,7 @@ date_default_timezone_get('America/Detroit');
 define('COMMUNITY', 'Sunward');
 
 /* -------- seasonal config --------- */
-define('DEADLINE', strtotime('March 11, 2018, 11pm'));
+define('DEADLINE', strtotime('June 16, 2018, 11pm'));
 
 /* ----------- job ids --------------- */
 // define('MEETING_NIGHT_ORDERER', 4194);
@@ -22,9 +22,9 @@ define('DEADLINE', strtotime('March 11, 2018, 11pm'));
 // define('WEEKDAY_HEAD_COOK', 4190);
 // define('WEEKDAY_ASST_COOK', 4191);
 // define('WEEKDAY_CLEANER', 4195);
-define('WEEKDAY_HEAD_COOK', 1); //SUNWARD
-define('WEEKDAY_ASST_COOK', 2); //SUNWARD
-define('WEEKDAY_CLEANER', 3); //SUNWARD
+define('WEEKDAY_HEAD_COOK', 4); //SUNWARD
+define('WEEKDAY_ASST_COOK', 5); //SUNWARD
+define('WEEKDAY_CLEANER', 6); //SUNWARD
 // define('WEEKDAY_TABLE_SETTER', 4184);
 
 
@@ -37,8 +37,11 @@ if (COMMUNITY == 'Sunward') {
 
 
 # Are Sunday meals treated separately from weeknights?
-// define('ARE_SUNDAYS_UNIQUE', TRUE);
-define('ARE_SUNDAYS_UNIQUE', FALSE); //SUNWARD
+if (COMMUNITY == 'Sunward') {
+	define('ARE_SUNDAYS_UNIQUE', FALSE);
+} else {
+	define('ARE_SUNDAYS_UNIQUE', TRUE);
+}
 
 /**
  * Get the number of shift overrides.

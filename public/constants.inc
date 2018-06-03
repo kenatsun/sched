@@ -22,9 +22,9 @@ if (($this_month == 11) || ($this_month == 12)) {
 define('SEASON_YEAR', $this_year);
 
 // define('SEASON_ID', get_season_id());
-define('SEASON_ID', 1); //SUNWARD
+define('SEASON_ID', 2); //SUNWARD
 // define('SEASON_NAME', get_season_name()); // summer, fall, winter
-define('SEASON_NAME', SPRING); //SUNWARD
+define('SEASON_NAME', 'SUMMER'); //SUNWARD
 if (0) {deb("constants.inc: SEASON_NAME:", SEASON_NAME);}
 
 // -------- sqlite tables --------- 
@@ -32,6 +32,7 @@ if (0) {deb("constants.inc: SEASON_NAME:", SEASON_NAME);}
 define('SURVEY_JOB_TABLE', 'jobs'); //SUNWARD
 define('ASSIGN_TABLE', 'offers'); //SUNWARD
 define('SEASON_TABLE', 'seasons'); //SUNWARD
+define('SEASON_WORKER_TABLE', 'season_workers'); //SUNWARD
 
 // this is altered
 define('AUTH_USER_TABLE', 'workers'); //SUNWARD

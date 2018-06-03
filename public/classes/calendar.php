@@ -813,10 +813,10 @@ EOHTML;
 		}
 
 		if (0) deb("calendar.list_available_workers(): cur_date (pre-sort) = ", $cur_date_prefs);
-		ksort($cur_date_prefs);
+		if (!empty($cur_date_prefs)) ksort($cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_prefs (sorted) = ", $cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_assignments (sorted) = ", $this->cur_date_assignments);
-		ksort($this->assignments[$date_string]);
+		if (!empty($this->assignments)) ksort($this->assignments[$date_string]);
 		if (0) deb("calendar.list_available_workers(): this->assignments[date_string] (sorted) = ", $this->assignments[$date_string]);
 		
 		foreach($cur_date_prefs as $job=>$info) {

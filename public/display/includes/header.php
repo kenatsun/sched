@@ -8,7 +8,7 @@ if (0) deb("header: called determineUserStatus()",'');
 <!doctype html>
 <html> 
 <head>
-	<title>Sunward Meals Scheduling Survey DEV</title>
+	<title>Sunward Meals Scheduling Survey</title>
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css">
 	<link rel="stylesheet" href="select2/select2.min.css" type="text/css">
 

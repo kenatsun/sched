@@ -61,7 +61,7 @@ function get_num_shift_overrides() {
 
 function get_skip_dates() {
 	$skip_dates = array(
-		"6" => 14,
+		"8" => 9,
 	);
 	if (0) deb("config.skip_dates() = ", $skip_dates);
 	return $skip_dates;

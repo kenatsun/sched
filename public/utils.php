@@ -315,12 +315,13 @@ EOHTML;
 
 function getJobs() {
 	$jobs_table = SURVEY_JOB_TABLE;
+	$season_id = SEASON_ID;
 	$select = "j.description, j.id as job_id, j.instances, 0 as signups";
 	$from = "{$jobs_table} as j";
-	$where = "";
+	$where = "j.season_id = {$season_id}";
 	$order_by = "j.display_order";
 	$jobs = sqlSelect($select, $from, $where, $order_by);
-	if (0) deb ("utils.getJobSignups(): jobs =", $jobs);
+	if (0) deb ("utils.getJobs(): jobs =", $jobs);
 	return $jobs;
 }
 
@@ -328,9 +329,10 @@ function getJobSignups() {
 	$person_table = AUTH_USER_TABLE;
 	$offers_table = ASSIGN_TABLE;
 	$jobs_table = SURVEY_JOB_TABLE;
+	$season_id = SEASON_ID;
 	$select = "p.id as person_id, p.first_name, p.last_name, o.instances, j.id as job_id, j.description";
 	$from = "{$person_table} as p, {$offers_table} as o, {$jobs_table} as j";
-	$where = "p.id = o.worker_id and o.job_id = j.id";
+	$where = "p.id = o.worker_id and o.job_id = j.id and j.season_id = {$season_id}";
 	$order_by = "p.first_name, p.last_name, j.display_order";
 	$signups = sqlSelect($select, $from, $where, $order_by);
 	if (0) deb ("utils.getJobSignups(): signups =", $signups);

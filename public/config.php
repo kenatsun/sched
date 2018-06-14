@@ -11,7 +11,7 @@ date_default_timezone_get('America/Detroit');
 define('COMMUNITY', 'Sunward');
 
 /* -------- seasonal config --------- */
-define('DEADLINE', strtotime('June 16, 2018, 11pm'));
+define('DEADLINE', strtotime('June 19, 2018, 11pm'));
 
 /* ----------- job ids --------------- */
 // define('MEETING_NIGHT_ORDERER', 4194);

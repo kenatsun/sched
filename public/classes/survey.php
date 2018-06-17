@@ -627,10 +627,11 @@ EOHTML;
 	protected function saveRequests() {
 		$bundle = array_get($this->requests, 'bundle_shifts', '');
 		$work_prefs_table = SCHEDULE_COMMENTS_TABLE;
+		$season_id = SEASON_ID;
 		$timestamp = date('Y-m-d H:i:s');
 		if (0) deb("survey.saveRequests(): timestamp:", $timestamp);
 		$sql = <<<EOSQL
-replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comments, clean_after_self, bunch_shifts, bundle_shifts)
+replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comments, clean_after_self, bunch_shifts, bundle_shifts, season_id)
 	values(
 		{$this->worker_id},
 		'{$timestamp}',
@@ -639,12 +640,13 @@ replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comment
 		'{$this->requests['comments']}',
 		'{$this->requests['clean_after_self']}',
 		'{$this->requests['bunch_shifts']}',
-		'{$bundle}'
+		'{$bundle}',
+		'{$season_id}
 	)
 EOSQL;
-		if (0) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
+		if (1) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
 		$success = $this->dbh->exec($sql);
-		if (0) deb("survey.saveRequests(): success?", $success);
+		if (1) deb("survey.saveRequests(): success?", $success);
 		sqlSelect("*", $work_prefs_table, "worker_id = {$this->worker_id}", "");
 	}
 

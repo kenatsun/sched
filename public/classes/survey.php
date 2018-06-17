@@ -641,12 +641,12 @@ replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comment
 		'{$this->requests['clean_after_self']}',
 		'{$this->requests['bunch_shifts']}',
 		'{$bundle}',
-		'{$season_id}
+		{$season_id}
 	)
 EOSQL;
-		if (1) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
+		if (0) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
 		$success = $this->dbh->exec($sql);
-		if (1) deb("survey.saveRequests(): success?", $success);
+		if (0) deb("survey.saveRequests(): success?", $success);
 		sqlSelect("*", $work_prefs_table, "worker_id = {$this->worker_id}", "");
 	}
 

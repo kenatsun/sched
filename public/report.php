@@ -443,9 +443,10 @@ EOHTML;
 function renderWorkerComments() {
 	
 	// Get the worker comments from database
+	$season_id = SEASON_ID;
 	$select = "w.first_name || ' ' || w.last_name as worker_name, c.avoids, c.prefers, c.clean_after_self, c.comments";
 	$from = SCHEDULE_COMMENTS_TABLE . " as c, " . AUTH_USER_TABLE . " as w";
-	$where = "c.worker_id = w.id";
+	$where = "c.worker_id = w.id and c.season_id = {$season_id}";
 	$order_by = "w.first_name, w.last_name";
 	$comments = sqlSelect($select, $from, $where, $order_by);
 	if (0) deb ("report.renderWorkerComments(): comments =", $comments); 

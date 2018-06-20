@@ -28,6 +28,9 @@ define('SEASON_NAME', 'SUMMER'); //SUNWARD
 if (0) {deb("constants.inc: SEASON_NAME:", SEASON_NAME);}
 
 // -------- sqlite tables --------- 
+// settings tables
+define('SKIP_DATES_TABLE', 'skip_dates'); //SUNWARD
+
 // tables from the work survey (read-only)
 define('SURVEY_JOB_TABLE', 'jobs'); //SUNWARD
 define('ASSIGN_TABLE', 'offers'); //SUNWARD

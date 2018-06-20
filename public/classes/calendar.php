@@ -273,11 +273,11 @@ EOHTML;
 				}
 
 				$date_string = "{$month_num}/{$i}/" . SEASON_YEAR;
-				$cell = '';		
-				$skip_dates = get_skip_dates();
+				$cell = '';	
+				$skip_dates = get_skip_dates($month_num, $i);
 				if (0) deb("calendar.evalDates(): skip_dates:", $skip_dates); 
 				if (0) deb("calendar.evalDates(): date_string: <b>$date_string</b>"); 				
-				if (0) deb("calendar.evalDates(): month_num:", $i); 				
+				if (0) deb("calendar.evalDates(): month_num = {$month_num}, day_num = {$i}", NULL); 				
 				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
 				
 				// check for holidays
@@ -288,11 +288,17 @@ EOHTML;
 				}
 				// check for manual skip dates
 				// SUNWARD: using manual skip_dates for community meeting nights because the GO formula for CM nights is not true for us
-				else if (isset($skip_dates[$month_num]) &&
-					in_array($i, $skip_dates)) {
-					// in_array($i, $skip_dates[$month_num])) {
-					$cell = '<span class="skip">community meeting</span>';
+				else if (count ($skip_dates) > 0) {
+					if (0) deb("calendar.php: skip_dates = ", $skip_dates);
+					$reason = $skip_dates[0]['reason'];
+					if (0) deb("calendar.php: skip_dates[0][reason] = ", $reason);
+					$cell = '<span class="skip">' . $reason . '</span>';
 				}
+				// else if (isset($skip_dates[$month_num]) &&
+					// in_array($i, $skip_dates)) {
+					// // in_array($i, $skip_dates[$month_num])) {
+					// $cell = '<span class="skip">community meeting</span>';
+				// }
 				// sundays
 				else if (ARE_SUNDAYS_UNIQUE && ($day_of_week == 0)) {
 					$this->num_shifts['sunday']++;
@@ -442,7 +448,7 @@ EOHTML;
 			$quarterly_month_ord = ($month_num % 4);
 			$season_year = SEASON_YEAR;
 			$month_selector = (!$this->is_report ? $this->renderMonthSelector() : ""); 
-			if (0) deb("survey.evalDates(): day_labels =", '"'.$day_labels.'"');
+			if (0) deb("calendar.evalDates(): day_labels =", '"'.$day_labels.'"');
 			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
 			if (0) deb("calendar.evalDates(): weekly_spacer = ", '"'.$weekly_spacer.'"');
 			if (0) deb("calendar.evalDates(): selectors = ", $selectors);
@@ -470,6 +476,7 @@ EOHTML;
 		}
 
 		if (!$this->web_display) {
+			if (0) debt("calendar.evalDates(): dates_and_shifts =", $dates_and_shifts);
 			return $dates_and_shifts;
 		}
 

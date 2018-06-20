@@ -11,7 +11,7 @@ date_default_timezone_get('America/Detroit');
 define('COMMUNITY', 'Sunward');
 
 /* -------- seasonal config --------- */
-define('DEADLINE', strtotime('June 19, 2018, 11pm'));
+define('DEADLINE', strtotime('June 20, 2018, 11pm'));
 
 /* ----------- job ids --------------- */
 // define('MEETING_NIGHT_ORDERER', 4194);
@@ -59,10 +59,21 @@ function get_num_shift_overrides() {
 	];
 }
 
-function get_skip_dates() {
-	$skip_dates = array(
-		"8" => 9,
-	);
+function get_skip_dates($month_num = NULL, $day_num = NULL) {
+	$select = "*";
+	$from = SKIP_DATES_TABLE;
+	$where = "season_id = " . SEASON_ID;
+	if ($month_num && $day_num) {
+		$where .= " AND month_number = {$month_num} AND day_number = {$day_num}";
+	}
+	$skip_dates = sqlSelect($select, $from, $where, '');
+	// $skip_dates = array(
+		// "8" => 2,
+		// "8" => 9,
+		// "8" => 16,
+		// "8" => 23,
+		// "8" => 30,
+	// );
 	if (0) deb("config.skip_dates() = ", $skip_dates);
 	return $skip_dates;
 }

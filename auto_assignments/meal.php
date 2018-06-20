@@ -208,7 +208,7 @@ EOTXT;
 		$prefer_list = array();
 		foreach($assigned_worker_objects as $worker) {
 			// get list of names worker does not want to work with
-			// Array ( [0] => aaron, [1] => nancy)
+			// Array ( [0] => aaron, (0) => nancy)
 			$av_list = $worker->getAvoids();
 			if (!empty($av_list)) {
 				$avoid_list = array_merge($avoid_list, $av_list);

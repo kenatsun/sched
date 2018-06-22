@@ -208,7 +208,7 @@ EOTXT;
 		$prefer_list = array();
 		foreach($assigned_worker_objects as $worker) {
 			// get list of names worker does not want to work with
-			// Array ( [0] => aaron, (0) => nancy)
+			// Array ( [0] => aaron, [1] => nancy)
 			$av_list = $worker->getAvoids();
 			if (!empty($av_list)) {
 				$avoid_list = array_merge($avoid_list, $av_list);
@@ -494,7 +494,7 @@ EOTXT;
 	 * @return boolean, if false then a hobart shift was needed and not filled
 	 *     with a hobarter. TRUE either means it was filled or not needed.
 	 */
-	public function printResults($format='txt') {
+	public function printResults($format='txt') { 
 		if (empty($this->assigned)) {
 			return;
 		}
@@ -662,6 +662,7 @@ EOTXT;
 	public function insertAssignmentIntoDB() {
 		global $all_jobs;
 		global $scheduler_timestamp;
+		$season_id = SEASON_ID;
 		if (0) debt("meal.insertAssignmentIntoDB(): this->assigned =", $this->assigned);
 		// for each job
 		foreach($this->assigned as $job_id=>$assignments) {
@@ -672,7 +673,7 @@ EOTXT;
 			// for each assignment to that job
 			foreach($assignments as $assignment_key=>$person) {
 				// Get id of job from database based on description
-				$db_job_id = sqlSelect("id", "jobs", "description = '{$job_description}'", "")[0]['id'];
+				$db_job_id = sqlSelect("id", "jobs", "description = '{$job_description}' and season_id = {$season_id}", "")[0]['id'];
 				if (!db_job_id) debt("meal.insertAssignmentIntoDB(): ERROR no job id found for job named '{$job_description}'.");
 				// Get id of shift from database based on db_job_id and meal date ('string')
 				$db_shift_id = sqlSelect("id", "shifts", "job_id = '{$db_job_id}' and string = '{$this->date}'", "")[0]['id'];
@@ -680,16 +681,16 @@ EOTXT;
 				// Get id of worker from database based on username
 				$db_worker_id = sqlSelect("id", "workers", "username = '{$person}'", "")[0]['id'];	
 				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker usernamed '{$person}'.");
-				$rows_affected = sqlReplace("assignments", "shift_id, worker_id, scheduler_timestamp", "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}'");
-				if (0) debt("meal.insertAssignmentIntoDB(): now =", $now);
-				if (0) debt("meal.insertAssignmentIntoDB(): this->date =", $this->date);
-				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key =", $assignment_key);
-				if (0) debt("meal.insertAssignmentIntoDB(): job_id =", $job_id);
-				if (0) debt("meal.insertAssignmentIntoDB(): person =", $person);
-				if (0) debt("meal.insertAssignmentIntoDB(): db_job_id =", $db_job_id);
-				if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id =", $db_shift_id);
-				if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id =", $db_worker_id);
-				if (0) debt("meal.insertAssignmentIntoDB(): rows_affected =", $rows_affected);
+			$rows_affected = sqlReplace("assignments", "shift_id, worker_id, scheduler_timestamp, season_id", "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}', {$season_id}");
+				if (0) debt("meal.insertAssignmentIntoDB(): this->date = {$this->date}");
+				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key = $assignment_key");
+				if (0) debt("meal.insertAssignmentIntoDB(): job_id = $job_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): person = $person");
+				if (0) debt("meal.insertAssignmentIntoDB(): db_job_id = $db_job_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): season_id = $season_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id = $db_shift_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id = $db_worker_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): rows_affected = $rows_affected");
 			}
 		}
 		if (0) debt("meal.insertAssignmentIntoDB(): rows in table =", sqlSelect("count(*)", "assignments", "", "")[0]['count(*)']);

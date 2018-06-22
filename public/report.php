@@ -386,7 +386,7 @@ function renderJobSignups() {
 	}
 	$needed_row .= "</tr>";
 
-	// Render a row showing total signups needed for each job
+	// Render a row showing total signups shortfall for each job
 	$shortfall_row = "<tr>
 		<td {$background}><strong>signups still needed</strong></td>";
 	foreach($jobs as $index=>$job) {

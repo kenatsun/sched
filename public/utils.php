@@ -197,7 +197,7 @@ function add_easter($holidays) {
  */
 function get_holidays() {
 	$holidays = [
-		1 => (0),
+		1 => [1],
 		7 => [4],
 		10 => [31],
 		12 => [24,25, 31],

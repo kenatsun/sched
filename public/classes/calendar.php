@@ -410,7 +410,7 @@ EOHTML;
 				$month_short_name = substr($current_season[$month_num], 0, 3);
 				$table .= <<<EOHTML
 				<td class="dow_{$day_of_week}">
-					<div class="date_number"><strong>{$i}</strong> {$month_short_name} {$tally}</div>
+					<div class="date_number"><strong>{$i}</strong> <small><small>{$month_short_name}</small></small> {$tally}</div>
 					{$cell}
 				</td>
 EOHTML;

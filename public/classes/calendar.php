@@ -406,11 +406,11 @@ EOHTML;
 					}
 				}
 
-				if (1) deb("calendar.php: evalDates(): current_season = ", $current_season[$month_num]);
+				if (0) deb("calendar.php: evalDates(): current_season = ", $current_season[$month_num]);
 				$month_short_name = substr($current_season[$month_num], 0, 3);
 				$table .= <<<EOHTML
 				<td class="dow_{$day_of_week}">
-					<div class="date_number">{$month_short_name} {$i}{$tally}</div>
+					<div class="date_number"><strong>{$i}</strong> {$month_short_name} {$tally}</div>
 					{$cell}
 				</td>
 EOHTML;

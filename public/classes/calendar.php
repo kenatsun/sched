@@ -224,6 +224,7 @@ EOHTML;
 		$day_of_week = NULL;
 		$out = '';
 		$dates_and_shifts = array();
+		
 		// for each month in the season
 		$month_count = 0;
 		foreach($current_season as $month_num=>$month_name) {
@@ -287,18 +288,14 @@ EOHTML;
 					$cell .= '<span class="skip">holiday</span>';
 				}
 				// check for manual skip dates
-				// SUNWARD: using manual skip_dates for community meeting nights because the GO formula for CM nights is not true for us
+				// SUNWARD: using manual skip_dates for community meeting nights because the GO formula for CM nights is not true for Sunward
 				else if (count ($skip_dates) > 0) {
 					if (0) deb("calendar.php: skip_dates = ", $skip_dates);
 					$reason = $skip_dates[0]['reason'];
 					if (0) deb("calendar.php: skip_dates[0][reason] = ", $reason);
 					$cell = '<span class="skip">' . $reason . '</span>';
 				}
-				// else if (isset($skip_dates[$month_num]) &&
-					// in_array($i, $skip_dates)) {
-					// // in_array($i, $skip_dates[$month_num])) {
-					// $cell = '<span class="skip">community meeting</span>';
-				// }
+
 				// sundays
 				else if (ARE_SUNDAYS_UNIQUE && ($day_of_week == 0)) {
 					$this->num_shifts['sunday']++;
@@ -409,9 +406,11 @@ EOHTML;
 					}
 				}
 
+				if (1) deb("calendar.php: evalDates(): current_season = ", $current_season[$month_num]);
+				$month_short_name = substr($current_season[$month_num], 0, 3);
 				$table .= <<<EOHTML
 				<td class="dow_{$day_of_week}">
-					<div class="date_number">{$i}{$tally}</div>
+					<div class="date_number">{$month_short_name} {$i}{$tally}</div>
 					{$cell}
 				</td>
 EOHTML;

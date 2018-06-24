@@ -64,7 +64,6 @@ class Survey1 {
 
 	public function toString() {
 		if (0) deb("survey1.toString(): id:", $this->person->id);
-		// $jobs = $this->offers_list->getOffers($this->person->id);
 		if (0) deb("survey1.toString(): offers:", $this->offers);
 		if (0) deb("survey1.toString(): this->person->username:", $this->person->username);
 		if (0) deb("survey1.toString(): _GET['person']:", $_GET['person']);

@@ -301,7 +301,9 @@ EOHTML;
 
 function renderJobSignups() {
 	$jobs = getJobs();
+	if (0) deb("report.php: renderJobSignups(): getJobs() returns:", $jobs);
 	$signups = getJobSignups();
+	if (0) deb("report.php: renderJobSignups(): getJobSignups() returns:", $signups);
 
 	// Make header rows for the table
 	$job_names_header = '<tr style="text-align:center;"><th></th>';

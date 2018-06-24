@@ -451,4 +451,5 @@ EOSQL;
 	if (0) deb("utils.sqlSelect: rows_affected:", $rows_affected);
 	return $rows_affected;
 }
+
 ?>

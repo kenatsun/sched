@@ -9,7 +9,6 @@ require_once 'classes/PeopleList.php';
 require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
-// require_once 'display/images';
 
 require_once 'display/includes/header.php';
 require_once 'participation.php';
@@ -52,7 +51,8 @@ if ($now <= DEADLINE || $extended  || userIsAdmin()) {
 		display_person_menu();
 		display_footer();
 		$community = COMMUNITY;
-		display_report_link("Take a look at {$community}'s responses so far");		
+		display_report_link("Take a look at {$community}'s responses so far");	
+		display_dashboard_link("Administrator Dashboard");	
 	} else {
 		build_survey($respondent_id);
 		// build_survey($survey, $respondent_id);
@@ -153,6 +153,13 @@ function display_report_link($text) {
 EOHTML;
 }
 
+function display_dashboard_link($text) {
+	$dir = BASE_DIR;
+	echo <<<EOHTML
+<p class="summary_report"><strong><a href="{$dir}/dashboard.php">{$text}</a></strong></p>
+EOHTML;
+}
+
 /**
  * Render the list of people as links in order to select their survey.
  */
@@ -196,14 +203,12 @@ EOHTML;
 
 
 /**
- * @param[in] survey Survey for this respondent to take
  * @param[in] respondent_id string person's id from the _GET array
  */
 // function build_survey($survey, $respondent_id) {
 function build_survey($respondent_id) {
 	if (0) deb("index.build_survey: respondent_id = ", $respondent_id);
 	$survey = new Survey1($respondent_id);
-	// $survey->setRespondent($respondent_id);
 	if (0) deb("index.build_survey: survey = ", $survey);
 	print $survey->toString();
 }

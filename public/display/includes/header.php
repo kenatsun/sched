@@ -6,7 +6,7 @@ determineUserStatus();
 if (0) deb("header: called determineUserStatus()",'');
 
 $head = <<<EOHTML
-<!doctype html>
+<!doctype html> 
 <html> 
 <head>
 	<title>{$html_title}</title>

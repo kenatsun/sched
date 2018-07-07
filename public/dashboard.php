@@ -42,7 +42,7 @@ function renderRevisionForm() {
 		and j.season_id = {$season_id}";
 	$order_by = "date(s.string)";
 	$meals = sqlSelect($select, $from, $where, $order_by);
-	if (1) deb("dashboard.php.renderRevisionForm(): meals = ", $meals);
+	if (0) deb("dashboard.php.renderRevisionForm(): meals = ", $meals);
 	
 	// Make the table header row
 	$header_row .= "<tr>
@@ -86,7 +86,7 @@ function renderRevisionForm() {
 			// Figure out which workers could be added to this job
 			$select = "";
 			
-			if (1) deb("dashboard.php.renderRevisionForm(): meal_date = {$meal['meal_date']}, addable_workers = ", getAddableWorkers($job['job_id']));
+			if (0) deb("dashboard.php.renderRevisionForm(): meal_date = {$meal['meal_date']}, addable_workers = ", getAddableWorkers($job['job_id']));
 			$job_cell .= '<tr><td style="background:White">' . "add-worker widget</td></tr>";
 			$job_cell .= "</table></td>";
 			if (0) deb("dashboard.php.renderRevisionForm(): job_cell = ", $job_cell);
@@ -144,7 +144,7 @@ function getAddableWorkers($shift_id) {
 			and s.id = {$shift_id}";
 	$order_by = "s.string asc, p.pref desc, w.first_name asc, w.last_name asc";
 	$addable_workers = sqlSelect($select, $from, $where, $order_by);
-	if (1) deb ("dashboard.php.getAddableWorkers() addable_workers = ", $addable_workers); 
+	if (0) deb ("dashboard.php.getAddableWorkers() addable_workers = ", $addable_workers); 
 	return $addable_workers;
 }
 

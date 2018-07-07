@@ -623,7 +623,7 @@ EOHTML;
 					a.username ASC;
 EOSQL;
 		
-		if (1) deb("calendar.php.getWorkerDates(): sql = ", $sql);
+		if (0) deb("calendar.php.getWorkerDates(): sql = ", $sql);
 		$data = array();
 		global $dbh;
 		foreach($dbh->query($sql) as $row) {

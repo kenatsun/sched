@@ -52,7 +52,6 @@ if ($now <= DEADLINE || $extended  || userIsAdmin()) {
 		display_footer();
 		$community = COMMUNITY;
 		display_report_link("Take a look at {$community}'s responses so far");	
-		display_dashboard_link("Administrator Dashboard");	
 	} else {
 		build_survey($respondent_id);
 		// build_survey($survey, $respondent_id);
@@ -63,7 +62,9 @@ else {
 	display_headline();
 	display_countdown();
 	display_report_link("View the schedule");		
+	// display_dashboard_link("Administrator Dashboard");	
 }
+if (userIsAdmin()) display_dashboard_link("Administrator Dashboard");	
 print <<<EOHTML
 </body>
 </html>
@@ -104,18 +105,6 @@ function display_countdown() {
 		</div>
 EOHTML;
 }
-
-// function display_respondents() {
-	// // display the responders summary
-	// $r = new Respondents();
-	// if (0) deb("inex1.display_respondents: Respondents =", $r);
-	// echo <<<EOHTML
-		// <div class="special_info">
-			// {$r->getTimeRemaining()}
-			// {$r->getSummary()}
-		// </div>
-// EOHTML;
-// }
 
 function display_person_menu() {
 	$respondents = renderPeopleListAsLinks();

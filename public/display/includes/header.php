@@ -1,14 +1,15 @@
 <?php
+global $html_title;
 session_start();
 if (0) deb("header: gonna call determineUserStatus()",'');
 determineUserStatus();
 if (0) deb("header: called determineUserStatus()",'');
-?>
 
+$head = <<<EOHTML
 <!doctype html>
 <html> 
 <head>
-	<title>Sunward Meals Scheduling Survey DEV</title>
+	<title>{$html_title}</title>
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css">
 	<link rel="stylesheet" href="select2/select2.min.css" type="text/css">
 
@@ -40,8 +41,9 @@ if (0) deb("header: called determineUserStatus()",'');
         }
 		window.onbeforeunload = unloadPage;
     </script>
+EOHTML;
+print $head;
 
-<?php
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 // if (isset($_REQUEST['worker'])) {
 	echo <<<EOHTML

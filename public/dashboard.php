@@ -9,10 +9,18 @@ require_once "{$relative_dir}/config.php";
 require_once "{$relative_dir}/globals.php";
 require_once "{$relative_dir}/display/includes/header.php";
 
+
+// Display the Dashboard
 session_start();
 
 $headline = renderHeadline("Dashboard"); 
 $revision_form = renderRevisionForm();
+$page = <<<EOHTML
+	{$headline}
+	{$revision_form}
+EOHTML;
+print $page;
+
 
 // Functions to render sections of the Dashboard
 
@@ -28,13 +36,13 @@ function renderRevisionForm() {
 	if (0) deb("dashboard.php.renderRevisionForm(): jobs = ", $jobs);
 	
 	// Get data for Meals table
-	$select = " DISTINCT s.string as meal_date, s.string as meal_day_name";
+	$select = " DISTINCT s.string as meal_date";
 	$from = "$jobs_table j, $shifts_table s";
 	$where = "s.job_id = j.id
-		and j.season_id = $season_id";
+		and j.season_id = {$season_id}";
 	$order_by = "date(s.string)";
 	$meals = sqlSelect($select, $from, $where, $order_by);
-	if (0) deb("dashboard.php.renderRevisionForm(): meals = ", $meals);
+	if (1) deb("dashboard.php.renderRevisionForm(): meals = ", $meals);
 	
 	// Make the table header row
 	$header_row .= "<tr>
@@ -47,17 +55,15 @@ function renderRevisionForm() {
 	if (0) deb("dashboard.php.renderRevisionForm(): header_row =", $header_row);
 
 	// Make the table row for each meal
-	foreach($meals as $index=>$meal) {	
+	foreach($meals as $m_index=>$meal) {	
 		$date_ob = new DateTime($meal['meal_date']);
 		$meal['meal_day_name'] = $date_ob->format('l');
-		// $meal['meal_day_name'] = date('D', $meal['meal_date']);
-		// $meal['meal_day_name'] = normalizeDate($meal['meal_date']);
-		// $meal['meal_day_name'] = date('D', $meal['meal_day_name']);
+
 		if (0) deb("dashboard.php.renderRevisionForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
 		
 		// Make the worker cell for each job in this row
 		$job_cells = "";
-		foreach($jobs as $index=>$job){
+		foreach($jobs as $m_index=>$job){
 			
 			if (0) deb("dashboard.php.renderRevisionForm(): job_id = {$job['job_id']}, meal_id = {$meal['id']}");
 			
@@ -78,9 +84,9 @@ function renderRevisionForm() {
 			}
 			
 			// Figure out which workers could be added to this job
-			$select =
-			$
+			$select = "";
 			
+			if (1) deb("dashboard.php.renderRevisionForm(): meal_date = {$meal['meal_date']}, addable_workers = ", getAddableWorkers($job['job_id']));
 			$job_cell .= '<tr><td style="background:White">' . "add-worker widget</td></tr>";
 			$job_cell .= "</table></td>";
 			if (0) deb("dashboard.php.renderRevisionForm(): job_cell = ", $job_cell);
@@ -111,10 +117,35 @@ EOHTML;
 	return $revision_form;
 }
 
-$page = <<<EOHTML
-	{$headline}
-	{$revision_form}
-EOHTML;
-print $page
+
+// Supporting functions
+
+function getAddableWorkers($shift_id) {
+	$season_id = SEASON_ID;
+	$assignments_table = ASSIGN_TABLE;
+	$workers_table = AUTH_USER_TABLE;
+	$shifts_table = SCHEDULE_SHIFTS_TABLE;
+	$shift_prefs_table = SCHEDULE_PREFS_TABLE;
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "s.string, 
+			s.job_id, 	
+			w.first_name || ' ' || w.last_name as name, 
+			p.pref";
+	$from = "{$workers_table} as w, 
+			{$shifts_table} as s, 
+			// {$jobs_table} as j,
+			{$shift_prefs_table} as p";
+	$where = "w.id = p.worker_id
+			and s.id = p.date_id
+			// and s.job_id = j.id			
+			// and j.season_id = {$season_id}
+			and p.pref > 0";
+	if ($shift_id) $where .= "
+			and s.id = {$shift_id}";
+	$order_by = "s.string asc, p.pref desc, w.first_name asc, w.last_name asc";
+	$addable_workers = sqlSelect($select, $from, $where, $order_by);
+	if (1) deb ("dashboard.php.getAddableWorkers() addable_workers = ", $addable_workers); 
+	return $addable_workers;
+}
 
 ?>

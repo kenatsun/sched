@@ -423,7 +423,7 @@ EOSQL;
 		ORDER BY {$order_by}
 EOSQL;
 	}
-	if (0) deb("utils.sqlSelect: sql:", $sql);
+	if (1) deb("utils.sqlSelect: sql:", $sql);
 	$results = array();
 	foreach($dbh->query($sql) as $row) {
 		// Get rid of the numbered elements that get stuck into these row-arrays,  

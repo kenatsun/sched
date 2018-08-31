@@ -652,8 +652,8 @@ EOSQL;
 		$success = $this->dbh->exec($sql);
 		if (0) deb("survey.saveRequests(): success?", $success);
 
-		// Save coworker prefs into coworker_prefs table.
-		if (1) {
+		// Save coworker requests into coworker_requests table.
+		if (0) {  // write existing requests to debug
 			$select = "r.request, w.id, w.first_name, w.last_name";
 			$from = "{$coworker_requests_table} as r, {$workers_table} as w";
 			$where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
@@ -663,13 +663,13 @@ EOSQL;
 		}
 
 		// Delete this worker's existing coworker_requests for this season.
-		$rows_affected = sqlDelete("{$coworker_requests_table}", "requester_id = {$this->worker_id} and season_id = {$season_id}", (1));
+		$rows_affected = sqlDelete("{$coworker_requests_table}", "requester_id = {$this->worker_id} and season_id = {$season_id}", (0));
 		if (0) deb("survey.saveRequests(): request rows deleted = ", $rows_affected);
 		// Insert new coworker requests (which may be the same as some old ones just deleted).
 		$this->saveCoworkerRequests('avoid', $this->avoid_list);
 		$this->saveCoworkerRequests('prefer', $this->prefer_list);
 
-		if (1) {
+		if (0) {  // write updated requests to debug
 			$select = "r.request, w.id, w.first_name, w.last_name";
 			$from = "{$coworker_requests_table} as r, {$workers_table} as w";
 			$where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
@@ -677,31 +677,6 @@ EOSQL;
 			$requests = sqlSelect($select, $from, $where, $order_by, (0));
 			deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} after update = ", $requests);
 		}
-		// $select = "r.request, w.id, w.first_name, w.last_name";
-		// $from = "{$coworker_requests_table} as r, {$workers_table} as w";
-		// $where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
-		// $order_by = "username";
-		// $coworkers = sqlSelect($select, $from, $where, $order_by, (0));
-		// if (1) deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} before update = ", $coworkers);
-		// // Delete this worker's existing coworker_requests for this season.
-		// $rows_affected = sqlDelete("{$coworker_requests_table}", "requester_id = {$this->worker_id} and season_id = {$season_id}", (1));
-		// if (0) deb("survey.saveRequests(): request rows deleted = ", $rows_affected);
-		// foreach($coworkers as $key=>$coworker) {
-			// // Get the id of the coworker
-			// $coworker_id = sqlSelect("id", "{$workers_table} as w", "w.username = '{$coworker}'", "", (0));
-			// // Insert the coworker request
-			// $table = $coworker_requests_table;
-			// $columns = "request, requester_id, coworker_id, season_id";
-			// $values = "'avoid', {$this->worker_id}, {$coworker_id[0]['id']}, {$season_id}";
-			// $rows_affected = sqlInsert($table, $columns, $values, (0));
-			// if (0) deb("survey.saveRequests(): request rows inserted = ", $rows_affected);
-		// }
-		// $select = "r.request, w.id, w.first_name, w.last_name";
-		// $from = "{$coworker_requests_table} as r, {$workers_table} as w";
-		// $where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
-		// $order_by = "username";
-		// $coworkers = sqlSelect($select, $from, $where, $order_by, (0));
-		// if (1) deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} after update = ", $coworkers);
 	}
 
 
@@ -723,7 +698,7 @@ EOSQL;
 			$table = $coworker_requests_table;
 			$columns = "request, requester_id, coworker_id, season_id";
 			$values = "'{$request}', {$this->worker_id}, {$coworker_id[0]['id']}, {$season_id}";
-			$rows_affected = sqlInsert($table, $columns, $values, (1));
+			$rows_affected = sqlInsert($table, $columns, $values, (0));
 			if (0) deb("survey.saveRequests(): request rows inserted = ", $rows_affected);
 		}
 	}

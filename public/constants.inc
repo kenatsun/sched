@@ -42,6 +42,7 @@ define('AUTH_USER_TABLE', 'workers'); //SUNWARD
 
 // tables for meals scheduling (read & write)
 define('SCHEDULE_COMMENTS_TABLE', 'work_prefs'); //SUNWARD
+define('SCHEDULE_COWORKER_REQUESTS_TABLE', 'coworker_requests'); //SUNWARD
 define('SCHEDULE_PREFS_TABLE', 'shift_prefs'); //SUNWARD
 define('SCHEDULE_SHIFTS_TABLE', 'shifts'); //SUNWARD
 

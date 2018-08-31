@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once 'utils.php';
 
 global $dbh;
@@ -48,7 +48,7 @@ class Roster {
 	 */
 	public function loadRequests() {
 		$comments_table = SCHEDULE_COMMENTS_TABLE;
-		$auth_user_table = AUTH_USER_TABLE;
+		$auth_user_table = AUTH_USER_TABLE; 
 		$sql = <<<EOSQL
 			SELECT a.username, c.avoids, c.prefers, c.clean_after_self,
 				c.bunch_shifts, c.bundle_shifts

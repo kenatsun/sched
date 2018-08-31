@@ -197,7 +197,7 @@ function add_easter($holidays) {
  */
 function get_holidays() {
 	$holidays = [
-		1 => [1],
+		1 => [0],
 		7 => [4],
 		10 => [31],
 		12 => [24,25, 31],
@@ -405,7 +405,7 @@ function getJobsFromDB($season_id) {
 }
 
 // Generic SQL SELECT
-function sqlSelect($select, $from, $where, $order_by) {
+function sqlSelect($select, $from, $where, $order_by, $debs=0) {
 	global $dbh;
 	$sql = <<<EOSQL
 		SELECT {$select} 
@@ -423,33 +423,65 @@ EOSQL;
 		ORDER BY {$order_by}
 EOSQL;
 	}
-	if (0) deb("utils.sqlSelect: sql:", $sql);
-	$results = array();
-	foreach($dbh->query($sql) as $row) {
-		// Get rid of the numbered elements that get stuck into these row-arrays,  
-		// leaving only named attributes as elements in the results array
-		foreach($row as $key=>$value) {
-			if (is_int($key)) unset($row[$key]);
+	if ($debs) deb("utils.sqlSelect(): sql:", $sql); 
+	$rows = array();
+	$found = $dbh->query($sql);
+	if ($found) {
+		foreach($dbh->query($sql) as $row) {
+			// Get rid of the numbered elements that get stuck into these row-arrays,  
+			// leaving only named attributes as elements in the rows array
+			foreach($row as $key=>$value) {
+				if (is_int($key)) unset($row[$key]); 
+			}
+			$rows[] = $row;
 		}
-		$results[] = $row;
 	}
-	if (0) deb("utils.sqlSelect: results:", $results);
-	return $results;
+	if ($debs) deb("utils.sqlSelect(): rows:", $rows);
+	return $rows;
+}
+
+// Generic SQL INSERT
+function sqlInsert($table, $columns, $values, $debs=0) {
+	global $dbh;
+	$sql = <<<EOSQL
+		INSERT INTO {$table} ({$columns})
+		VALUES ({$values}) 
+EOSQL;
+	if ($debs) deb("utils.sqlInsert: sql:", $sql);
+	$rows_affected = $dbh->exec($sql);
+	if ($debs) deb("utils.sqlInsert: rows_affected:", $rows_affected);
+	return $rows_affected;
 }
 
 // Generic SQL REPLACE
 // REPLACE INTO apparently works with SQLite and MySQL but not PostgreSQL, 
 // so would have to rewrite this function for PostgreSQL
-function sqlReplace($table, $columns, $values) {
+function sqlReplace($table, $columns, $values, $debs=0) {
 	global $dbh;
 	$sql = <<<EOSQL
 		REPLACE INTO {$table} ({$columns})
 		VALUES ({$values}) 
 EOSQL;
-	if (0) deb("utils.sqlReplace: sql:", $sql);
+	if ($debs) deb("utils.sqlReplace: sql:", $sql);
 	$rows_affected = $dbh->exec($sql);
-	if (0) deb("utils.sqlSelect: rows_affected:", $rows_affected);
+	if ($debs) deb("utils.sqlReplace: rows_affected:", $rows_affected);
 	return $rows_affected;
 }
 
+// Generic SQL DELETE
+function sqlDelete($from, $where, $debs=0) {
+	global $dbh;
+	$sql = <<<EOSQL
+		DELETE FROM {$from} 
+EOSQL;
+	if ($where) {
+	$sql .= <<<EOSQL
+		WHERE {$where}
+EOSQL;
+	}
+	if ($debs) deb("utils.sqlDelete: sql:", $sql);
+	$rows_affected = $dbh->exec($sql);
+	if ($debs) deb("utils.sqlDelete: rows_affected:", $rows_affected);
+	return $rows_affected;
+}
 ?>

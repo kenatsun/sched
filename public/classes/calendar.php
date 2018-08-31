@@ -645,7 +645,7 @@ EOSQL;
 		return $dates;
 	}
 
-	public function getWorkerComments($job_key_clause) {
+	public function XXgetWorkerComments($job_key_clause) {
 		$special_prefs = array(
 			'avoids',
 			'prefers',

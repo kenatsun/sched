@@ -627,9 +627,13 @@ EOHTML;
 	protected function saveRequests() {
 		$bundle = array_get($this->requests, 'bundle_shifts', '');
 		$work_prefs_table = SCHEDULE_COMMENTS_TABLE;
+		$coworker_requests_table = SCHEDULE_COWORKER_REQUESTS_TABLE;
+		$workers_table = AUTH_USER_TABLE;
 		$season_id = SEASON_ID;
 		$timestamp = date('Y-m-d H:i:s');
 		if (0) deb("survey.saveRequests(): timestamp:", $timestamp);
+		
+		// Save all requests into the SCHEDULE_COMMENTS_TABLE
 		$sql = <<<EOSQL
 replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comments, clean_after_self, bunch_shifts, bundle_shifts, season_id)
 	values(
@@ -647,9 +651,84 @@ EOSQL;
 		if (0) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
 		$success = $this->dbh->exec($sql);
 		if (0) deb("survey.saveRequests(): success?", $success);
-		sqlSelect("*", $work_prefs_table, "worker_id = {$this->worker_id}", "");
+
+		// Save coworker prefs into coworker_prefs table.
+		if (1) {
+			$select = "r.request, w.id, w.first_name, w.last_name";
+			$from = "{$coworker_requests_table} as r, {$workers_table} as w";
+			$where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
+			$order_by = "request, username";
+			$requests = sqlSelect($select, $from, $where, $order_by, (0));
+			deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} before update = ", $requests);
+		}
+
+		// Delete this worker's existing coworker_requests for this season.
+		$rows_affected = sqlDelete("{$coworker_requests_table}", "requester_id = {$this->worker_id} and season_id = {$season_id}", (1));
+		if (0) deb("survey.saveRequests(): request rows deleted = ", $rows_affected);
+		// Insert new coworker requests (which may be the same as some old ones just deleted).
+		$this->saveCoworkerRequests('avoid', $this->avoid_list);
+		$this->saveCoworkerRequests('prefer', $this->prefer_list);
+
+		if (1) {
+			$select = "r.request, w.id, w.first_name, w.last_name";
+			$from = "{$coworker_requests_table} as r, {$workers_table} as w";
+			$where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
+			$order_by = "request, username";
+			$requests = sqlSelect($select, $from, $where, $order_by, (0));
+			deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} after update = ", $requests);
+		}
+		// $select = "r.request, w.id, w.first_name, w.last_name";
+		// $from = "{$coworker_requests_table} as r, {$workers_table} as w";
+		// $where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
+		// $order_by = "username";
+		// $coworkers = sqlSelect($select, $from, $where, $order_by, (0));
+		// if (1) deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} before update = ", $coworkers);
+		// // Delete this worker's existing coworker_requests for this season.
+		// $rows_affected = sqlDelete("{$coworker_requests_table}", "requester_id = {$this->worker_id} and season_id = {$season_id}", (1));
+		// if (0) deb("survey.saveRequests(): request rows deleted = ", $rows_affected);
+		// foreach($coworkers as $key=>$coworker) {
+			// // Get the id of the coworker
+			// $coworker_id = sqlSelect("id", "{$workers_table} as w", "w.username = '{$coworker}'", "", (0));
+			// // Insert the coworker request
+			// $table = $coworker_requests_table;
+			// $columns = "request, requester_id, coworker_id, season_id";
+			// $values = "'avoid', {$this->worker_id}, {$coworker_id[0]['id']}, {$season_id}";
+			// $rows_affected = sqlInsert($table, $columns, $values, (0));
+			// if (0) deb("survey.saveRequests(): request rows inserted = ", $rows_affected);
+		// }
+		// $select = "r.request, w.id, w.first_name, w.last_name";
+		// $from = "{$coworker_requests_table} as r, {$workers_table} as w";
+		// $where = "r.requester_id = {$this->worker_id} and r.season_id = {$season_id} and r.coworker_id = w.id";
+		// $order_by = "username";
+		// $coworkers = sqlSelect($select, $from, $where, $order_by, (0));
+		// if (1) deb("survey.saveRequests(): coworker_requests by worker {$this->worker_id} after update = ", $coworkers);
 	}
 
+
+	/**
+	 * Save the coworker requests into the coworker_requests table.
+	 * Note:  These are also redundantly stored in a column of the work_prefs table,
+	 * which is preserved because some parts of this system still put/get them there.
+	 */
+	protected function saveCoworkerRequests($request, $coworkers_list) {
+		$coworker_requests_table = SCHEDULE_COWORKER_REQUESTS_TABLE;
+		$workers_table = AUTH_USER_TABLE;
+		$season_id = SEASON_ID;
+
+		$coworkers = explode(",", $coworkers_list);
+		foreach($coworkers as $key=>$coworker) {
+			// Get the id of the coworker
+			$coworker_id = sqlSelect("id", "{$workers_table} as w", "w.username = '{$coworker}'", "", (0));
+			// Insert the coworker request
+			$table = $coworker_requests_table;
+			$columns = "request, requester_id, coworker_id, season_id";
+			$values = "'{$request}', {$this->worker_id}, {$coworker_id[0]['id']}, {$season_id}";
+			$rows_affected = sqlInsert($table, $columns, $values, (1));
+			if (0) deb("survey.saveRequests(): request rows inserted = ", $rows_affected);
+		}
+	}
+	
+	
 	/**
 	 * Save the shift preferences.
 	 */

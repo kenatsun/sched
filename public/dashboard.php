@@ -56,14 +56,7 @@ function renderRevisionForm() {
 	if (0) deb("dashboard.php.renderRevisionForm(): header_row =", $header_row);
 
 	// Sort the meals by date (ascending)
-	$time_order = array();
-	foreach($meals as $m_index=>$meal) {	
-		$date_ob = new DateTime($meal['meal_date']);
-		$meal['time_order'] = $date_ob->format('U');
-		$time_order[$m_index] = $m_index['time_order'];
-		$meal['meal_day_name'] = $date_ob->format('l');
-	}
-	array_multisort($time_order, SORT_ASC, $meals);
+	usort($meals, "meal_date_sort");
 	if (0) deb("dashboard.php.renderRevisionForm(): meals after sort = ", $meals);
 	if (0) deb("dashboard.php.renderRevisionForm(): time_order = ", $time_order);
 	
@@ -110,8 +103,8 @@ function renderRevisionForm() {
 
 			// if (0) deb("dashboard.php.renderRevisionForm(): job[job_id] = {$job['job_id']}" );
 			// if (0) deb("dashboard.php.renderRevisionForm(): job[id] = {$job['shift_id']}" );
-			// $swappable_workers = getSwappableWorkers($job['id']);
-			$swappable_workers = getSwappableWorkers($shift_id, TRUE);
+			// $swappable_workers = getAvailableWorkersForShift($job['id']);
+			$swappable_workers = getAvailableWorkersForShift($shift_id, TRUE, TRUE);
 			if (0) deb("dashboard.php.renderRevisionForm(): meal_date = {$meal['meal_date']}, swappable_workers = ", $swappable_workers);
 			foreach($swappable_workers as $w_index=>$worker) {
 				$shift_cell .= '<tr><td style="background:White">' . ">> {$worker['name']}</td></tr>";
@@ -149,8 +142,8 @@ EOHTML;
 
 // Supporting functions
 
-function getSwappableWorkers($shift_id="", $addable_only=FALSE, $omit_avoiders=TRUE) { 
-	if (0) deb("dashboard.getSwappableWorkers: shift_id = $shift_id");
+function getAvailableWorkersForShift($shift_id="", $addable_only=FALSE, $omit_avoiders=TRUE) { 
+	if (0) deb("dashboard.getAvailableWorkersForShift: shift_id = $shift_id");
 	$season_id = SEASON_ID;
 	$assignments_table = ASSIGNMENTS_TABLE;
 	$workers_table = AUTH_USER_TABLE;
@@ -180,33 +173,37 @@ function getSwappableWorkers($shift_id="", $addable_only=FALSE, $omit_avoiders=T
 		and not w.id in (
 			select ww.id
 			from {$workers_table} as ww, 
-				{$assignments_table} as a
-			where a.shift_id = {$shift_id}
-				and a.worker_id = ww.id
+				{$assignments_table} as aa
+			where aa.shift_id = {$shift_id}
+				and aa.worker_id = ww.id
 		)";
 	// Include only workers who have more offers than assignments to do this job.
 	if ($addable_only) $where = $where . "
-			and (
-				select o.instances
-				from {$offers_table} as o
-				where o.worker_id = w.id 
-					and o.job_id = j.id
-			) > (
-				select count(a.id)
-				from {$assignments_table} as a, {$shifts_table} as s
-				where a.worker_id = w.id
-					and a.shift_id = s.id
-					and s.job_id = j.id
-			)";
+		and (
+			select oo.instances
+			from {$offers_table} as oo
+			where oo.worker_id = w.id 
+				and oo.job_id = j.id
+		) > (
+			select count(aa.id)
+			from {$assignments_table} as aa, {$shifts_table} as ss
+			where aa.worker_id = w.id
+				and aa.shift_id = ss.id
+				and ss.job_id = j.id
+		)";
 	// Omit workers who want to avoid any worker already assigned to this job.
 	if ($omit_avoiders) $where = $where . "
-			and w.id not in (
-				select 
-			)";
+		and not w.id in (
+			select cc.requester_id  
+			from coworker_requests cc, assignments aa, shifts ss
+			where cc.request = 'avoid'
+				and cc.coworker_id = aa.worker_id
+				and aa.shift_id = s.id
+		)";
 	$order_by = "s.string asc, p.pref desc, w.first_name asc, w.last_name asc";
 	$swappable_workers = sqlSelect($select, $from, $where, $order_by, (0));
 	
-	if (0) deb("dashboard.php:getSwappableWorkers() swappable_workers = ", $swappable_workers); 
+	if (0) deb("dashboard.php:getAvailableWorkersForShift() swappable_workers = ", $swappable_workers); 
 	return $swappable_workers;
 }
 

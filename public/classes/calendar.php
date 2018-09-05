@@ -65,7 +65,6 @@ class Calendar {
 		$current_season = get_current_season();
 
 		$out = "";
-EOHTML;
 		
 		foreach($current_season as $month_num=>$month_name) {
 			$out .= <<<EOHTML

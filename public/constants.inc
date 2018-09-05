@@ -4,7 +4,7 @@
  */
 
 define('BASE_DIR', ''); //SUNWARD }
-// define('BASE_DIR', '/go_meals_scheduling/public');
+// define('BASE_DIR', '/mo/public');
 
 define('RESULTS_FILE', 'schedule.txt');
 

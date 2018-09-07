@@ -100,7 +100,7 @@ class Worker {
 	 */
 	public function setNumberOfShifts($job_id, $num) {
 		// multiply by the number of months in the season:
-		$current_season = get_current_season();
+		$current_season = get_current_season_months();
 		$this->num_shifts_to_fill[$job_id] = $num * 
 			count($current_season);
 	}

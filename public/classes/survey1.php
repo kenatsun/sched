@@ -92,7 +92,7 @@ EOHTML;
 
 	protected function renderInstructions() {
 		$season_name = get_season_name_from_db();
-		// $month_names = get_current_season();
+		// $month_names = get_current_season_months();
 		return <<<EOHTML
 				<br>
 				<p class="question">How many times are you willing and able to do each of these meal jobs during {$season_name}?</p>  
@@ -102,7 +102,7 @@ EOHTML;
 		
 	protected function renderHints() {
 		$season_name = get_season_name_from_db();
-		$months = get_current_season();
+		$months = get_current_season_months();
 		if (0) deb("survey1.renderHints: months = ", $months);
 		$month_names = array_values($months);
 		if (0) deb("survey1.renderHints: month_names = ", $month_names);

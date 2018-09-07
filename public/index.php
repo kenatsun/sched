@@ -79,7 +79,7 @@ function display_headline() {
 }
 
 function display_instructions() {
-	$month_names = get_current_season();
+	$month_names = get_current_season_months();
 	$deadline = date('ga l, F j', DEADLINE);
 	if (0) deb("index.display_introduction(): deadline = ", $deadline);
 	echo <<<EOHTML

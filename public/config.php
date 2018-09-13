@@ -68,13 +68,6 @@ $where = "season_id = $season_id}";
 		$where .= " AND month_number = {$month_num} AND day_number = {$day_num}";
 	}
 	$skip_dates = sqlSelect($select, $from, $where, '');
-	// $skip_dates = array(
-		// "8" => 2,
-		// "8" => 9,
-		// "8" => 16,
-		// "8" => 23,
-		// "8" => 30,
-	// );
 	if (0) deb("config.skip_dates() = ", $skip_dates);
 	return $skip_dates;
 }
@@ -158,24 +151,24 @@ function get_job_instances() {
  *
  * @return array list of names.
  */
-function get_hobarters() {
-	return [
-		'bill',
-		'debbi',
-		'erik',
-		'hope',
-		'jillian',
-		'kate',
-		'kathyboblitt',
-		'kevink',
-		'mac',
-		'maryking',
-		'patti',
-		'rod',
-		'sharon',
-		'ted',
-		'willie',
-		'yimiau',
-	];
-}
+// function get_hobarters() {
+	// return [
+		// 'bill',
+		// 'debbi',
+		// 'erik',
+		// 'hope',
+		// 'jillian',
+		// 'kate',
+		// 'kathyboblitt',
+		// 'kevink',
+		// 'mac',
+		// 'maryking',
+		// 'patti',
+		// 'rod',
+		// 'sharon',
+		// 'ted',
+		// 'willie',
+		// 'yimiau',
+	// ];
+// }
 ?>

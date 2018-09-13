@@ -12,7 +12,6 @@ require_once "{$relative_dir}/globals.php";
 require_once "{$relative_dir}/display/includes/header.php";
 
 
-
 $headline = renderHeadline("Dashboard"); 
 $revision_form = renderRevisionForm();
 $seasons_section = renderSeasonSection();
@@ -32,7 +31,6 @@ function renderSeasonSection() {
 	// Get data for Seasons table
 	$seasons = sqlSelect("*", "seasons", "", "date(start_date)", (0), "Seasons");
 	if (0) deb("dashboard.php.renderSeasonSection(): seasons = ", $seasons);
- 
 }
 
 function renderRevisionForm() {	

@@ -301,12 +301,6 @@ function renderHeadline($text) {
 		<p><strong>You're signed into this session as an admin.</strong></p>
 		</div>"
 		: "");
-	// Note: I was trying to put this into the above, but it got an html error about 'Unexpected Post"
-				// <form method="post" action="{$_SERVER['PHP_SELF']}">
-				// <input type="hidden" name="guest">
-				// <li><input type="submit" value="{$sign_in_as_guest_label}"></li>
-			// </form>
-
 	return <<<EOHTML
 	{$instance_notice}
 	{$admin_notice}

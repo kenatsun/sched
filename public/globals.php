@@ -33,7 +33,7 @@ if(isset($_COOKIE["season id"])) {			// if this user has selected a season to wo
 $season = sqlSelect("*", "seasons", "id = {$season_id}", "")[0];
 if (0) deb("globals.php: season = ", $season);
 
-// Assign season's attributes to constants.
+// Assign this season's attributes to constants.
 // global $season_name;
 $season_name = $season['name'];
 if (0) deb("globals.php: season_name = {$season_name}");
@@ -52,6 +52,17 @@ if (0) deb("globals.php: SEASON_START_YEAR = " . SEASON_START_YEAR);
 
 define('SEASON_END_YEAR', DateTime::createFromFormat("Y-m-d", $season['end_date'])->format("Y"));
 if (0) deb("globals.php: SEASON_END_YEAR = " . SEASON_END_YEAR);
+
+// Assign this season's job ids to constants
+$season_job_ids = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = {$season['id']}", "", (0));
+if (0) deb("globals.php: season_job_ids = " . $season_job_ids);
+foreach ($season_job_ids as $i=>$season_job_id) {
+	define($season_job_id['constant_name'], $season_job_id['id']);
+}
+	if (0) deb("globals.php: WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
+	if (0) deb("globals.php: WEEKDAY_ASST_COOK = ", WEEKDAY_ASST_COOK);
+	if (0) deb("globals.php: WEEKDAY_CLEANER = ", WEEKDAY_CLEANER);
+
 
 // Set path to assignments file.
 global $json_assignments_file;

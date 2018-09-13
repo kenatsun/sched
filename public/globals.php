@@ -136,13 +136,7 @@ function create_sqlite_connection() {
 			$relative_dir .= '/';
 		}
 
-		$db_fullpath = getDatabaseFullpath();
-		// $db_fullpath = "../../../ww/wwa/db/production.sqlite3"; .  Connect directly to the ww app database 
-		// $db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
-		
-		$db_fullpath = getDatabaseFullpath(); 
-		// $db_fullpath = "../../../ww/wwa/db/development.sqlite3"; .  Connect directly to the ww app database
-		// $db_fullpath = "{$relative_dir}sqlite_data/work_allocation.db";
+		$db_fullpath = getDatabaseFullpath();  // This function is in git_ignored.php because production & development use different databases
 		$db_is_writable = is_writable($db_fullpath);
 		$db_file = "sqlite:{$db_fullpath}";
 		$dbh = new PDO($db_file);

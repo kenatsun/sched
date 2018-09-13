@@ -4,7 +4,7 @@ require_once 'display/includes/header.php';
 require_once 'classes/person.php';
 require_once 'classes/survey.php';
 
-$season_name = get_season_name_from_db($season_id);;
+$season_name = get_season_name_from_db($season_id);
 
 global $dbh;
 

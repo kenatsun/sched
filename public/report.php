@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 require_once('globals.php');
 
 global $relative_dir;
@@ -10,8 +12,6 @@ require_once "{$relative_dir}/classes/PeopleList.php";
 require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/constants.inc";
 require_once "{$relative_dir}/config.php";
-
-session_start();
 
 require_once('display/includes/header.php');
 

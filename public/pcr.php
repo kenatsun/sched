@@ -14,7 +14,7 @@ $coworker_requests_table = SCHEDULE_COWORKER_REQUESTS_TABLE;
 $workers_table = AUTH_USER_TABLE;
 $season_id = SEASON_ID;
 
-if (1) deb("*********************************************************************");
+if (0) deb("*********************************************************************");
 
 $select = "p.worker_id, p.avoids, p.prefers, p.season_id";
 $from = "{$work_prefs_table} as p";
@@ -22,7 +22,7 @@ $where = "";
 $order_by = "p.season_id, p.worker_id";
 $work_prefs = sqlSelect($select, $from, $where, $order_by, (0));
 
-if (1) {  // write existing requests to debug
+if (0) {  // write existing requests to debug
 	$select = "w.username as requester, r.request, c.username as coworker, w.id as r_id, c.id as c_id, r.season_id as season";
 	$from = "{$coworker_requests_table} as r, {$workers_table} as w, {$workers_table} as c";
 	$where = "r.requester_id = w.id and r.coworker_id = c.id";
@@ -67,7 +67,7 @@ foreach ($work_prefs as $k=>$work_pref) {
 	
 }
 
-if (1) {  // write existing requests to debug
+if (0) {  // write existing requests to debug
 	$select = "w.username as requester, r.request, c.username as coworker, w.id as r_id, c.id as c_id, r.season_id as season";
 	$from = "{$coworker_requests_table} as r, {$workers_table} as w, {$workers_table} as c";
 	$where = "r.requester_id = w.id and r.coworker_id = c.id";

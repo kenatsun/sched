@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 global $relative_dir;
 if (!strlen($relative_dir)) {
     $relative_dir = '.';
@@ -10,19 +12,28 @@ require_once "{$relative_dir}/globals.php";
 require_once "{$relative_dir}/display/includes/header.php";
 
 
-// Display the Dashboard
-session_start();
 
 $headline = renderHeadline("Dashboard"); 
 $revision_form = renderRevisionForm();
+$seasons_section = renderSeasonSection();
 $page = <<<EOHTML
 	{$headline}
+	{$seasons_section}
 	{$revision_form}
 EOHTML;
 print $page;
 
 
 // Functions to render sections of the Dashboard
+
+function renderSeasonSection() {
+	$revision_season_headline = "<h2>Seasons</h2>";
+	
+	// Get data for Seasons table
+	$seasons = sqlSelect("*", "seasons", "", "date(start_date)", (0), "Seasons");
+	if (0) deb("dashboard.php.renderSeasonSection(): seasons = ", $seasons);
+ 
+}
 
 function renderRevisionForm() {	
 	$jobs_table = SURVEY_JOB_TABLE;
@@ -37,13 +48,13 @@ function renderRevisionForm() {
 	
 	// Get data for Meals table
 	$select = " DISTINCT s.string as meal_date";
-	$from = "$jobs_table j, $shifts_table s";
+	$from = "{$jobs_table} j, {$shifts_table} s";
 	$where = "s.job_id = j.id
-		and j.season_id = {$season_id}";
-	$order_by = "";
-	// $order_by = "date(s.string)";
+			and j.season_id = {$season_id}";
+	// $order_by = "";
+	$order_by = "date(s.string) asc";
 	$meals = sqlSelect($select, $from, $where, $order_by);
-	if (0) deb("dashboard.php.renderRevisionForm(): meals = ", $meals);
+	if (0) deb("dashboard.php.renderRevisionForm(): meals = ", $meals); 
 	
 	// Make the table header row
 	$header_row .= "<tr>

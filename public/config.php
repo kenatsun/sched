@@ -22,9 +22,9 @@ define('DEADLINE', strtotime('June 20, 2018, 11pm'));
 // define('WEEKDAY_HEAD_COOK', 4190);
 // define('WEEKDAY_ASST_COOK', 4191);
 // define('WEEKDAY_CLEANER', 4195);
-define('WEEKDAY_HEAD_COOK', 4); //SUNWARD
-define('WEEKDAY_ASST_COOK', 5); //SUNWARD
-define('WEEKDAY_CLEANER', 6); //SUNWARD
+define('WEEKDAY_HEAD_COOK', 4); 
+define('WEEKDAY_ASST_COOK', 5); 
+define('WEEKDAY_CLEANER', 6); 
 // define('WEEKDAY_TABLE_SETTER', 4184);
 
 
@@ -60,9 +60,10 @@ function get_num_shift_overrides() {
 }
 
 function get_skip_dates($month_num = NULL, $day_num = NULL) {
+	$season_id = SEASON_ID;
 	$select = "*";
 	$from = SKIP_DATES_TABLE;
-	$where = "season_id = " . SEASON_ID;
+$where = "season_id = $season_id}";
 	if ($month_num && $day_num) {
 		$where .= " AND month_number = {$month_num} AND day_number = {$day_num}";
 	}
@@ -93,9 +94,9 @@ $sunday_jobs = array(
 );
 // list in order of importance
 $weekday_jobs = array(
-	WEEKDAY_HEAD_COOK => 'head cook', //SUNWARD
-	WEEKDAY_ASST_COOK => 'asst cook', //SUNWARD
-	WEEKDAY_CLEANER => 'cleaner', //SUNWARD
+	WEEKDAY_HEAD_COOK => 'head cook', 
+	WEEKDAY_ASST_COOK => 'asst cook', 
+	WEEKDAY_CLEANER => 'cleaner', 
 	// WEEKDAY_TABLE_SETTER => 'Weekday Table Setter',
 );
 
@@ -118,9 +119,9 @@ function get_num_dinners_per_assignment($job_id=NULL) {
 		// WEEKDAY_ASST_COOK => 2,
 		// WEEKDAY_HEAD_COOK => 2,
 		// WEEKDAY_CLEANER => 4,
-		WEEKDAY_ASST_COOK => 1, //SUNWARD
-		WEEKDAY_HEAD_COOK => 1, //SUNWARD
-		WEEKDAY_CLEANER => 1, //SUNWARD
+		WEEKDAY_ASST_COOK => 1, 
+		WEEKDAY_HEAD_COOK => 1, 
+		WEEKDAY_CLEANER => 1, 
 		// WEEKDAY_TABLE_SETTER => 4,
 	);
 
@@ -145,9 +146,9 @@ function get_job_instances() {
 		// WEEKDAY_HEAD_COOK => array(1=>1, 2=>1, 3=>1, 4=>1),
 		// WEEKDAY_ASST_COOK => array(1=>2, 2=>2, 3=>2, 4=>2),
 		// WEEKDAY_CLEANER => array(1=>3, 2=>3, 3=>3, 4=>3),
-		WEEKDAY_HEAD_COOK => array(4=>1, 7=>1), //SUNWARD
-		WEEKDAY_ASST_COOK => array(4=>1, 7=>1), //SUNWARD
-		WEEKDAY_CLEANER => array(4=>2, 7=>2), //SUNWARD
+		WEEKDAY_HEAD_COOK => array(4=>1, 7=>1), 
+		WEEKDAY_ASST_COOK => array(4=>1, 7=>1), 
+		WEEKDAY_CLEANER => array(4=>2, 7=>2), 
 		// WEEKDAY_TABLE_SETTER => array(1=>1, 2=>1, 3=>1, 4=>1),
 	];
 }

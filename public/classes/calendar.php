@@ -33,7 +33,7 @@ class Calendar {
 			$this->key_filter = $_GET['key'];
 		}
 
-		$this->holidays = get_holidays(SEASON_NAME);
+		$this->holidays = get_holidays(SEASON_TYPE);
 	}
 
 	public function setIsReport($setting=TRUE) {
@@ -53,16 +53,18 @@ class Calendar {
 		global $json_assignments_file;
 		$dir = BASE_DIR;
 		$file = $json_assignments_file;
+		if (0) deb("calendar.php loadAssignments(): file = ", $file);
 
 		if (!file_exists($file)) {
 			return FALSE;
 		}
 
 		$this->assignments = json_decode(file_get_contents($file), true);
+		if (0) deb("calendar.loadAssignments(): this->assignments = ", $this->assignments);
 	}
 
 	public function renderMonthsOverlay() {
-		$current_season = get_current_season();
+		$current_season = get_current_season_months();
 
 		$out = "";
 		
@@ -160,7 +162,7 @@ EOHTML;
 		global $mtg_jobs;
 		global $mtg_nights;
 
-		$current_season = get_current_season();
+		$current_season = get_current_season_months();
 
 		$meal_days = get_weekday_meal_days();
 
@@ -226,13 +228,14 @@ EOHTML;
 		
 		// for each month in the season
 		$month_count = 0;
+		if (0) deb("calendar.evalDate(): current_season = ", $current_season);		
 		foreach($current_season as $month_num=>$month_name) {
 			$month_count++;
 			$month_entries = array();
 			$month_week_count = 1;
 
 			// get unix ts
-			$start_ts = strtotime("{$month_name} 1, " . SEASON_YEAR);
+			$start_ts = strtotime("{$month_name} 1, " . SEASON_START_YEAR);
 			$days_in_month = date('t', $start_ts);
 
 			// figure out the first day of the starting month
@@ -258,9 +261,9 @@ EOHTML;
 			// for each day in the current month
 			for ($i=1; $i<=$days_in_month; $i++) {
 				$tally = '';
-				$this_year = SEASON_YEAR;
+				$this_year = SEASON_START_YEAR;
 				if (0) deb("calendar.evalDate(): month={$month_num}, date={$i}, year={$this_year}");
-				// $today =  $month_num . "/" . $i . "/" . SEASON_YEAR;
+				// $today =  $month_num . "/" . $i . "/" . SEASON_START_YEAR;
 
 				// if this is sunday... add the row start
 				if (($day_of_week == 0) && ($i != 1)) {
@@ -272,7 +275,9 @@ EOHTML;
 EOHTML;
 				}
 
-				$date_string = "{$month_num}/{$i}/" . SEASON_YEAR;
+				$date_string = "{$month_num}/{$i}/" . SEASON_START_YEAR;
+				if (0) deb("calendar.evalDates(): SEASON_START_YEAR: " . SEASON_START_YEAR); 
+				if (0) deb("calendar.evalDates(): date_string: {$date_string}"); 
 				$cell = '';	
 				$skip_dates = get_skip_dates($month_num, $i);
 				if (0) deb("calendar.evalDates(): skip_dates:", $skip_dates); 
@@ -444,7 +449,7 @@ EOHTML;
 
 			$survey = ($this->is_report) ? '' : 'survey';
 			$quarterly_month_ord = ($month_num % 4);
-			$season_year = SEASON_YEAR;
+			$season_year = SEASON_START_YEAR;
 			$month_selector = (!$this->is_report ? $this->renderMonthSelector() : ""); 
 			if (0) deb("calendar.evalDates(): day_labels =", '"'.$day_labels.'"');
 			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
@@ -823,6 +828,7 @@ EOHTML;
 		if (!empty($cur_date_prefs)) ksort($cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_prefs (sorted) = ", $cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_assignments (sorted) = ", $this->cur_date_assignments);
+		if (0) deb("calendar.list_available_workers(): this->assignments[date_string] (pre-sort) = ", $this->assignments[$date_string]);
 		if (!empty($this->assignments)) ksort($this->assignments[$date_string]);
 		if (0) deb("calendar.list_available_workers(): this->assignments[date_string] (sorted) = ", $this->assignments[$date_string]);
 		

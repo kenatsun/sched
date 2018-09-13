@@ -93,11 +93,11 @@ function get_season_name_from_db() {
 	$season_table = SEASON_TABLE;
 	$season_id = SEASON_ID;
 	$sql = <<<EOSQL
-		SELECT description FROM {$season_table} WHERE id = {$season_id};
+		SELECT name FROM {$season_table} WHERE id = {$season_id};
 EOSQL;
 	$season_name = array();
 	foreach($dbh->query($sql) as $row) {
-		$season_name[] = $row['description'];
+		$season_name[] = $row['name'];
 		break;
 	}
 	if (0) deb("	Utils: Season name from DB:", $season_name);
@@ -109,9 +109,9 @@ EOSQL;
  *
  * @return array list of month names contained in the requested season.
  */
-function get_current_season() {
-	if (0) deb("utils.get_current_season: SEASON_NAME = ", SEASON_NAME);
-	switch(SEASON_NAME) {
+function get_current_season_months() {
+	if (0) deb("utils.get_current_season_months: SEASON_TYPE = ", SEASON_TYPE);
+	switch(SEASON_TYPE) {
 		case "SPRING":
 			return [
 				4=>'April',
@@ -187,8 +187,8 @@ function get_season_name($date=NULL) {
  */
 function add_easter($holidays) {
 	// add easter, which floats between march and april
-	$easter_month = date('n', easter_date(SEASON_YEAR));
-	$easter_day = date('j', easter_date(SEASON_YEAR));
+	$easter_month = date('n', easter_date(SEASON_START_YEAR));
+	$easter_day = date('j', easter_date(SEASON_START_YEAR));
 	$holidays[$easter_month][] = $easter_day;
 
 	return $holidays;
@@ -210,7 +210,7 @@ function get_holidays() {
 	$holidays = add_easter($holidays);
 
 	// add memorial day
-	$mem_day = date('j', strtotime('last monday of May, ' . SEASON_YEAR));
+	$mem_day = date('j', strtotime('last monday of May, ' . SEASON_START_YEAR));
 	// sunday, day before
 	$holidays[5][] = ($mem_day - 1);
 	// monday, memorial day
@@ -218,13 +218,13 @@ function get_holidays() {
 
 	// sunday before labor day
 	// if last day of aug is sunday, then next day is labor day... skip
-	$last_aug = date('D', strtotime('last day of August, ' . SEASON_YEAR));
+	$last_aug = date('D', strtotime('last day of August, ' . SEASON_START_YEAR));
 	if ($last_aug == 'Sun') {
 		$holidays[8][] = 31;
 	}
 
 	// labor day
-	$labor_day = date('j', strtotime('first monday of September, ' . SEASON_YEAR));
+	$labor_day = date('j', strtotime('first monday of September, ' . SEASON_START_YEAR));
 	// if the Sunday before is in Sept, then skip it
 	if ($labor_day > 1) {
 		$holidays[9][] = ($labor_day - 1);
@@ -232,15 +232,15 @@ function get_holidays() {
 	$holidays[9][] = $labor_day;
 
 	// thanksgiving
-	$thx_day = date('j', strtotime('fourth thursday of November, ' . SEASON_YEAR));
+	$thx_day = date('j', strtotime('fourth thursday of November, ' . SEASON_START_YEAR));
 	$holidays[11][] = $thx_day;
-	$last_sunday = date('j', strtotime('last sunday of November, ' . SEASON_YEAR));
+	$last_sunday = date('j', strtotime('last sunday of November, ' . SEASON_START_YEAR));
 	if ($last_sunday > $thx_day) {
 		$holidays[11][] = $last_sunday;
 	}
 
 	ksort($holidays);
-	$yr = SEASON_YEAR;
+	$yr = SEASON_START_YEAR;
 	if (0) {deb("Holidays for {$yr}:", $holidays);}
 	return $holidays;
 }
@@ -261,7 +261,7 @@ function get_first_associative_key($dict) {
 /* 
 Print debug data to the web page
 */
-//SUNWARD
+
 function deb($label, $data=NULL) {
 	$print_data = ($data ? "<pre> " . print_r($data, TRUE) . "</pre>" : '<p> </p>');
 	echo <<<EOHTML
@@ -276,7 +276,7 @@ EOHTML;
 /* 
 Print debug data to the terminal
 */
-//SUNWARD
+
 function debt($label, $data=NULL) {
 	$print_data = print_r($data, TRUE);
 	print "

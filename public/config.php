@@ -67,11 +67,11 @@ function get_skip_dates($month_num = NULL, $day_num = NULL) {
 	$season_id = SEASON_ID;
 	$select = "*";
 	$from = SKIP_DATES_TABLE;
-$where = "season_id = $season_id}";
+	$where = "season_id = {$season_id}";
 	if ($month_num && $day_num) {
 		$where .= " AND month_number = {$month_num} AND day_number = {$day_num}";
 	}
-	$skip_dates = sqlSelect($select, $from, $where, '');
+	$skip_dates = sqlSelect($select, $from, $where, '', (0));
 	if (0) deb("config.skip_dates() = ", $skip_dates);
 	return $skip_dates;
 }
@@ -240,8 +240,6 @@ function set_season_constants() {
 	define('SEASON_END_YEAR', DateTime::createFromFormat("Y-m-d", $season['end_date'])->format("Y"));
 	if (0) deb("config.php: SEASON_END_YEAR = " . SEASON_END_YEAR);
 
-	define('DEADLINEX', strtotime('June 20, 2018, 11pm'));
-	if (0) deb("config.php: DEADLINEX = " . DEADLINEX);  
 	define('DEADLINE', strtotime($season['survey_end_date']));
 	if (0) deb("config.php: DEADLINE = " . DEADLINE);
 

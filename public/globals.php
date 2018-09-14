@@ -5,7 +5,6 @@ date_default_timezone_set('America/Detroit');
 
 require_once('utils.php');
 require_once('config.php');
-require_once('git_ignored.php');
 
 define('NON_RESPONSE_PREF', .5);
 define('PLACEHOLDER', 'XXXXXXXX');
@@ -19,49 +18,6 @@ define('WEDNESDAY', 3);
 define('THURSDAY', 4);
 define('FRIDAY', 5);
 define('SATURDAY', 6);
-
-create_sqlite_connection();
-
-// Identify the season this session will be working with.
-if(isset($_COOKIE["season id"])) {			// if this user has selected a season to work on 
-	$season_id = $_COOKIE["season id"];		// set season_id to that
-} else {									// if not, get season_id from the current_season table (which only has one row)
-	$season_id = sqlSelect("season_id", "current_season", "", "", (0), "current_season")[0]['season_id'];
-	if (0) deb("globals.php: season_id = ", $season_id);
-}
-// global $season;
-$season = sqlSelect("*", "seasons", "id = {$season_id}", "")[0];
-if (0) deb("globals.php: season = ", $season);
-
-// Assign this season's attributes to constants.
-// global $season_name;
-$season_name = $season['name'];
-if (0) deb("globals.php: season_name = {$season_name}");
-
-if (0) deb("globals.php: season start_date = ", $season['start_date']);
-if (0) deb("globals.php: year of season = ", date('Y', $season['start_date']));
-
-define('SEASON_ID', $season_id);
-if (0) deb("globals.php: SEASON_ID = " . SEASON_ID);
-
-define('SEASON_TYPE', $season['season_type']);
-if (0) deb("globals.php: SEASON_TYPE = " . SEASON_TYPE);
-
-define('SEASON_START_YEAR', DateTime::createFromFormat("Y-m-d", $season['start_date'])->format("Y"));
-if (0) deb("globals.php: SEASON_START_YEAR = " . SEASON_START_YEAR);
-
-define('SEASON_END_YEAR', DateTime::createFromFormat("Y-m-d", $season['end_date'])->format("Y"));
-if (0) deb("globals.php: SEASON_END_YEAR = " . SEASON_END_YEAR);
-
-// Assign this season's job ids to constants
-$season_job_ids = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = {$season['id']}", "", (0));
-if (0) deb("globals.php: season_job_ids = " . $season_job_ids);
-foreach ($season_job_ids as $i=>$season_job_id) {
-	define($season_job_id['constant_name'], $season_job_id['id']);
-}
-	if (0) deb("globals.php: WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
-	if (0) deb("globals.php: WEEKDAY_ASST_COOK = ", WEEKDAY_ASST_COOK);
-	if (0) deb("globals.php: WEEKDAY_CLEANER = ", WEEKDAY_CLEANER);
 
 
 // Set path to assignments file.

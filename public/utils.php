@@ -2,6 +2,8 @@
 require_once 'constants.inc';
 require_once 'git_ignored.php';
 
+
+
 function meal_date_sort($a, $b) {
     return strtotime($a['meal_date']) - strtotime($b['meal_date']);
 }

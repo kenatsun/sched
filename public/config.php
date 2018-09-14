@@ -6,6 +6,7 @@ if (!strlen($relative_dir)) {
 
 require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/constants.inc";
+// require_once "{$relative_dir}/globals.php";
 require_once('git_ignored.php');
 date_default_timezone_get('America/Detroit');
 
@@ -30,6 +31,11 @@ create_sqlite_connection();
 // define('WEEKDAY_CLEANER', 6); 
 // define('WEEKDAY_TABLE_SETTER', 4184);
 set_season_constants();
+
+
+// Set path to assignments file.
+global $json_assignments_file;
+$json_assignments_file = 'results/' . SEASON_ID . '.json';
 
 
 /* ----------- meals on holidays? -------------- */

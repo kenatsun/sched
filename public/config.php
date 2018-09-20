@@ -103,39 +103,6 @@ $weekday_jobs = array(
 	// WEEKDAY_TABLE_SETTER => 'Weekday Table Setter',
 );
 
-// Assign this season's job ids to constants
-// NOTE:  Not working, I think because a constant name can't be a variable
-// $season_job_ids = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = {$season['id']}", "", (0));
-// if (0) deb("config.php: season_job_ids = " . $season_job_ids);
-// foreach ($season_job_ids as $i=>$season_job_id) {
-	// define("'{$season_job_id['constant_name']}'", "'{$season_job_id['id']}'");
-// }
-
-// Assign this season's job ids to constants
-// NOTE:  Not working, I think because a constant name can't be a variable
-function assign_job_ids_to_season_job_constants ($this_season) {
-	$job_table = SURVEY_JOB_TABLE;
-	// $select = "*";
-	// $from = "{$job_table} as j, "
-	$season_job_ids = sqlSelect("*", "{$job_table}", "season_id = {$season['id']}", "id", (0));
-	if (0) deb("config.php: season_job_ids = " . $season_job_ids);
-	foreach ($season_job_ids as $i=>$season_job_id) {
-		if (0) deb("config.php: season_job_id['constant_name'] = ", $season_job_id['constant_name']);
-		if (0) deb("config.php: season_job_id['description'] = ", $season_job_id['description']);
-		if ($season_job_id['constant_name'] = 'WEEKDAY_HEAD_COOK') {
-			define('WEEKDAY_HEAD_COOK', $season_job_id['id']);
-			if (0) deb("config.php: WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
-		}
-		if ($season_job_id['constant_name'] = 'WEEKDAY_ASST_COOK') {
-			define('WEEKDAY_ASST_COOK', $season_job_id['id']);
-			if (0) deb("config.php: WEEKDAY_ASST_COOK = ", WEEKDAY_ASST_COOK);
-		}
-		if ($season_job_id['constant_name'] = 'WEEKDAY_CLEANER') {
-			define('WEEKDAY_CLEANER', $season_job_id['id']);
-			if (0) deb("config.php: WEEKDAY_CLEANER = ", WEEKDAY_CLEANER); 
-		}
-	}
-}
 
 /*
  * Get how many dinners are contained within the requested job.

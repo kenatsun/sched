@@ -36,7 +36,7 @@ EOHTML;
 global $extended;
 if (0) deb("index: userIsAdmin() = " . userIsAdmin());
 $now = time();
-if ($now <= DEADLINE || $extended  || userIsAdmin()) {
+if ($now <= DEADLINE || $extended || userIsAdmin()) {
 	// If a person has been specified in the request, do their survey
 	// else display the list of all respondents as links
 	$respondent_id = array_get($_GET, 'person');
@@ -51,7 +51,9 @@ if ($now <= DEADLINE || $extended  || userIsAdmin()) {
 		display_person_menu();
 		display_footer();
 		$community = COMMUNITY;
-		display_report_link("Take a look at {$community}'s responses so far");	
+		display_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
+		display_report_link("Click here for details of the responses");	
+		
 	} else {
 		build_survey($respondent_id);
 		// build_survey($survey, $respondent_id);
@@ -62,7 +64,6 @@ else {
 	display_headline();
 	display_countdown();
 	display_report_link("View the schedule");		
-	// display_dashboard_link("Administrator Dashboard");	
 }
 if (userIsAdmin()) display_dashboard_link("Administrator Dashboard");	
 print <<<EOHTML
@@ -126,10 +127,20 @@ EOHTML;
 }
 
 function display_footer() {
+	print $html;
 	$html = <<<EOHTML
 	<div>
 	<p>If you have any questions, concerns, or problems with this questionnaire, please send us a note at <a href="mailto:moremeals@sunward.org?Subject=Help with the Willing Workers Questionnaire" target="_top">moremeals@sunward.org</a>.</p> 
 	<p>We <em>do</em> make house calls!  Just ask.</p> 
+	</div>
+EOHTML;
+}
+
+function display_job_signups($headline, $display_details) {
+	$signups = renderJobSignups($headline, $display_details);
+	$html = <<<EOHTML
+	<div>
+	{$signups}
 	</div>
 EOHTML;
 	print $html;
@@ -138,7 +149,7 @@ EOHTML;
 function display_report_link($text) {
 	$dir = BASE_DIR;
 	echo <<<EOHTML
-<p class="summary_report"><strong><a href="{$dir}/report.php">{$text}</a></strong></p>
+<p class="summary_report"><a href="{$dir}/report.php">{$text}</a></p>
 EOHTML;
 }
 

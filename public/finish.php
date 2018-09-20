@@ -47,6 +47,7 @@ EOHTML;
 	print $out;
 	if (0) deb("finish.displayResultsPage(): worker = ", $worker);
 	if (0) deb("finish.displayResultsPage(): summary = ", $summary);
+	if (0) deb("finish.php: SKIP_EMAIL = ", SKIP_EMAIL);
 	sendEmail($person_id, $summary_text, $insufficient_prefs_msg);
 }
 
@@ -164,15 +165,15 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	$instance = INSTANCE;
 	$database = DATABASE;
 	$instance_label = (INSTANCE ? "\nThis is from the {$instance} instance.  Database = {$database}\n" : "");
-	if (0) deb("survey.sendEmail(): person:", $person);
-	if (0) deb("survey.sendEmail(): person_email:", $person_email);
-	if (0) deb("survey.sendEmail(): content:", $content . "<p>END</p>");
+	if (0) deb("finish.sendEmail(): person:", $person);
+	if (0) deb("finish.sendEmail(): person_email:", $person_email);
+	if (0) deb("finish.sendEmail(): content:", $content . "<p>END</p>");
 	$tagless_content = strip_tags($content);
 	$empty_lineless_content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $tagless_content);
 	$trimmed_content = trim($empty_lineless_content, " ");
-	if (0) deb("survey.sendEmail(): tagless content: {$tagless_content}", "<p>END</p>");
-	if (0) deb("survey.sendEmail(): empty_lineless_content: {$empty_lineless_content}", "<p>END</p>");
-	if (0) deb("survey.sendEmail(): trimmed_content: {$trimmed_content}", "<p>END</p>");
+	if (0) deb("finish.sendEmail(): tagless content: {$tagless_content}", "<p>END</p>");
+	if (0) deb("finish.sendEmail(): empty_lineless_content: {$empty_lineless_content}", "<p>END</p>");
+	if (0) deb("finish.sendEmail(): trimmed_content: {$trimmed_content}", "<p>END</p>");
 	$email_body = "Dear {$person_name} ~\n\n" .
 		"Thanks for completing the {$community} meals scheduling questionnaire!\n\n";
 	if (!$content == "") {
@@ -185,6 +186,7 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	$email_body .= "\nYou may revise your responses to this questionnaire at any time until $deadline, when the survey closes, by going to {$url}.\n\n" .
 	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)
 	{$instance_label}";
+	if (0) deb("finish.sendEmail: SKIP_EMAIL = ", SKIP_EMAIL);
 	if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
 		$sent = mail($person_email,
 			'Meal Scheduling Survey preferences saved at ' . $timestamp,

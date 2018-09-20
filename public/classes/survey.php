@@ -518,8 +518,6 @@ EOSQL;
 			if (!isset($_POST[$r])) {
 				continue;
 			}
-
-			// #!# $this->requests[$r] = sqlite_escape_string($_POST[$r]);
 			$this->requests[$r] = $_POST[$r];
 			unset($_POST[$r]);
 		}
@@ -562,7 +560,7 @@ EOSQL;
 
 	/**
 	 * Used by the save process to figure out if the user has selected enough
-	 * shifts to fulfill their assignment.
+	 * shifts to fulfill their assignment. 
 	 */
 	protected function confirmWorkLoad() {
 		global $all_jobs;
@@ -576,8 +574,11 @@ EOSQL;
 			// if they haven't filled out enough preferences to fulfill this
 			// shift, then warn them.
 			if ($pos_count < $num_instances) {
+				$shortage = $num_instances - $pos_count;
+				$day_text = ($shortage == 1 ? "a day" : "days");
 				$insufficient_prefs[] = 
-					"({$pos_count} avail / <b>{$num_instances} needed</b>) for {$all_jobs[$job_id]}\n";
+					// "({$pos_count} avail / <b>{$num_instances} needed</b>) for {$all_jobs[$job_id]}\n";
+					"<strong>{$all_jobs[$job_id]}:</strong>  You signed up for {$num_instances} jobs, but only said 'ok' or 'prefer' for {$pos_count}.  Could you find  {$day_text} to do {$shortage} more?\n";
 			}
 		}
 
@@ -587,20 +588,21 @@ EOSQL;
 			$out = <<<EOHTML
 			<div class="warning">
 				<h2>Warning:</h2>
-				<p>You haven't marked enough preferences for the jobs assigned. Your
-				choices will be saved and you can come back add more later. However, without
+				<p>You haven't marked enough meals as "ok" or "prefer" 
+				to give you the number of jobs you signed up to do. </p>
+				<p>Your preferences have been saved.  You can come back and add more later. However, without
 				enough available dates, assignments will be more difficult.</p>
 			</div>
 
 			<div class="attention">
-				<h3>Jobs which need more availability:</h3>
+				<h3>Jobs which need more "ok" or "prefer" ratings:</h3>
 				<p>{$missing}</p>
 				<p>Perhaps you can trade a shift, or <a
 					href="{$dir}/index2.php?worker={$this->username}">
 						add more availability</a>.</p>
 			</div>
 EOHTML;
-			$this->insufficient_prefs_msg = $out;
+			$this->insufficient_prefs_msg = $out; 
 			echo $out;
 		}
 	}

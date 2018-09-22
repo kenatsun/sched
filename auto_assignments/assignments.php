@@ -12,18 +12,20 @@ require_once 'public/utils.php';
  */
 $start = microtime(TRUE);
 
-$options = getopt('cijdsxwqu');
+$options = getopt('cijdsxwquD');
 if (empty($options)) {
 	echo <<<EOTXT
 Usage:
-	-c	output as CSV
-	-i	output as SQL insert statements
-	-j	output to json format
-	-s	display schedule
-	-u	only unfulfilled workers
-	-w	display workers
-	-x	run many combinations looking for a full allocation
+	-c  output as CSV
+	-i  output as SQL insert statements
+	-j  output to json format
+	-s  display schedule
+	-u  only unfulfilled workers
+	-w  display workers
+	-x  run many combinations looking for a full allocation
 	-q  quiet mode: don't display the results (used for debugging)
+	-d  insert assignments into database
+	-D  insert assignments into database, after deleting previous ones for this season
 
 EOTXT;
 	exit;
@@ -73,9 +75,13 @@ if (!empty($options)) {
 }
 
 // write assignments in ASSIGNMENTS database table
-// if (array_key_exists('d', $options)) {
+if (array_key_exists('d', $options) || array_key_exists('D', $options)) { 
+	if (array_key_exists('D', $options)) {
+		$season_id = SEASON_ID; 
+		sqlDelete(ASSIGNMENTS_TABLE, "season_id = {$season_id}", (0));
+	}
 	$assignments->outputToDatabase();
-// }
+}
 
 $end = microtime(TRUE);
 echo "elapsed time: " . ($end - $start) . "\n";

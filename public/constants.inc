@@ -37,7 +37,7 @@ define('SEASON_TABLE', 'seasons');
 define('SEASON_WORKER_TABLE', 'season_workers'); 
 
 // this is altered
-define('AUTH_USER_TABLE', 'workers'); 
+define('AUTH_USER_TABLE', 'workers');  
 
 // tables for meals scheduling (read & write)
 define('SCHEDULE_COMMENTS_TABLE', 'work_prefs'); 

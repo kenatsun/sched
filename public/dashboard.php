@@ -99,7 +99,7 @@ function renderRevisionForm() {
 			$where = "a.worker_id = w.id
 				and a.shift_id = {$shift_id}";
 			$order_by = "worker_name";
-			$workers = sqlSelect($select, $from, $where, $order_by);
+			$workers = sqlSelect($select, $from, $where, $order_by, (0));
 			if (0) deb("dashboard.php.renderRevisionForm(): workers = ", $workers);
 			
 			// Make the embedded table listing the workers & controls for this shift cell

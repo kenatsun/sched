@@ -162,26 +162,26 @@ function get_job_instances() {
  *
  * @return array list of names.
  */
-// function get_hobarters() {
-	// return [
-		// 'bill',
-		// 'debbi',
-		// 'erik',
-		// 'hope',
-		// 'jillian',
-		// 'kate',
-		// 'kathyboblitt',
-		// 'kevink',
-		// 'mac',
-		// 'maryking',
-		// 'patti',
-		// 'rod',
-		// 'sharon',
-		// 'ted',
-		// 'willie',
-		// 'yimiau',
-	// ];
-// }
+function get_hobarters() {
+	return [
+		'bill',
+		'debbi',
+		'erik',
+		'hope',
+		'jillian',
+		'kate',
+		'kathyboblitt',
+		'kevink',
+		'mac',
+		'maryking',
+		'patti',
+		'rod',
+		'sharon',
+		'ted',
+		'willie',
+		'yimiau',
+	];
+}
 
 function set_season_constants() {
 

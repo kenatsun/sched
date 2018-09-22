@@ -638,7 +638,7 @@ EOSQL;
 	}
 	if ($debs) deb("utils.sqlDelete: sql:", $sql);
 	$rows_affected = $dbh->exec($sql);
-	if ($debs) deb("utils.sqlDelete: rows_affected:", $rows_affected);
+	if ($debs) deb("utils.sqlDelete: rows_affected: {$rows_affected}");
 	return $rows_affected;
 }
 ?>

@@ -611,23 +611,31 @@ EOHTML;
 	 * Load which dates the workers have marked as being available.
 	 */
 	function getWorkerDates() {
-		// grab all the preferences for every date
+		// grab all the preferences for every date in this season
+		$season_id = SEASON_ID;
 		$prefs_table = SCHEDULE_PREFS_TABLE;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
+		$offers_table = ASSIGN_TABLE;
+		$jobs_table = SURVEY_JOB_TABLE; 
 		$sql = <<<EOSQL
 			SELECT s.string, s.job_id, a.username, p.pref
 				FROM {$auth_user_table} as a, {$prefs_table} as p,
 					{$shifts_table} as s
+					, {$offers_table} as o
 				WHERE p.pref>0
-					AND a.id=p.worker_id
+					AND a.id = p.worker_id
+					AND a.id = o.worker_id
+					AND s.job_id = o.job_id
 					AND s.id = p.date_id
+					AND o.season_id = {$season_id}
+					AND o.instances > 0
 				ORDER BY s.string ASC,
 					p.pref DESC,
 					a.username ASC;
 EOSQL;
 		
-		if (0) deb("calendar.php.getWorkerDates(): sql = ", $sql);
+		if (0) deb("calendar.getWorkerDates(): sql = ", $sql);
 		$data = array();
 		global $dbh;
 		foreach($dbh->query($sql) as $row) {
@@ -645,7 +653,7 @@ EOSQL;
 			$dates[$d['string']][$d['job_id']][$d['pref']][] = $d['username'];
 		}
 
-		if (0) deb("Calendar: dates array =", $dates);
+		if (0) deb("Calendar.getWorkerDates(): dates array =", $dates);
 		return $dates;
 	}
 

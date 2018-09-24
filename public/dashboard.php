@@ -105,32 +105,34 @@ function renderRevisionForm() {
 			// Make the embedded table listing the workers & controls for this shift cell
 			$shift_cell = '<td><table>';
 			foreach($workers as $w_index=>$worker) {
-				$shift_cell .= '<tr><td style="background:White">' . "{$worker['worker_name']} ";
+				$shift_cell .= '<tr><td style="background:White">' . "<strong>{$worker['worker_name']}</strong>";
 				// Figure out which shifts this worker could be added to
 				$possible_shifts = getPossibleShiftsForWorker($worker['worker_id'], $job['job_id'], TRUE);
 				if (0) deb("dashboard.php.renderRevisionForm(): worker = {$worker['worker_name']} {$worker['worker_id']}, possible_shifts = ", $possible_shifts); 
 				// Display the possible shifts in a dropdown box
 				if ($possible_shifts) {
-					$shift_cell .= '<select class="preference_selection"  name = "' . $worker['worker_id'] . '_shifts">';
-					$shift_cell .= '<option value="">' . "move to</option>";
+					$shift_cell .= '<p>move to <select class="preference_selection" style="font-size: 9pt" name = "' . $worker['worker_id'] . '_shifts">';
+					$shift_cell .= '<option value=""></option>';
 					foreach($possible_shifts as $s_index=>$possible_shift) {
-						$shift_cell .= '<option value="' . "{$possible_shift['shift_id']}" . '">' . "{$possible_shift['shift_date']}</option>";
+						$shift_cell .= '<option style="font-size: 9pt" value="' . "{$possible_shift['shift_id']}" . '">' . "{$possible_shift['shift_date']}</option>";
 					}
-					$shift_cell .= "</select>";
-					$possible_swaps = getPossibleSwapsForWorkerOnShift($worker['worker_id'], $shift_id, $job['job_id']);
-					if (0) deb("dashboard.php.renderRevisionForm(): worker = {$worker['worker_name']} {$worker['worker_id']}, possible_swaps = ", $possible_swaps); 
-					// Display the possible shifts in a dropdown box
-					if ($possible_swaps) {
-						$shift_cell .= '<select class="preference_selection" name = "' . $worker['worker_id'] . '_swaps">';
-						$shift_cell .= '<option value="' . "" . '">' . "swap with</option>";
-						foreach($possible_swaps as $t_index=>$possible_swap) {
-							$shift_cell .= '<option value="' . "{$possible_swap['assignment_id']}" . '">';
-							$shift_cell .= "{$possible_swap['worker_name']} from {$possible_swap['shift_date']}</option>";
+					$shift_cell .= "</select></p>";
+					$possible_trades = getPossibleTradesForWorkerOnShift($worker['worker_id'], $shift_id, $job['job_id']);
+					if (0) deb("dashboard.php.renderRevisionForm(): worker = {$worker['worker_name']} {$worker['worker_id']}, possible_trades = ", $possible_trades); 
+					// Display the possible trades in a dropdown box
+					if ($possible_trades) {
+						$shift_cell .= '<p>trade to <select class="preference_selection" style="font-size: 9pt" name = "' . $worker['worker_id'] . '_trades">';
+						$shift_cell .= '<option value="' . "" . '">' . "</option>";
+						foreach($possible_trades as $t_index=>$possible_trade) {
+							$shift_cell .= '<option value="' . "{$possible_trade['assignment_id']}" . '">';
+							$shift_cell .= "{$possible_trade['shift_date']} for {$possible_trade['worker_name']}</option>";
 						}
-						$shift_cell .= "</select>";
+						$shift_cell .= "</select></p>";
 					}
 					$shift_cell .= "</td></tr>";
+					// $shift_cell .= "<hr></td></tr>";
 				}
+				// $shift_cell .= '<hr>';
 			}
 			
 			// Figure out which workers could be added to this shift
@@ -138,10 +140,10 @@ function renderRevisionForm() {
 			if (0) deb("dashboard.php.renderRevisionForm(): meal_date = {$meal['meal_date']}, available_workers = ", $available_workers); 
 			// Display the available workers in a dropdown box
 			if ($available_workers) {
-				$shift_cell .= '<tr><td style="background:White"><select class="preference_selection" name = "' . $shift_id . '">';
-				$shift_cell .= '<option value="' . "" . '">' . "available</option>";
+				$shift_cell .= '<tr><td style="background:White"><hr>add ' . $job['description'] . ' <select class="preference_selection" style="font-size: 9pt" name = "' . $shift_id . '">';
+				$shift_cell .= '<option value="' . "" . '">' . "</option>";
 				foreach($available_workers as $w_index=>$available_worker) {
-					$shift_cell .= '<option value="' . "{$available_worker['worker_id']}" . '">' . "{$available_worker['worker_name']}</option>";
+					$shift_cell .= '<option value="' . $available_worker['worker_id'] . '">' . "{$available_worker['worker_name']}</option>";
 				}
 				$shift_cell .= "</select></td></tr>";
 			}
@@ -235,7 +237,7 @@ function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 	return $possible_shifts;
 }
 
-function getPossibleSwapsForWorkerOnShift($worker_id, $shift_id, $job_id) {
+function getPossibleTradesForWorkerOnShift($worker_id, $shift_id, $job_id) {
 	$season_id = SEASON_ID;
 	$assignments_table = ASSIGNMENTS_TABLE;
 	$workers_table = AUTH_USER_TABLE;
@@ -255,12 +257,11 @@ function getPossibleSwapsForWorkerOnShift($worker_id, $shift_id, $job_id) {
 	$where = "this_worker_id = {$worker_id}
 		and this_worker_current_shift_id = {$shift_id}
 		and job_id = {$job_id}";
-
 	$order_by = "date(shift_date) asc";
-	$possible_swaps = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleSwapsForWorkerOnShift()");
-	if (0) deb("dashboard.php:getPossibleSwapsForWorkerOnShift() possible_shifts = ", $possible_swaps);
+	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForWorkerOnShift()");
+	if (0) deb("dashboard.php:getPossibleTradesForWorkerOnShift() possible_shifts = ", $possible_trades);
 	
-	return $possible_swaps; 
+	return $possible_trades; 
 }
 
 ?>

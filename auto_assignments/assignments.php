@@ -82,9 +82,9 @@ if (array_key_exists('d', $options) || array_key_exists('D', $options)) {
 		sqlDelete(ASSIGNMENTS_TABLE, "season_id = {$season_id}", (0));
 		sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0));
 	}
-	sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, {$scheduler_timestamp}", (0));
-	$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = {$scheduler_timestamp}", (0))[0]['id'];
-	debt("assignments: scheduler_run_id = $scheduler_run_id");
+	sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));
+	$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = '{$scheduler_timestamp}'", (0))[0]['id'];
+	if (0) debt("assignments: scheduler_run_id = ", $scheduler_run_id);
 	$assignments->outputToDatabase(); 
 }
 

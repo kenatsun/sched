@@ -47,5 +47,6 @@ define('SCHEDULE_SHIFTS_TABLE', 'shifts');
 
 // table capturing output of the Scheduler (assignments.php)
 define('ASSIGNMENTS_TABLE', 'assignments'); 
+define('SCHEDULER_RUNS_TABLE', 'scheduler_runs');
 
 ?>

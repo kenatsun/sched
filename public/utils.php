@@ -604,9 +604,9 @@ function sqlInsert($table, $columns, $values, $debs=0) {
 		INSERT INTO {$table} ({$columns})
 		VALUES ({$values}) 
 EOSQL;
-	if ($debs) deb("utils.sqlInsert: sql:", $sql);
+	if ($debs) debt("utils.sqlInsert: sql:", $sql);
 	$rows_affected = $dbh->exec($sql);
-	if ($debs) deb("utils.sqlInsert: rows_affected:", $rows_affected);
+	if ($debs) debt("utils.sqlInsert: rows_affected:", $rows_affected);
 	return $rows_affected;
 }
 
@@ -619,9 +619,9 @@ function sqlReplace($table, $columns, $values, $debs=0) {
 		REPLACE INTO {$table} ({$columns})
 		VALUES ({$values}) 
 EOSQL;
-	if ($debs) deb("utils.sqlReplace: sql:", $sql);
+	if ($debs) debt("utils.sqlReplace: sql:", $sql);
 	$rows_affected = $dbh->exec($sql);
-	if ($debs) deb("utils.sqlReplace: rows_affected:", $rows_affected);
+	if ($debs) debt("utils.sqlReplace: rows_affected:", $rows_affected);
 	return $rows_affected;
 }
 

@@ -77,8 +77,8 @@ if (!empty($options)) {
 
 // write assignments in ASSIGNMENTS database table
 if (array_key_exists('d', $options) || array_key_exists('D', $options)) { 
+	$season_id = SEASON_ID; 
 	if (array_key_exists('D', $options)) {
-		$season_id = SEASON_ID; 
 		sqlDelete(ASSIGNMENTS_TABLE, "season_id = {$season_id}", (0));
 		sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0));
 	}

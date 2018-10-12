@@ -30,13 +30,22 @@ function create_sqlite_connection() {
 	}
 }
 
+function formatted_date($date, $format) {
+	$date_ob = date_create($date);
+	return date_format($date_ob, $format);
+}
 
 function meal_date_sort($a, $b) {
-    return strtotime($a['meal_date']) - strtotime($b['meal_date']);
+	if (0) deb("utils.meal_date_sort: arg a = ", $a);
+	if (0) deb("utils.meal_date_sort: arg b = ", $b);
+    $diff = strtotime($a['meal_date']) - strtotime($b['meal_date']); 
+	// if (!$diff) $diff = 1;
+	if (0) deb("utils.meal_date_sort: diff = ", $diff);
+	return $diff;
 }
 
 function surveyIsClosed() {
-	$is_closed = (DEADLINE < time() ? TRUE : FALSE);
+	$is_closed = (DEADLINE < time() ? TRUE : FALSE); 
 	$deadline = DEADLINE;
 	$time = time();
 	if (0) deb("utils:surveyIsClosed(): is_closed = $is_closed, DEADLINE = $deadline, time() = $time");
@@ -559,6 +568,7 @@ EOHTML;
 	return $out;
 }
 
+// SQL FUNCTIONS
 
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where, $order_by, $debs=0, $tag="") {
@@ -593,40 +603,60 @@ EOSQL;
 			$rows[] = $row;
 		}
 	}
-	if ($debs) deb("utils.sqlSelect(){$tag}: rows:", $rows);
+	if ($debs) deb("utils.sqlSelect() {$tag}: rows:", $rows);
 	return $rows;
 }
 
+// Generic SQL UPDATE
+function sqlUpdate($table, $set, $where, $debs=0, $tag="", $do_it=TRUE) {
+	global $dbh;
+	if ($debs && $tag) $tag = " [$tag]";
+	$sql = <<<EOSQL
+		UPDATE {$table} 
+		SET {$set}
+EOSQL;
+	if ($where) {
+		$sql .= <<<EOSQL
+		
+		WHERE {$where}
+EOSQL;
+	}
+	if ($debs) deb("utils.sqlUpdate(){$tag}: sql:", $sql); 
+	if ($do_it) $rows_affected = $dbh->exec($sql);
+	if ($debs) deb("utils.sqlInsert() {$tag}: rows_affected:", $rows_affected);
+	return $rows_affected;
+}
+
 // Generic SQL INSERT
-function sqlInsert($table, $columns, $values, $debs=0) {
+function sqlInsert($table, $columns, $values, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	$sql = <<<EOSQL
 		INSERT INTO {$table} ({$columns})
 		VALUES ({$values}) 
 EOSQL;
-	if ($debs) debt("utils.sqlInsert: sql:", $sql);
-	$rows_affected = $dbh->exec($sql);
-	if ($debs) debt("utils.sqlInsert: rows_affected:", $rows_affected);
+	if ($debs) deb("utils.sqlInsert() {$tag}: sql:", $sql);
+	if ($do_it) $rows_affected = $dbh->exec($sql);
+	if ($debs) deb("utils.sqlInsert() {$tag}: rows_affected:", $rows_affected);
 	return $rows_affected;
 }
 
 // Generic SQL REPLACE
 // REPLACE INTO apparently works with SQLite and MySQL but not PostgreSQL, 
 // so would have to rewrite this function for PostgreSQL
-function sqlReplace($table, $columns, $values, $debs=0) {
+function sqlReplace($table, $columns, $values, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	$sql = <<<EOSQL
 		REPLACE INTO {$table} ({$columns})
 		VALUES ({$values}) 
 EOSQL;
-	if ($debs) debt("utils.sqlReplace: sql:", $sql);
-	$rows_affected = $dbh->exec($sql);
-	if ($debs) debt("utils.sqlReplace: rows_affected:", $rows_affected);
+	if ($debs) deb("utils.sqlReplace: sql:", $sql);
+	if ($do_it) $rows_affected = $dbh->exec($sql);
+	if ($debs) deb("utils.sqlReplace {$tag}: rows_affected = {$rows_affected}");
 	return $rows_affected;
 }
 
 // Generic SQL DELETE
-function sqlDelete($from, $where, $debs=0) {
+function sqlDelete($from, $where, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	$sql = <<<EOSQL
 		DELETE FROM {$from} 
@@ -637,8 +667,8 @@ EOSQL;
 EOSQL;
 	}
 	if ($debs) deb("utils.sqlDelete: sql:", $sql);
-	$rows_affected = $dbh->exec($sql);
-	if ($debs) deb("utils.sqlDelete: rows_affected: {$rows_affected}");
+	if ($do_it) $rows_affected = $dbh->exec($sql);
+	if ($debs) deb("utils.sqlDelete {$tag}: rows_affected = {$rows_affected}");
 	return $rows_affected;
 }
 ?>

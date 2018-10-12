@@ -34,7 +34,7 @@ define('SKIP_DATES_TABLE', 'skip_dates');
 define('SURVEY_JOB_TABLE', 'jobs'); 
 define('ASSIGN_TABLE', 'offers'); 
 define('SEASON_TABLE', 'seasons'); 
-define('SEASON_WORKER_TABLE', 'season_workers'); 
+define('SEASON_WORKER_TABLE', 'season_workers');  
 
 // this is altered
 define('AUTH_USER_TABLE', 'workers');  
@@ -48,5 +48,7 @@ define('SCHEDULE_SHIFTS_TABLE', 'shifts');
 // table capturing output of the Scheduler (assignments.php)
 define('ASSIGNMENTS_TABLE', 'assignments'); 
 define('SCHEDULER_RUNS_TABLE', 'scheduler_runs');
+define('CHANGE_SETS_TABLE', 'change_sets');
+define('CHANGES_TABLE', 'changes');
 
 ?>

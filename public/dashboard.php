@@ -72,6 +72,8 @@ function renderAssignmentsForm() {
 	$shifts_table = SCHEDULE_SHIFTS_TABLE;
 	$workers_table = AUTH_USER_TABLE;
 	$assignments_table = ASSIGNMENTS_TABLE;
+	$changes_table = CHANGES_TABLE;
+	$change_sets_table = CHANGE_SETS_TABLE;
 	$season_id = SEASON_ID;
 	
 	$assignments_form_headline = "<h2>Assignments</h2>";
@@ -86,7 +88,7 @@ function renderAssignmentsForm() {
 	
 	// Get id of the most recent scheduler run
 	$scheduler_run_id = scheduler_run()['id'];
-	$scheduler_run_date = formatted_date(scheduler_run()['run_timestamp'], "M j g:i a");
+	// $scheduler_run_date = formatted_date(scheduler_run()['run_timestamp'], "M j g:i a");
 	
 	// Get data for Meals table
 	$select = " DISTINCT s.string as meal_date";
@@ -151,8 +153,14 @@ EOHTML;
 			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = {$shift_id}");
 
 			// Find the worker(s) doing this shift (i.e. this job for this meal)
-			$select = "w.username as worker_name, w.id as worker_id, a.id as assignment_id, a.added_by_change_id as added, a.removed_by_change_id as removed";
-			$from = "{$workers_table} as w, {$assignments_table} as a";
+			$select = "w.username as worker_name, 
+				w.id as worker_id, 
+				a.id as assignment_id, 
+				a.added_by_change_id as added_by_change_id, 
+				a.removed_by_change_id as removed_by_change_id,
+				a.generated"; 
+			$from = "{$workers_table} as w, 
+				{$assignments_table} as a";  
 			$where = "a.worker_id = w.id
 				and a.shift_id = {$shift_id}
 				and a.scheduler_run_id = {$scheduler_run_id}";
@@ -163,20 +171,40 @@ EOHTML;
 			// Make the embedded table listing the workers & controls for this shift cell
 			$shift_cell = '<td><table>';
 			foreach($assignments as $w_index=>$assignment) {
-				$shift_cell .= '<tr><td style="background:White"><strong>' . $assignment['worker_name'] . '</strong>';
-				if ($assignment['added']) {
-					$change_set_id = sqlSelect("change_set_id", CHANGES_TABLE, "id = {$assignment['added']}", "", (0))[0]['change_set_id'];
-					$shift_cell .= ' added on ' . $scheduler_run_date;
-					// $shift_cell .= ' added #' . $change_set_id;
+				if ($assignment['removed_by_change_id']) {
+					$assignment_color = "Pink";
 				}
-				if ($assignment['removed']) {
-					$change_set_id = sqlSelect("change_set_id", CHANGES_TABLE, "id = {$assignment['removed']}", "", (0))[0]['change_set_id'];
-					$shift_cell .= ' removed on ' . $scheduler_run_date;
-					// $shift_cell .= ' removed #' . $change_set_id;
+				else if ($assignment['added_by_change_id']) {
+					$assignment_color = "LightGreen";
+				}
+				else {
+					$assignment_color = "White";
+				}
+				if ($assignment['added_by_change_id'] && !$assignment['generated']) {
+				// Display change marker if non-generated assignment is added as of now
+					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>';
+					$select = "when_saved";
+					$from = CHANGES_TABLE . " as c, " . CHANGE_SETS_TABLE . " as s";
+					$where = "c.id = {$assignment['added_by_change_id']}
+						and s.id = c.change_set_id";
+					$when_saved = sqlSelect($select, $from, $where, "", (0))[0]['when_saved'];
+					$shift_cell .= ' - added ' . formatted_date($when_saved, "M j g:ia") . ' (#' . $assignment['added_by_change_id'] . ')'; 
+				} elseif ($assignment['removed_by_change_id'] && $assignment['generated']) {
+				// Display change marker if generated assignment is removed as of now
+					$assignment_color = "Pink";
+					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>';
+					$select = "when_saved";
+					$from = CHANGES_TABLE . " as c, " . CHANGE_SETS_TABLE . " as s";
+					$where = "c.id = {$assignment['removed_by_change_id']}
+						and s.id = c.change_set_id";
+					$when_saved = sqlSelect($select, $from, $where, "", (0))[0]['when_saved'];
+					$shift_cell .= ' - removed ' . formatted_date($when_saved, "M j g:ia") . ' (#' . $assignment['removed_by_change_id'] . ')';
+				} else {
+					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>';
 				}
 				
 				// Display controls that would remove worker from shift, unless worker has been removed already
-				if (!$assignment['removed']) {	
+				if (!$assignment['removed_by_change_id']) {	
 					$shift_cell .= '<table>';
 					$shift_cell .= '<tr><td style="text-align: right;">remove</td><td><input type="checkbox" name="remove[]" value="' . $assignment['assignment_id'] . '"></td></tr>';
 
@@ -223,7 +251,8 @@ EOHTML;
 				$shift_cell .= '<tr><td style="background:White"><hr>add ' . $job['description'] . ' <select class="preference_selection" style="font-size: 9pt" name = "add[]">';
 				$shift_cell .= '<option value="' . "" . '">' . "</option>";
 				foreach($available_workers as $w_index=>$available_worker) {
-					$shift_cell .= '<option value="' . $available_worker['worker_id'] . '_to_' . $shift_id . '">' . "{$available_worker['worker_name']}</option>";
+					$color = $available_worker['open_offers_count'] > 0 ? "LightGreen" : "LightGray";
+					$shift_cell .= '<option style="background-color:' . $color . ';" value="' . $available_worker['worker_id'] . '_to_' . $shift_id . '">' . "{$available_worker['worker_name']}  ({$available_worker['open_offers_count']})</option>";
 				}
 				$shift_cell .= '</select></td></tr>';
 			}
@@ -247,7 +276,7 @@ EOHTML;
 		
 	$meals_table = <<<EOHTML
 	<table style="table-layout:auto; width:100%" style="background:Yellow">
-		<table style="table-layout:auto; width:100%" border="1" cellspacing="3"> 
+		<table style="table-layout:auto; width:100%" border="1" cellspacing="3">
 		{$meal_rows} 
 		</table>
 	</table>
@@ -267,32 +296,28 @@ EOHTML;
 // Supporting functions
 
 function getAvailableWorkersForShift($shift_id, $addable_only=FALSE, $omit_avoiders=TRUE) { 
-	if (0) deb("dashboard.getAvailableWorkersForShift: shift_id = $shift_id");
 	$season_id = SEASON_ID;
-	$assignments_table = ASSIGNMENTS_TABLE;
-	$workers_table = AUTH_USER_TABLE;
-	$shifts_table = SCHEDULE_SHIFTS_TABLE;
-	$shift_prefs_table = SCHEDULE_PREFS_TABLE;
-	$jobs_table = SURVEY_JOB_TABLE;
-	$offers_table = ASSIGN_TABLE;
-
-	$select = "worker_id, 
-			worker as worker_name,
-			job_name";
-	$from = "possible_shifts_for_workers";
-	$where = "shift_id = {$shift_id}      -- This shift.
-			and season_id = {$season_id}  -- This season.";
+	$select = "p.worker_id, 
+			p.worker as worker_name,
+			p.job_name, 
+			o.open_offers_count";
+	$from = "possible_shifts_for_workers p, open_offers_count o";
+	$where = "p.shift_id = {$shift_id}      	-- This shift.
+			and p.season_id = {$season_id}  	-- This season.
+			and o.worker_id = p.worker_id		-- The open offers of this worker
+			and o.job_id = p.job_id				-- to do this job
+			and o.season_id = {$season_id}		-- in this season.";
 	// Optionally, include only workers who have more offers than assignments to do this job.
 	if ($addable_only) $where = $where . "
 			-- Include only workers who have more offers than assignments to do this job
-			and worker_id in (						-- This worker is in
-				select worker_id 					-- the set of workers		
-				from open_offers_count
-				where open_offers_count > 0			-- who have more offers than assignments
-					and job_id = job_id				-- to do this job
-					and season_id = {$season_id}	-- in this season.
+			and p.worker_id in (						-- This worker is in
+				select oo.worker_id 					-- the set of workers		
+				from open_offers_count as oo
+				where oo.open_offers_count > 0			-- who have more offers than assignments
+					and oo.job_id = p.job_id			-- to do this job
+					and oo.season_id = {$season_id}		-- in this season.
 		)";
-	$order_by = "pref desc, worker asc";
+	$order_by = "open_offers_count desc, pref desc, worker asc";
 	$available_workers = sqlSelect($select, $from, $where, $order_by, (0), "available_workers");
 	if (0) deb("dashboard.php:getPossibleShiftsForWorker() available_workers for shift {$shift_id} (from view) = ", $available_workers);
 
@@ -301,12 +326,6 @@ function getAvailableWorkersForShift($shift_id, $addable_only=FALSE, $omit_avoid
 
 function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 	$season_id = SEASON_ID;
-	$assignments_table = ASSIGNMENTS_TABLE;
-	$workers_table = AUTH_USER_TABLE;
-	$shifts_table = SCHEDULE_SHIFTS_TABLE;
-	$shift_prefs_table = SCHEDULE_PREFS_TABLE;
-	$jobs_table = SURVEY_JOB_TABLE;
-
 	$select = "shift_id, 
 			worker,
 			shift_date,
@@ -315,8 +334,8 @@ function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 	$from = "possible_shifts_for_workers";
 	$where = "worker_id = {$worker_id}    -- This worker.
 			and season_id = {$season_id}  -- This season.
-			and job_id = {$job_id}       -- This job type.";
-	$order_by = "";
+			and job_id = {$job_id}        -- This job type.";
+	$order_by = "shift_id asc";
 	$possible_shifts = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleShiftsForWorker()");
 	if (0) deb("dashboard.php:getPossibleShiftsForWorker() possible_shifts = ", $possible_shifts);
 
@@ -324,15 +343,6 @@ function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 }
 
 function getPossibleTradesForWorkerOnShift($worker_id, $shift_id, $job_id) {
-	$season_id = SEASON_ID;
-	$assignments_table = ASSIGNMENTS_TABLE;
-	$workers_table = AUTH_USER_TABLE;
-	$shifts_table = SCHEDULE_SHIFTS_TABLE;
-	$shift_prefs_table = SCHEDULE_PREFS_TABLE;
-	$jobs_table = SURVEY_JOB_TABLE;
-	$offers_table = ASSIGN_TABLE;
-
-	// sqlSelect("id", $assignments_table, "worker_id = ")
 	$select = 
 		"that_worker_id as worker_id,
 		that_worker_current_shift_id as shift_id,
@@ -341,11 +351,10 @@ function getPossibleTradesForWorkerOnShift($worker_id, $shift_id, $job_id) {
 		that_worker_name as worker_name,
 		that_worker_current_shift_date as shift_date";
 	$from = "swaps";
-	// $where = "this_worker_current_assignment_id = {$assignment_id}";
 	$where = "this_worker_id = {$worker_id}
 		and this_worker_current_shift_id = {$shift_id}
 		and job_id = {$job_id}";
-	$order_by = "date(shift_date) asc";
+	$order_by = "shift_id asc";
 	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForWorkerOnShift()");
 	if (0) deb("dashboard.php:getPossibleTradesForWorkerOnShift() possible_shifts = ", $possible_trades);
 	

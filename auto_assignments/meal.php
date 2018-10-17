@@ -662,7 +662,7 @@ EOTXT;
 	public function insertAssignmentIntoDB() {
 		global $all_jobs;
 		global $scheduler_timestamp;
-		global $scheduler_run_id;
+		$scheduler_run_id = scheduler_run()['id'];
 		$season_id = SEASON_ID;
 		if (0) debt("meal.insertAssignmentIntoDB(): this->assigned =", $this->assigned);
 		// for each job
@@ -685,18 +685,20 @@ EOTXT;
 				$db_worker_id = sqlSelect("id", "workers", "username = '{$person}'", "")[0]['id'];	
 				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker usernamed '{$person}'.");
 			$table = ASSIGNMENTS_TABLE;
-			$columns = "shift_id, worker_id, scheduler_timestamp, season_id, scheduler_run_id";
-			$values = "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}', {$season_id}, {$scheduler_run_id}";
+			// $columns = "shift_id, worker_id, season_id, scheduler_run_id";
+			// $values = "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}', {$season_id}, {$scheduler_run_id}";
+			$columns = "shift_id, worker_id, season_id, scheduler_run_id, generated";
+			$values = "{$db_shift_id}, {$db_worker_id}, {$season_id}, {$scheduler_run_id}, 1";
 			$rows_affected = sqlReplace($table, $columns, $values, (0));
-				if (0) debt("meal.insertAssignmentIntoDB(): this->date = {$this->date}");
-				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key = $assignment_key");
-				if (0) debt("meal.insertAssignmentIntoDB(): job_id = $job_id");
-				if (0) debt("meal.insertAssignmentIntoDB(): person = $person");
-				if (0) debt("meal.insertAssignmentIntoDB(): db_job_id = $db_job_id");
-				if (0) debt("meal.insertAssignmentIntoDB(): season_id = $season_id");
-				if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id = $db_shift_id");
-				if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id = $db_worker_id");
-				if (0) debt("meal.insertAssignmentIntoDB(): rows_affected = $rows_affected");
+			if (0) debt("meal.insertAssignmentIntoDB(): this->date = {$this->date}");
+			if (0) debt("meal.insertAssignmentIntoDB(): assignment_key = $assignment_key");
+			if (0) debt("meal.insertAssignmentIntoDB(): job_id = $job_id");
+			if (0) debt("meal.insertAssignmentIntoDB(): person = $person");
+			if (0) debt("meal.insertAssignmentIntoDB(): db_job_id = $db_job_id");
+			if (0) debt("meal.insertAssignmentIntoDB(): season_id = $season_id");
+			if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id = $db_shift_id");
+			if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id = $db_worker_id");
+			if (0) debt("meal.insertAssignmentIntoDB(): rows_affected = $rows_affected");
 			}
 		}
 		if (0) debt("meal.insertAssignmentIntoDB(): rows in table =", sqlSelect("count(*)", "assignments", "", "")[0]['count(*)']);

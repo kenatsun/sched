@@ -12,93 +12,8 @@ require_once "{$relative_dir}/globals.php";
 define('OK_CHANGE_VALUE', 'ok_change');
 if (0) deb("change_sets.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
 
-// Work with assignments and changes from the latest scheduler run in the current season.
-function scheduler_run() {
-	return sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = " . SEASON_ID, "run_timestamp desc", (0))[0];
-}
 
 // Show change set from form data, get user confirmation
-function confirmChangeSet($posts) {
-	if (0) deb("change_sets_utils.confirmChangeSet(): POST = ", $posts); 
-	
-	// Insert the change set, and get its id
-	$scheduler_run_id = scheduler_run()['id'];
-	sqlInsert(CHANGE_SETS_TABLE, "scheduler_run_id", "{$scheduler_run_id}", (0));
-	$change_set_id = sqlSelect("id", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id}", "id desc", (0))[0]['id'];
-	if (0) deb("change_sets_utils.confirmChangeSet(): change_set_id = ", $change_set_id);
-	
-	// Insert remove requests into changes table
-	$removes = array();
-	if ($posts['remove']) {
-		foreach ($posts['remove'] as $i=>$remove){
-			if ($remove) 
-				$assignment_id = $remove;
-				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
-				$worker_id = $assignment['worker_id'];
-				$shift_id = $assignment['shift_id'];
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {$worker_id}, {$shift_id}", (0));
-		}
-	}
-
-	// Insert add requests into changes table
-	$adds = array();
-	if ($posts['add']) {
-		foreach ($posts['add'] as $i=>$add){
-			if ($add) {
-				$worker_id = explode("_to_",$add)[0];
-				$shift_id = explode("_to_",$add)[1];
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$worker_id}, {$shift_id}", (0));
-			}
-		}
-	}
-
-	// Insert move requests into changes table
-	$moves = array();
-	if ($posts['move']) {
-		foreach ($posts['move'] as $i=>$move){ 
-			if ($move) {
-				$assignment_id = explode("_to_",$move)[0];
-				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
-				// Move this worker to that shift
-				$worker_id = $assignment['worker_id'];
-				$from_shift_id = $assignment['shift_id'];
-				$to_shift_id = explode("_to_",$move)[1];
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {$worker_id}, {$from_shift_id}", (0));
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$worker_id}, {$to_shift_id}", (0));
-			}
-		}
-	}
-
-	// Insert trade requests into changes table 
-	$trades = array();
-	if ($posts['trade']) {
-		foreach ($posts['trade'] as $i=>$trade){ 
-			if ($trade) {
-				// Get data on this assignment
-				$this_assignment_id = explode("_with_",$trade)[0];
-				$this_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$this_assignment_id}", "", (0))[0];
-				$this_worker_id = $this_assignment['worker_id'];
-				$this_shift_id = $this_assignment['shift_id'];
-				// Get data on that assignment
-				$that_assignment_id = explode("_with_",$trade)[1];
-				$that_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$that_assignment_id}", "", (0))[0];
-				$that_worker_id = $that_assignment['worker_id'];
-				$that_shift_id = $that_assignment['shift_id']; 
-				// Move this worker to that shift
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {this_worker_id}, {$this_shift_id}", (0), "rem this from this");
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$this_worker_id}, {$that_shift_id}", (0), "add this to that");
-				// Move that worker to this shift
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {$that_worker_id}, {$that_shift_id}", (0), "rem that from that");
-				sqlInsert(CHANGES_TABLE, "add_or_remove, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$that_worker_id}, {$this_shift_id}", (0), "add that to this");
-			}
-		}
-	}
-	
-	if (0) deb("change_sets_utils.confirmChangeSet(): change_set_id = ", $change_set_id); 
-
-	return $change_set_id;
-}
-
 // Render one change set
 function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 	
@@ -112,7 +27,7 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 		and c.shift_id = s.id
 		and c.worker_id = w.id
 		and s.job_id = j.id";
-	$order_by = "add_or_remove desc";
+	$order_by = "action desc";
 	$changes = sqlSelect($select, $from, $where, $order_by, (0), "changes in this change set"); 
 
 	// Sort the meals by date (ascending)
@@ -144,7 +59,7 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 			<tr style="width:1px; white-space:nowrap;">
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $meal_date . '</td>
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['job_name'] . '</td>
-				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['add_or_remove'] . '</td>
+				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['action'] . '</td>
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['worker_name'] . '</td>';
 		if ($show_ok_checkbox) { 		
 			$change_rows .= '
@@ -160,15 +75,132 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 		{$change_rows} 
 		</table>
 EOHTML;
-	// $changes_table = <<<EOHTML
-	// <table style="table-layout:auto; width:1px;"><tr>
-		// <table style="table-layout:auto; width:1px; vertical-align:middle;" border="1" > 
-		// {$change_rows} 
-		// </table>
-	// </tr></table>
-// EOHTML;
 	return $changes_table;
 }
+
+
+function insertChangeSet($posts) {
+	if (0) deb("change_sets_utils.insertChangeSet(): POST = ", $posts); 
+	
+	// Insert the change set, and get its id
+	$scheduler_run_id = scheduler_run()['id'];
+	sqlInsert(CHANGE_SETS_TABLE, "scheduler_run_id", "{$scheduler_run_id}", (0));
+	$change_set_id = sqlSelect("id", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id}", "id desc", (0))[0]['id'];
+	if (0) deb("change_sets_utils.insertChangeSet(): change_set_id = ", $change_set_id);
+	
+	
+	// Insert remove requests into changes table
+	if ($posts['remove']) {
+		foreach ($posts['remove'] as $i=>$remove){
+			if ($remove) {
+				$assignment_id = $remove;
+				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
+				insertChange('remove', $assignment['worker_id'], $assignment['shift_id'], $change_set_id, $scheduler_run_id);		
+				// $worker_id = $assignment['worker_id'];
+				// $shift_id = $assignment['shift_id'];
+				// $columns = "action, change_set_id, worker_id, shift_id";
+				// sqlInsert(CHANGES_TABLE, $columns, "'remove', {$change_set_id}, {$worker_id}, {$shift_id}", (0));
+				// insertChange('remove', $worker_id, $shift_id, $change_set_id, $prior_removed_by_change_id, $prior_added_by_change_id);	
+			}
+		}
+	}
+
+	// Insert add requests into changes table
+	if ($posts['add']) {
+		foreach ($posts['add'] as $j=>$add){
+			if (0) deb("change_sets_utils.insertChangeSet(): add = ", $add);
+			if ($add) {
+				$worker_id = explode("_to_",$add)[0];
+				$shift_id = explode("_to_",$add)[1];
+				if (0) deb("change_sets_utils.insertChangeSet(): gonna add worker = $worker_id");
+				insertChange('add', $worker_id, $shift_id, $change_set_id, $scheduler_run_id);		
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$worker_id}, {$shift_id}", (0));
+			}
+		}
+	}
+
+	// Insert move requests into changes table 
+	if ($posts['move']) {
+		foreach ($posts['move'] as $k=>$move){ 
+			if (0) deb("change_sets_utils.insertChangeSet(): move = ", $move);
+			if ($move) {
+				// Get data on the existing assignment
+				$assignment_id = explode("_to_",$move)[0];
+				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
+				// Move this worker to that shift
+				$worker_id = $assignment['worker_id'];
+				$from_shift_id = $assignment['shift_id'];
+				$to_shift_id = explode("_to_",$move)[1];
+				if (0) deb("change_sets_utils.insertChangeSet(): gonna move worker = $worker_id");
+				insertChange('remove', $worker_id, $from_shift_id, $change_set_id, $scheduler_run_id);
+				insertChange('add', $worker_id, $to_shift_id, $change_set_id, $scheduler_run_id);		
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {$worker_id}, {$from_shift_id}", (0));
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$worker_id}, {$to_shift_id}", (0));
+			}
+		}
+	}
+
+	// Insert trade requests into changes table 
+	// $trades = array();
+	if ($posts['trade']) {
+		foreach ($posts['trade'] as $l=>$trade){ 
+			if ($trade) {
+				// Get data on this assignment
+				$this_assignment_id = explode("_with_",$trade)[0];
+				$this_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$this_assignment_id}", "", (0))[0];
+				$this_worker_id = $this_assignment['worker_id'];
+				$this_shift_id = $this_assignment['shift_id'];
+				// Get data on that assignment
+				$that_assignment_id = explode("_with_",$trade)[1];
+				$that_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$that_assignment_id}", "", (0))[0];
+				$that_worker_id = $that_assignment['worker_id'];
+				$that_shift_id = $that_assignment['shift_id']; 
+				// Move this worker to that shift
+				insertChange('remove', $this_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);		
+				insertChange('add', $this_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
+				// Move that worker to this shift
+				insertChange('remove', $that_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
+				insertChange('add', $that_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);		
+				// // Move this worker to that shift
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {$this_worker_id}, {$this_shift_id}", (0), "rem this from this");
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$this_worker_id}, {$that_shift_id}", (0), "add this to that");
+				// // Move that worker to this shift
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'remove', {$change_set_id}, {$that_worker_id}, {$that_shift_id}", (0), "rem that from that");
+				// sqlInsert(CHANGES_TABLE, "action, change_set_id, worker_id, shift_id", "'add', {$change_set_id}, {$that_worker_id}, {$this_shift_id}", (0), "add that to this");
+			}
+		}
+	}
+	
+	if (0) deb("change_sets_utils.insertChangeSet(): change_set_id = ", $change_set_id); 
+
+	return $change_set_id;
+}
+
+
+// Construct and store one change
+function insertChange($action, $worker_id, $shift_id, $change_set_id, $scheduler_run_id) {
+
+	$where = "shift_id = {$shift_id}
+		and worker_id = {$worker_id}
+		and scheduler_run_id = {$scheduler_run_id} 
+		and season_id = " . SEASON_ID;
+	$existing_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0), "existing assignment?")[0];
+	if ($existing_assignment) {
+		$removed_by_change_id = $assignment['removed_by_change_id'] ? $assignment['removed_by_change_id'] : "null";
+		$added_by_change_id = $assignment['added_by_change_id'] ? $assignment['added_by_change_id'] : "null";
+		if (0) deb("change_sets_utils.insertChange(): added_by_change_id = ", $added_by_change_id); 
+		$columns = "action, worker_id, shift_id, change_set_id, prior_removed_by_change_id, prior_added_by_change_id";
+		$values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, {$removed_by_change_id}, {$added_by_change_id}";
+		if (0) deb("change_sets_utils.insertChange(): values = ", $values); 
+	} else {
+		$columns = "action, worker_id, shift_id, change_set_id";
+		$values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}";
+	}
+	// $columns = "action, worker_id, shift_id, change_set_id, prior_removed_by_change_id, prior_added_by_change_id";
+	// $values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, {$removed_by_change_id}, {$added_by_change_id}";
+	sqlInsert(CHANGES_TABLE, $columns, $values, (0), "insert one change");
+}
+
 
 function saveAssignmentChanges($change_set_id, $posts) {
 
@@ -192,7 +224,6 @@ function saveAssignmentChanges($change_set_id, $posts) {
 		
 		// Delete the not-ok changes from this change set
 		sqlDelete(CHANGES_TABLE, "change_set_id = {$change_set_id} and not id in ({$ok_changes_string})");
-		// sqlSelect("*", CHANGES_TABLE, "change_set_id = {$change_set_id} and not (id in ({$ok_changes_string}))", "", (0));
 
 		// Set the change timestamp for this change set to now
 		$when_saved = date("Y/m/d H:i:s");
@@ -207,22 +238,54 @@ function saveAssignmentChanges($change_set_id, $posts) {
 		$changes = sqlSelect($select, $from, $where, "", (0));
 		foreach ($changes as $i=>$change) {
 			if (0) deb("change_sets_untils:saveAssignmentChanges() change = ", $change);
-			// $assignment_id = sqlSelect("id", ASSIGNMENTS_TABLE, )
-			if ($change['add_or_remove'] == 'remove') {
-				$set = "removed_by_change_id = {$change['id']}";
-				$where = "shift_id = {$change['shift_id']}
-					and worker_id = {$change['worker_id']}
-					and season_id = " . SEASON_ID;
+
+			// Get the existing assignment, if any
+			$where = "shift_id = {$change['shift_id']}
+				and worker_id = {$change['worker_id']}
+				and season_id = " . SEASON_ID;
+			$existing_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0))[0];
+			if (0) deb("change_sets_untils:saveAssignmentChanges() existing_assignment = ", $existing_assignment);
+	
+			if ($change['action'] == 'remove') {
+				// $where = "shift_id = {$change['shift_id']}
+					// and worker_id = {$change['worker_id']}
+					// and season_id = " . SEASON_ID;
+				// $existing_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0))[0];
+				// if (0) deb("change_sets_untils:saveAssignmentChanges() existing_assignment = ", $existing_assignment);
+				// if ($existing_assignment) {
+				// Mark assignment as removed by this change, and nullify its added_by mark
+				$set = "removed_by_change_id = {$change['id']}, added_by_change_id = null";
+				$where = "id = {$existing_assignment['id']}";
 				sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment deletes");
+				// }
+			} elseif ($change['action'] == 'add') {
+				// $where = "shift_id = {$change['shift_id']}
+					// and worker_id = {$change['worker_id']}
+					// and season_id = " . SEASON_ID;
+				// $existing_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0), "existing assignment on add")[0];
+				// if (0) deb("change_sets_untils:saveAssignmentChanges() existing_assignment = ", $existing_assignment);
+				if ($existing_assignment) {
+					// If assignment already exists, mark it as added by this change and nullify its removed_by mark 
+					$set = "added_by_change_id = {$change['id']}, removed_by_change_id = null";
+					$where = "id = {$existing_assignment['id']}";
+					sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment deletes");					
+				} else {
+					// If assignment doesn't exist, create it and mark it as added by this change 
+					$columns = "shift_id, worker_id, season_id, scheduler_run_id, added_by_change_id, generated";
+					$values = "{$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change['scheduler_run_id']}, {$change['id']}, 0";
+					sqlInsert(ASSIGNMENTS_TABLE, $columns, $values, (0), "assignment creates");	 				
+				}
 			}
-			if ($change['add_or_remove'] == 'add') {
-				$columns = "shift_id, worker_id, season_id, scheduler_run_id, added_by_change_id";
-				$values = "{$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change['scheduler_run_id']}, {$change['id']}";
-				sqlInsert(ASSIGNMENTS_TABLE, $columns, $values, (0), "assignment creates");
-			}
+			// // Record the prior state of the assignment.xxxxed_by_change_id columns into the change record, to be restored in case of undo
+			// if (0) deb("change_sets_untils:saveAssignmentChanges() existing_assignment = ", $existing_assignment);
+			// if ($existing_assignment) {
+				// $set = "prior_change_that_added_id = {$existing_assignment['added_by_change_id']},
+					// prior_change_that_removed_id = {$existing_assignment['removed_by_change_id']}";
+				// sqlUpdate(CHANGES_TABLE, $set, "id = {$change['id']}");
+			// }
 		}	
 	} 
-	// If there are no ok changes in the change set, delete the whole change set 
+	// If the change set contains no ok changes, delete it 
 	else 
 	{
 		sqlDelete(CHANGE_SETS_TABLE, "id = {$change_set_id}", (0));
@@ -230,16 +293,18 @@ function saveAssignmentChanges($change_set_id, $posts) {
 }
 
 
-// Delete change sets that were never saved. 
+// Delete change sets whose assignment changes were never saved. 
 function purgeUnsavedChangeSets() {	
 	$sets_to_purge = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . scheduler_run()['id'] . " and when_saved is null", "", (0), "purgeUnsavedChangeSets()");
 	sqlDelete(CHANGE_SETS_TABLE, "scheduler_run_id = " . scheduler_run()['id'] . " and when_saved is null", (0), "purge unsaved");
 }
 
+
 function undoChangeSets($undo_back_to_change_set_id, $post) {
 
 	// Get the earliest change set in the series of change sets to undo
 	$earliest_change_set = sqlSelect("*", CHANGE_SETS_TABLE, "id = {$undo_back_to_change_set_id}", "", (0), "earliest change set to undo")[0];
+
 	// Get all the change sets to undo
 	$where = "scheduler_run_id = {$earliest_change_set['scheduler_run_id']} and when_saved >= '{$earliest_change_set['when_saved']}'";
 	$order_by = "when_saved desc";
@@ -249,24 +314,43 @@ function undoChangeSets($undo_back_to_change_set_id, $post) {
 	foreach($change_sets as $i=>$change_set) {
 		$changes = sqlSelect("*", CHANGES_TABLE, "change_set_id = {$change_set['id']}", "", (0), "change to undo");
 		foreach($changes as $j=>$change) {
-			// Re-add assignments that were soft-deleted
-			if ($change['add_or_remove'] == 'remove') {
-				$set = "removed_by_change_id = NULL";
-				$where = "shift_id = {$change['shift_id']}
-					and worker_id = {$change['worker_id']}
-					and season_id = " . SEASON_ID;
-				sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment un-removes", TRUE);				
-				sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0), "assignment to (re-) CREATE");			
-			}
-			// Delete assignments that were added
-			if ($change['add_or_remove'] == 'add') {
-				$where = "shift_id = {$change['shift_id']}
-					and worker_id = {$change['worker_id']}
-					and season_id = " . SEASON_ID;
+			// Get the assignment that's the target of this change
+			$from = ASSIGNMENTS_TABLE;
+			$where = "shift_id = {$change['shift_id']}
+				and worker_id = {$change['worker_id']}
+				and season_id = " . SEASON_ID;
+			$assignment = sqlSelect("*", $from, $where, "", (0), "target assignment of this change");
+			// $set = "removed_by_change_id = {$change['prior_removed_by_change_id']}, 
+				// removed_by_change_id = {$change['prior_removed_by_change_id']}";
+			// $where = "id = {$assignment['id']}";
+			if ($change['action'] == 'add' && $change['prior_added_by_change_id'] == null) {
+				// Hard-delete an assignment that did not exist before this change was saved
+				$where = "id = {$assignment['id']}";
 				sqlDelete(ASSIGNMENTS_TABLE, $where, (0), "assignment un-adds", TRUE);
-				sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0), "assignment to DELETE");				
+			} else {
+				// Restore prior state of an assignment that existed before this change was saved
+				$set = "removed_by_change_id = {$change['prior_removed_by_change_id']}, 
+					added_by_change_id = {$change['prior_added_by_change_id']}";
+				$where = "id = {$assignment['id']}";
+				sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment un-removes", TRUE);								
 			}
+			// // Restore prior state of an assignment that was soft-deleted by this change
+			// if ($change['action'] == 'remove') {
+				// sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment un-removes", TRUE);				
+				// sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0), "assignment to (re-) CREATE");			
+			// }
+			// // Delete or soft-delete assignment that was added by this change
+			// if ($change['action'] == 'add') {
+				// if ($change['prior_added_by_change_id']) {
+					// // Soft-delete an assignment that existed before this change
+					// sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment un-removes", TRUE);								
+				// } else {
+					// // Hard-delete an assignment that did not exist before this change.
+					// sqlDelete(ASSIGNMENTS_TABLE, $where, (0), "assignment un-adds", TRUE);
+				// }	
+			// }
 		}
+		// Delete the change_set that was just undone.
 		sqlDelete(CHANGE_SETS_TABLE, "id = {$change_set['id']}", (0), "change set to delete", TRUE);
 	}
 }

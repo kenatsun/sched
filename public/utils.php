@@ -23,11 +23,18 @@ function create_sqlite_connection() {
 		$dbh = new PDO($db_file);
 		$timeout = 5; // in seconds
 		$dbh->setAttribute(PDO::ATTR_TIMEOUT, $timeout);
+		// Enable foreign keys enforcement in database
+		$dbh->exec("PRAGMA foreign_keys = ON;");
 	}
 	catch(PDOException $e) {
 		echo "problem loading sqlite file [$db_fullpath]: {$e->getMessage()}\n";
 		exit;
 	}
+}
+
+// Work with assignments and changes from the latest scheduler run in the current season.
+function scheduler_run() {
+	return sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = " . SEASON_ID, "run_timestamp desc", (0))[0];
 }
 
 function formatted_date($date, $format) {
@@ -384,7 +391,8 @@ function getJobAssignments($date_string=NULL, $job_id=NULL, $worker_id=NULL) {
 	$select = "w.first_name || ' ' || w.last_name as worker_name, w.first_name, w.last_name, a.*, s.string as meal_date, s.job_id, j.description";
 	$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
 	$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id and j.season_id = {$season_id} {$date_clause} {$job_id_clause} {$worker_id_clause}
-		and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . " where season_id = {$season_id}) {$job_id_clause}";
+		and a.scheduler_run_id = " . scheduler_run()['id'] . " {$job_id_clause}";
+		// and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . " where season_id = {$season_id}) {$job_id_clause}";
 	$order_by = "j.display_order";
 	$assignments = sqlSelect($select, $from, $where, $order_by, (0), "getJobAssignments()");
 	if (0) deb("utils.getJobAssignments(): assignments:", $assignments);

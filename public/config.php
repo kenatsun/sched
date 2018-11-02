@@ -14,6 +14,8 @@ define('COMMUNITY', 'Sunward');
 
 create_sqlite_connection();
 
+define ('SHOW_IDS', '1');  // set to 1 to display object ids for debugging
+
 /* -------- seasonal config --------- */
 // define('DEADLINE', strtotime('June 20, 2018, 11pm'));
 

@@ -631,7 +631,8 @@ EOSQL;
 	}
 	if ($debs) deb("utils.sqlUpdate(){$tag}: sql:", $sql); 
 	if ($do_it) $rows_affected = $dbh->exec($sql);
-	if ($debs) deb("utils.sqlInsert() {$tag}: rows_affected:", $rows_affected);
+	if (!$rows_affected) $rows_affected = 0;
+	if ($debs) deb("utils.sqlUpdate() {$tag}: rows_affected: $rows_affected");
 	return $rows_affected;
 }
 
@@ -644,7 +645,8 @@ function sqlInsert($table, $columns, $values, $debs=0, $tag="", $do_it=TRUE) {
 EOSQL;
 	if ($debs) deb("utils.sqlInsert() {$tag}: sql:", $sql);
 	if ($do_it) $rows_affected = $dbh->exec($sql);
-	if ($debs) deb("utils.sqlInsert() {$tag}: rows_affected:", $rows_affected);
+	if (!$rows_affected) $rows_affected = 0;
+	if ($debs) deb("utils.sqlInsert() {$tag}: rows_affected: $rows_affected");
 	return $rows_affected;
 }
 

@@ -47,14 +47,6 @@ foreach($change_sets as $i=>$change_set) {
 		</tr>';
 }
 
-// $changes_table .= "<h4>Changes saved at {$change_set['when_saved']}</h4>";
-// $change_set_table = renderChangeSet($change_set['id'], FALSE);
-// $changes_table = "";
-// foreach($change_sets as $i=>$change_set) {
-	// $changes_table .= "<h3>Changes saved at {$change_set['when_saved']}</h3>";
-	// $changes_table .= renderChangeSet($change_set['id'], FALSE);	
-// }
-
 $change_sets_table .= '</table>';
 
 $change_sets_form = <<<EOHTML
@@ -63,9 +55,6 @@ $change_sets_form = <<<EOHTML
 		<input type="submit" name="undo" value="Undo Changes"> <input type="submit" name="no_undo" value="Don't Undo Changes">
 	</form>	
 EOHTML;
-	
-		// <input type="hidden" name="ok_change_value" id="ok_change_value" value="{$ok_change_value}" /> 
-		// <input type="hidden" name="change_set_id" id="change_set_id" value="{$change_set_id}" />
 
 $page = <<<EOHTML
 	{$headline}

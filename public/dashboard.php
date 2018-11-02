@@ -21,7 +21,7 @@ if ($_POST) {
 		// Update assignments table with the changes that user has confirmed 
 		if (isset($_POST['confirm'])) {
 			if (0) deb("dashboard.php: gonna confirm change_set_id = {$change_set_id}");
-			saveAssignmentChanges($change_set_id, $_POST);
+			saveAssignmentChangeSet($change_set_id, $_POST);
 		};
 
 		// Delete change set that user wants to discard
@@ -114,25 +114,37 @@ function renderAssignmentsForm() {
 	// Sort the meals by date (ascending)
 	usort($meals, "meal_date_sort");
 	if (0) deb("dashboard.php.renderAssignmentsForm(): meals after sort = ", $meals);
-	if (0) deb("dashboard.php.renderAssignmentsForm(): time_order = ", $time_order);
+	if (0) deb("dashboard.php.renderAssignmentsForm(): time_order = ", $time_order); 
 		
 	$previous_meal_month = 0;
-
+	
+		
 	// Make the table row for each meal
+	$n = 3;
+	$save_button_interval = 3;
 	foreach($meals as $m_index=>$meal) {
 		$date_ob = new DateTime($meal['meal_date']);
 		$meal['meal_day_name'] = $date_ob->format('l');
 		$meal_month = $date_ob->format('m');
-		$meal_date = $date_ob->format('M dd');
-		if (0) deb("dashboard.renderAssignmentsForm() meal_month = $meal_month");
+		$meal_date = $date_ob->format('F j'); 
+		if (0) deb("dashboard.renderAssignmentsForm() meal_month = {$meal_month}");
 		if (0) deb("dashboard.php.renderAssignmentsForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
 
 		// If starting a new month, insert header rows
-		if ($previous_meal_month < $meal_month) {
+		// if ($previous_meal_month < $meal_month) {
+			// $meal_rows .= <<<EOHTML
+				// <tr><td colspan={$ncols}><h2>&nbsp;&nbsp;&nbsp;{$date_ob->format('F')}</h2> </td><tr> 
+				// {$header_row}
+// EOHTML;
+		// }
+		if ($n == $save_button_interval) {
 			$meal_rows .= <<<EOHTML
-				<tr><td colspan={$ncols}><h2>&nbsp;&nbsp;&nbsp;{$date_ob->format('F')} <input type="submit" value="Review Changes"> <input type="reset" value="Cancel Changes"></h2> </td><tr> 
+				<tr><td colspan={$ncols} style="text-align: left;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"> </td><tr> 
 				{$header_row}
 EOHTML;
+			$n = 1;
+		} else {
+			++$n;
 		}
 		$previous_meal_month = $meal_month;
 	
@@ -153,14 +165,21 @@ EOHTML;
 			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = {$shift_id}");
 
 			// Find the worker(s) doing this shift (i.e. this job for this meal)
+			// $select = "w.username as worker_name, 
+				// w.id as worker_id, 
+				// a.id as assignment_id, 
+				// a.latest_action,
+				// a.latest_change_id,
+				// a.generated,
+				// a.exists_now"; 
 			$select = "w.username as worker_name, 
-				w.id as worker_id, 
-				a.id as assignment_id, 
-				a.added_by_change_id as added_by_change_id, 
-				a.removed_by_change_id as removed_by_change_id,
-				a.generated"; 
+				w.id as worker_id,  
+				a.id as assignment_id,  
+				a.latest_change_id,
+				a.generated,
+				a.exists_now"; 
 			$from = "{$workers_table} as w, 
-				{$assignments_table} as a";  
+				{$assignments_table} as a";
 			$where = "a.worker_id = w.id
 				and a.shift_id = {$shift_id}
 				and a.scheduler_run_id = {$scheduler_run_id}";
@@ -170,41 +189,52 @@ EOHTML;
 			
 			// Make the embedded table listing the workers & controls for this shift cell
 			$shift_cell = '<td><table>';
+			if (SHOW_IDS) $shift_cell .= '<tr><td>shift #' . $shift_id . '</td></tr>';
 			foreach($assignments as $w_index=>$assignment) {
-				if ($assignment['removed_by_change_id']) {
-					$assignment_color = "Pink";
+				if (SHOW_IDS) $wkr_id = ' (#' . $assignment['worker_id'] . '), assmt #' . $assignment['assignment_id']; 
+
+				if (0) deb("dashboard.php.renderAssignmentsForm(): assignment = ", $assignment);
+				$exists_now = $assignment['exists_now']; 
+				$has_changed = ($assignment['generated'] != $exists_now ? 1 : 0);
+				if (0) deb("dashboard.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assm_id = {$assignment['assignment_id']}");		
+				// if (0) deb("dashboard.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assm_id = {$assignment['assignment_id']}, latest_action = {$assignment['latest_action']}");		
+				
+				// If assignment's status changed since generation, make a change marker
+				if ($has_changed) {
+					// Get data about the latest change
+					$select = "s.when_saved as when_saved, s.id as id";
+					$from = CHANGES_TABLE . " as c, " . CHANGE_SETS_TABLE . " as s";
+					$where = "c.id = {$assignment['latest_change_id']}
+						and s.id = c.change_set_id";
+					$latest_change_set = sqlSelect($select, $from, $where, "", (0), "latest change set")[0];
+					if (SHOW_IDS) $chg_id = ' (#' . $latest_change_set['id'] . ')';
+					$change_marker = formatted_date($latest_change_set['when_saved'], "M j g:ia") . $chg_id;
+					
+					// If assignment exists now, make an "added" marker
+					if ($exists_now) {
+						$assignment_color = "LightGreen";
+						$change_marker = ' - added ' . $change_marker; 
+					} 
+					// Else assignment doesn't exist now, so make a "removed" marker
+					else { 
+						$assignment_color = "Pink";
+						$change_marker = ' - removed ' . $change_marker; 						
+					}
 				}
-				else if ($assignment['added_by_change_id']) {
-					$assignment_color = "LightGreen";
-				}
+				// Else assignment's status is the same as at generation, so don't make a change marker
 				else {
 					$assignment_color = "White";
+					$change_marker = "";					
 				}
-				if ($assignment['added_by_change_id'] && !$assignment['generated']) {
-				// Display change marker if non-generated assignment is added as of now
-					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>';
-					$select = "when_saved";
-					$from = CHANGES_TABLE . " as c, " . CHANGE_SETS_TABLE . " as s";
-					$where = "c.id = {$assignment['added_by_change_id']}
-						and s.id = c.change_set_id";
-					$when_saved = sqlSelect($select, $from, $where, "", (0))[0]['when_saved'];
-					$shift_cell .= ' - added ' . formatted_date($when_saved, "M j g:ia") . ' (#' . $assignment['added_by_change_id'] . ')'; 
-				} elseif ($assignment['removed_by_change_id'] && $assignment['generated']) {
-				// Display change marker if generated assignment is removed as of now
-					$assignment_color = "Pink";
-					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>';
-					$select = "when_saved";
-					$from = CHANGES_TABLE . " as c, " . CHANGE_SETS_TABLE . " as s";
-					$where = "c.id = {$assignment['removed_by_change_id']}
-						and s.id = c.change_set_id";
-					$when_saved = sqlSelect($select, $from, $where, "", (0))[0]['when_saved'];
-					$shift_cell .= ' - removed ' . formatted_date($when_saved, "M j g:ia") . ' (#' . $assignment['removed_by_change_id'] . ')';
-				} else {
-					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>';
+				
+				// Render the assignment if it exists and/or has been removed since generation
+				// Don't show an assignment that was not generated and doesn't currently exist
+				if ($exists_now || $has_changed) {
+					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>' . $wkr_id . $change_marker; 
 				}
 				
 				// Display controls that would remove worker from shift, unless worker has been removed already
-				if (!$assignment['removed_by_change_id']) {	
+				if ($exists_now) {	
 					$shift_cell .= '<table>';
 					$shift_cell .= '<tr><td style="text-align: right;">remove</td><td><input type="checkbox" name="remove[]" value="' . $assignment['assignment_id'] . '"></td></tr>';
 
@@ -263,7 +293,7 @@ EOHTML;
 
 		$meal_row = <<<EOHTML
 		<tr>
-			<td style="background:White"><strong>{$date_ob->format('M d')}</strong><br>{$meal['meal_day_name']}</td> 
+			<td style="background:White"><strong><big>{$meal_date}</big></strong><br>{$meal['meal_day_name']}</td> 
 			{$shift_cells}
 		</tr>
 EOHTML;
@@ -271,7 +301,7 @@ EOHTML;
 	}
 
 	$meal_rows .= <<<EOHTML
-		<tr><td colspan={$ncols}><h2>&nbsp;&nbsp;&nbsp; <input type="submit" value="Review Changes"> <input type="reset" value="Cancel Changes"></h2> </td><tr>
+		<tr><td colspan={$ncols} style="text-align: center;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"></td><tr>
 EOHTML;
 		
 	$meals_table = <<<EOHTML

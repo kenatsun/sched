@@ -94,9 +94,9 @@ if (array_key_exists('d', $options) || array_key_exists('D', $options)) {
 			$change_set_ids .= $change_set['id'];
 		}
 		if (0) debt("assignments.php: change_set_ids = {$change_set_ids}");
-		sqlDelete(ASSIGNMENTS_TABLE, "season_id = {$season_id}", (0));
-		sqlDelete(CHANGES_TABLE, "change_set_id in {$change_set_ids}", (0));
-		sqlDelete(CHANGE_SETS_TABLE, "id in {$change_set_ids}", (0));
+		sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (0));
+		sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (0));
+		sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (0));
 		sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0)); 
 	}
 	sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));

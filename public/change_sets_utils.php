@@ -90,16 +90,16 @@ EOHTML;
 }
 
 
-// Functions to save change sets
+// Functions to save change sets ...............................
 
-function insertChangeSet($posts) {
-	if (0) deb("change_sets_utils.insertChangeSet(): POST = ", $posts); 
+function saveChangeSet($posts) {
+	if (0) deb("change_sets_utils.saveChangeSet(): POST = ", $posts); 
 	
 	// Insert the change set, and get its id
 	$scheduler_run_id = scheduler_run()['id'];
 	sqlInsert(CHANGE_SETS_TABLE, "scheduler_run_id", "{$scheduler_run_id}", (0));
 	$change_set_id = sqlSelect("id", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id}", "id desc", (0))[0]['id'];
-	if (0) deb("change_sets_utils.insertChangeSet(): change_set_id = ", $change_set_id);
+	if (0) deb("change_sets_utils.saveChangeSet(): change_set_id = ", $change_set_id);
 	
 	
 	// Insert remove requests into changes table
@@ -108,7 +108,7 @@ function insertChangeSet($posts) {
 			if ($remove) {
 				$assignment_id = $remove;
 				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
-				insertChange('remove', $assignment['worker_id'], $assignment['shift_id'], $change_set_id, $scheduler_run_id);		
+				saveChange('remove', $assignment['worker_id'], $assignment['shift_id'], $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}
@@ -116,12 +116,12 @@ function insertChangeSet($posts) {
 	// Insert add requests into changes table
 	if ($posts['add']) {
 		foreach ($posts['add'] as $j=>$add){
-			if (0) deb("change_sets_utils.insertChangeSet(): add = ", $add);
+			if (0) deb("change_sets_utils.saveChangeSet(): add = ", $add);
 			if ($add) {
 				$worker_id = explode("_to_",$add)[0];
 				$shift_id = explode("_to_",$add)[1];
-				if (0) deb("change_sets_utils.insertChangeSet(): gonna add worker = $worker_id");
-				insertChange('add', $worker_id, $shift_id, $change_set_id, $scheduler_run_id);		
+				if (0) deb("change_sets_utils.saveChangeSet(): gonna add worker = $worker_id");
+				saveChange('add', $worker_id, $shift_id, $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}
@@ -129,7 +129,7 @@ function insertChangeSet($posts) {
 	// Insert move requests into changes table 
 	if ($posts['move']) {
 		foreach ($posts['move'] as $k=>$move){ 
-			if (0) deb("change_sets_utils.insertChangeSet(): move = ", $move);
+			if (0) deb("change_sets_utils.saveChangeSet(): move = ", $move);
 			if ($move) {
 				// Get data on the existing assignment
 				$assignment_id = explode("_to_",$move)[0];
@@ -138,9 +138,9 @@ function insertChangeSet($posts) {
 				$worker_id = $assignment['worker_id'];
 				$from_shift_id = $assignment['shift_id'];
 				$to_shift_id = explode("_to_",$move)[1];
-				if (0) deb("change_sets_utils.insertChangeSet(): gonna move worker = $worker_id");
-				insertChange('remove', $worker_id, $from_shift_id, $change_set_id, $scheduler_run_id);
-				insertChange('add', $worker_id, $to_shift_id, $change_set_id, $scheduler_run_id);		
+				if (0) deb("change_sets_utils.saveChangeSet(): gonna move worker = $worker_id");
+				saveChange('remove', $worker_id, $from_shift_id, $change_set_id, $scheduler_run_id);
+				saveChange('add', $worker_id, $to_shift_id, $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}
@@ -161,23 +161,23 @@ function insertChangeSet($posts) {
 				$that_worker_id = $that_assignment['worker_id'];
 				$that_shift_id = $that_assignment['shift_id']; 
 				// Move this worker to that shift
-				insertChange('remove', $this_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);		
-				insertChange('add', $this_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
+				saveChange('remove', $this_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);		
+				saveChange('add', $this_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
 				// Move that worker to this shift
-				insertChange('remove', $that_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
-				insertChange('add', $that_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);
+				saveChange('remove', $that_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
+				saveChange('add', $that_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);
 			}
 		}
 	}
 	
-	if (0) deb("change_sets_utils.insertChangeSet(): change_set_id = ", $change_set_id); 
+	if (0) deb("change_sets_utils.saveChangeSet(): change_set_id = ", $change_set_id); 
 
 	return $change_set_id;
 }
 
 
 // Construct and store one change 
-function insertChange($action, $worker_id, $shift_id, $change_set_id, $scheduler_run_id) {
+function saveChange($action, $worker_id, $shift_id, $change_set_id, $scheduler_run_id) {
 
 	$where = "shift_id = {$shift_id}
 		and worker_id = {$worker_id}
@@ -185,42 +185,35 @@ function insertChange($action, $worker_id, $shift_id, $change_set_id, $scheduler
 		and season_id = " . SEASON_ID;
 	$existing_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, $where, "", (0), "existing assignment?")[0];
 	if ($existing_assignment) {
-		// $prior_action = $assignment['latest_action'] ? $assignment['latest_action'] : "null"; 
-		// $columns = "action, worker_id, shift_id, change_set_id, prior_action, existed, prior_change_id";
-		// $values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, {$prior_action}, {$existing_assignment['exists_now']}, {$existing_assignment['latest_change_id']}";
-		// $columns = "action, worker_id, shift_id, change_set_id, prior_action, existed";
-		// $values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, {$prior_action}, {$existing_assignment['exists_now']}";
-		$columns = "action, worker_id, shift_id, change_set_id, existed";
-		$values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, {$existing_assignment['exists_now']}";
-		if (0) deb("change_sets_utils.insertChange(): values = ", $values); 
+		$columns = "action, worker_id, shift_id, change_set_id";
+		$values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}";
 	} else {
-		// $columns = "action, worker_id, shift_id, change_set_id, prior_action, existed"; 
-		// $values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, null, 0";
-		$columns = "action, worker_id, shift_id, change_set_id, existed"; 
-		$values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}, 0"; 
+		$columns = "action, worker_id, shift_id, change_set_id"; 
+		$values = "'{$action}', {$worker_id}, {$shift_id}, {$change_set_id}"; 
 	}
+	if (0) deb("change_sets_utils.saveChange(): values = ", $values); 
 	sqlInsert(CHANGES_TABLE, $columns, $values, (0), "insert one change");
 }
 
 
-// Functions to save changes to assignments based on change sets
+// Functions to save changes to assignments based on change sets ...............................
 
-function saveAssignmentChangeSet($change_set_id, $posts) {
-
-	if (0) deb("change_sets_utils:saveAssignmentChangeSet() post = ", $posts);
+function saveAssignmentBasedOnChangeSet($change_set_id, $posts) {
+	
+	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() post = ", $posts);
 
 	// Get ids of confirmed changes from $posts into a query string
 	$ok_changes_array = array();
 	$ok_change_value = $posts['ok_change_value'];
 	unset($posts['ok_change_value']);
-	if (0) deb("change_sets_utils:saveAssignmentChangeSet() post = ", $posts);
+	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() post = ", $posts);
 	foreach($posts as $i=>$post) {
 		if ($post == $ok_change_value) {
 			$ok_changes_array[] = $i;
 		}
 	}
 	$ok_changes_string = implode(", ", $ok_changes_array);
-	if (0) deb("change_sets_utils:saveAssignmentChangeSet() ok_changes_string = ", $ok_changes_string);
+	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() ok_changes_string = ", $ok_changes_string);
 	
 	// If there are ok changes in the change set, save them in the database
 	if ($ok_changes_string) {
@@ -240,8 +233,8 @@ function saveAssignmentChangeSet($change_set_id, $posts) {
 			and c.id in ({$ok_changes_string})";
 		$changes = sqlSelect($select, $from, $where, "", (0));
 		foreach ($changes as $i=>$change) {
-			if (0) deb("change_sets_utils:saveAssignmentChangeSet() change = ", $change);			
-			saveAssignmentChange($change);
+			if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() change = ", $change);			
+			saveAssignmentBasedOnChange($change);
 		}	
 	} 
 	// If the change set contains no ok changes, delete it 
@@ -251,44 +244,44 @@ function saveAssignmentChangeSet($change_set_id, $posts) {
 	}
 }
 
-function saveAssignmentChange($change) {
-	
-	$change_id = ($change['id'] ? $change['id'] : "null");
+function saveAssignmentBasedOnChange($change) {	
+
+	$change_set = sqlSelect("*", CHANGE_SETS_TABLE, "id = {$change['change_set_id']}", "", (0), "saveAssignmentBasedOnChange(): scheduler_run")[0];
 	// Get existing assignment, if any
 	$select = "*";
 	$from = ASSIGNMENTS_TABLE;
 	$where = "shift_id = {$change['shift_id']}
-		and worker_id = {$change['worker_id']}
-		and season_id = " . SEASON_ID;
+		and worker_id = {$change['worker_id']}";
 	$existing_assignment = sqlSelect($select, $from, $where, "", (0))[0];
-	if (0) deb("change_sets_utils.saveAssignmentChange(): change['action'] = {$change['action']}");
+	if (0) deb("change_sets_utils.saveAssignmentBasedOnChange(): change['action'] = {$change['action']}");
 	
-	// If assignment record exists, update or delete it per this change
+	// A change is always recorded by inserting a new record into assignment_states
+	$columns = "id, when_last_changed, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
+	// $new_existence_indicator = ($change['action'] == "add" ? 1 : 0);
+	// If assignment record exists, insert a new assignment_state with the existing assignment's id
 	if ($existing_assignment) {
-		$new_exists_value = ($change['action'] == "add" ? 1 : 0);
-		$set = "latest_change_id = {$change_id}, exists_now = {$new_exists_value}";
-		$where = "id = {$existing_assignment['id']}";
-		sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment record update");
+		$values = "{$existing_assignment['id']}, '{$change_set['when_saved']}', {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, {$existing_assignment['generated']}, " . ($change['action'] == "add" ? 1 : 0);
 	} 
-	// If not, the change action should be "add", so create the assignment record.
+	// Else insert a new assignment_state with a new id and generated = 0 (thus creating a new assignment)
+	// Note: The action should always be "add" on an assignment whose record doesn't already exist. 
+	// Maybe there should be an error trap here in case the UI lets in a bad case.
 	else {
-		$columns = "shift_id, worker_id, season_id, scheduler_run_id, latest_change_id, generated, exists_now";
-		$values = "{$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change['scheduler_run_id']}, {$change_id}, 0, 1";
-		sqlInsert(ASSIGNMENTS_TABLE, $columns, $values, (0), "add a non-generated assignment");	 				
+		$values = autoIncrementId(ASSIGNMENT_STATES_TABLE) . ", " . "'{$change_set['when_saved']}', {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, 0, 1";
 	}
-	// Else do nothing.  There should never be a "remove" action on an assignment whose record doesn't already exist. 
-	// Maybe there should be an error message here in case the UI lets in a bad case.
+	sqlInsert(ASSIGNMENT_STATES_TABLE, $columns, $values, (0), "saveAssignmentBasedOnChange(): add an assignment state");	 				
 }
 
 // Delete change sets whose assignment changes were never saved. 
 function purgeUnsavedChangeSets() {	
+
 	$sets_to_purge = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . scheduler_run()['id'] . " and when_saved is null", "", (0), "purgeUnsavedChangeSets()");
-	sqlDelete(CHANGE_SETS_TABLE, "scheduler_run_id = " . scheduler_run()['id'] . " and when_saved is null", (0), "purge unsaved");
+	foreach ($sets_to_purge as $i=>$set_to_purge) {
+		sqlDelete(CHANGES_TABLE, "change_set_id = {$set_to_purge['id']}", (0), "purgeUnsavedChangeSets(): deleting changes in change set");
+		sqlDelete(CHANGE_SETS_TABLE, "id = {$set_to_purge['id']}", (0), "purgeUnsavedChangeSets(): deleting change set");
+	}
 }
 
-
-// Functions to undo changes to assignments based on change sets
-
+// Undo selected change sets
 function undoChangeSets($undo_back_to_change_set_id, $post) {
 
 	// Get the earliest change set in the series of change sets to undo
@@ -302,22 +295,22 @@ function undoChangeSets($undo_back_to_change_set_id, $post) {
 	$order_by = "when_saved desc";
 	$change_sets_to_undo = sqlSelect($select, $from, $where, $order_by, (0), "change sets to undo"); 
 	
-	// Undo all the selected change sets
+	// Undo each selected change set
 	foreach($change_sets_to_undo as $i=>$change_set_to_undo) {
-		$changes_to_undo = sqlSelect("*", CHANGES_TABLE, "change_set_id = {$change_set_to_undo['id']}", "", (1), "changes to undo");
+		$changes_to_undo = sqlSelect("*", CHANGES_TABLE, "change_set_id = {$change_set_to_undo['id']}", "", (0), "changes to undo");
+		// Delete the assignment_states record that was created by each change
 		foreach($changes_to_undo as $j=>$change_to_undo) {			
-			// // Construct an inverse change
-			// $undoer = array();
-			// $undoer['action'] = ($change_to_undo['action'] == "remove" ? "add" : "remove");
-			// // $undoer['action'] = ($change_to_undo['prior_action'] == "remove" ? "add" : "remove");
-			// $undoer['shift_id'] = $change_to_undo['shift_id'];
-			// $undoer['worker_id'] = $change_to_undo['worker_id'];
-			// $undoer['scheduler_run_id'] = $change_to_undo['scheduler_run_id'];  // this attribute doesn't exist, or now it does
-			// $undoer['existed'] = $change_to_undo['existed'];
-			// if (0) deb("change_sets_utils:saveAssignmentChangeSet() undoer = ", $undoer);			
-			// // Undo by saving that change
-			// undoChange($undoer);
-			undoChange($change_to_undo);
+			$from = ASSIGNMENT_STATES_TABLE;
+			$where = "
+				shift_id = {$change_to_undo['shift_id']}
+				and worker_id = {$change_to_undo['worker_id']}
+				and when_last_changed = (
+					select max(aa.when_last_changed)
+					from " . ASSIGNMENT_STATES_TABLE . " as aa
+					where aa.id = id
+					)";
+			sqlDelete($from, $where, (0), "undoChange(): delete action");
+			// undoChange($change_to_undo);
 		}
 
 		// Delete the change_set that was just undone.
@@ -328,60 +321,20 @@ function undoChangeSets($undo_back_to_change_set_id, $post) {
 }
 
 
-function undoChange($change_to_undo) {
+// function undoChange($change_to_undo) {
 	
-	// $change_id = ($change['id'] ? $change['id'] : "null");
-	// Get existing assignment that was changed by the change that is to be undone
-	$select = "*";
-	$from = ASSIGNMENTS_TABLE;
-	$where = "shift_id = {$change_to_undo['shift_id']}
-		and worker_id = {$change_to_undo['worker_id']}
-		and season_id = " . SEASON_ID;
-	$existing_assignment = sqlSelect($select, $from, $where, "", (1), "assignment to undo")[0];
-	if (0) deb("change_sets_utils.saveAssignmentChange(): change['action'] = {$change_to_undo['action']}");
+	// // Get existing assignment that was changed by the change that is to be undone
+	// $select = "id, when_last_changed";
+	// $from = ASSIGNMENT_STATES_TABLE;
+	// $where = "shift_id = {$change_to_undo['shift_id']}
+		// and worker_id = {$change_to_undo['worker_id']}";
+	// $order_by = "when_last_changed desc";
+	// $existing_assignment = sqlSelect($select, $from, $where, $order_by, (0), "undoChange(): assignment_state to delete")[0];
+	// if (0) deb("change_sets_utils.saveAssignmentBasedOnChange(): change['action'] = {$change_to_undo['action']}");
 	
-	$new_exists_value = ($change_to_undo['action'] == "add" ? 0 : 1);
-	// $new_exists_value = ($change['action'] == "add" ? 1 : 0);
-	$where = "id = {$existing_assignment['id']}";
-	// If this change is to remove an assignment that didn't exist before, delete the assignment record.
-	// if ($change['action'] == "remove" && !$existing_assignment['generated']) {
-	if (1) deb("change_sets_utils.saveAssignmentChange(): new_exists_value = $new_exists_value, existing_assignment['generated'] = {$existing_assignment['generated']}");
-	if ($new_exists_value == 0 && !$existing_assignment['generated']) {
-		sqlDelete(ASSIGNMENTS_TABLE, $where, (1), "assignment record delete");
-	}
-	// Else this change is either adding or removing an assignment whose record already exists,
-	// so just update the existence status of this record.
-	else {
-		// $set = "latest_change_id = {$change_id}, exists_now = {$new_exists_value}";
-		$set = "exists_now = {$new_exists_value}";
-		$where = "id = {$existing_assignment['id']}";
-		sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (1), "assignment record update");
-	}
-
-	// // If assignment record exists, update or delete it per this change
-	// if ($existing_assignment) {
-		// $new_exists_value = ($change['action'] == "add" ? 1 : 0);
-		// $where = "id = {$existing_assignment['id']}";
-		// // If this change is to remove an assignment that didn't exist before, delete the assignment record.
-		// if ($change['action'] == "remove" && !$existing_assignment['generated']) {
-			// sqlDelete(ASSIGNMENTS_TABLE, $where, (0), "assignment record delete");
-		// }
-		// // Else this change is either adding or removing an assignment whose record already exists,
-		// // so just update the existence status of this record.
-		// else {
-			// $set = "latest_change_id = {$change_id}, exists_now = {$new_exists_value}";
-			// $where = "id = {$existing_assignment['id']}";
-			// sqlUpdate(ASSIGNMENTS_TABLE, $set, $where, (0), "assignment record update");
-		// }
-	// } 
-	// // If not, and if the change action is "add", create the assignment record.
-	// elseif ($change['action'] == "add" ) {
-		// $columns = "shift_id, worker_id, season_id, scheduler_run_id, latest_change_id, generated, exists_now";
-		// $values = "{$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change['scheduler_run_id']}, {$change_id}, 0, 1";
-		// sqlInsert(ASSIGNMENTS_TABLE, $columns, $values, (0), "add a non-generated assignment");	 				
-	// }
-	// // Else do nothing.  There should never be a "remove" action on a nonexistent assignment, except during "undo".
-}
+	// // Delete that assignment_states record
+	// sqlDelete(ASSIGNMENT_STATES_TABLE, "id = {$existing_assignment['id']} and when_last_changed = '{$existing_assignment['when_last_changed']}'", (0), "undoChange(): delete action");
+// }
 
 
 ?>

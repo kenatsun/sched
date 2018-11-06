@@ -16,7 +16,7 @@ require_once "{$relative_dir}/display/includes/header.php";
 if (0) deb("change_set.php: POST = ", $_POST); 
 
 if ($_POST) {
-	$change_set_id = insertChangeSet($_POST);
+	$change_set_id = saveChangeSet($_POST);
 }
 
 // Link back to dashboard

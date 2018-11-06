@@ -21,7 +21,7 @@ if ($_POST) {
 		// Update assignments table with the changes that user has confirmed 
 		if (isset($_POST['confirm'])) {
 			if (0) deb("dashboard.php: gonna confirm change_set_id = {$change_set_id}");
-			saveAssignmentChangeSet($change_set_id, $_POST);
+			saveAssignmentBasedOnChangeSet($change_set_id, $_POST);
 		};
 
 		// Delete change set that user wants to discard
@@ -95,7 +95,6 @@ function renderAssignmentsForm() {
 	$from = "{$jobs_table} j, {$shifts_table} s";
 	$where = "s.job_id = j.id
 			and j.season_id = {$season_id}";
-	// $order_by = "";
 	$order_by = "date(s.string) asc";
 	$meals = sqlSelect($select, $from, $where, $order_by);
 	if (0) deb("dashboard.php.renderAssignmentsForm(): meals = ", $meals); 
@@ -120,7 +119,7 @@ function renderAssignmentsForm() {
 	
 		
 	// Make the table row for each meal
-	$n = 3;
+	$nrows = 3;
 	$save_button_interval = 3;
 	foreach($meals as $m_index=>$meal) {
 		$date_ob = new DateTime($meal['meal_date']);
@@ -130,21 +129,14 @@ function renderAssignmentsForm() {
 		if (0) deb("dashboard.renderAssignmentsForm() meal_month = {$meal_month}");
 		if (0) deb("dashboard.php.renderAssignmentsForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
 
-		// If starting a new month, insert header rows
-		// if ($previous_meal_month < $meal_month) {
-			// $meal_rows .= <<<EOHTML
-				// <tr><td colspan={$ncols}><h2>&nbsp;&nbsp;&nbsp;{$date_ob->format('F')}</h2> </td><tr> 
-				// {$header_row}
-// EOHTML;
-		// }
-		if ($n == $save_button_interval) {
+		if ($nrows == $save_button_interval) {
 			$meal_rows .= <<<EOHTML
 				<tr><td colspan={$ncols} style="text-align: left;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"> </td><tr> 
 				{$header_row}
 EOHTML;
-			$n = 1;
+			$nrows = 1;
 		} else {
-			++$n;
+			++$nrows;
 		}
 		$previous_meal_month = $meal_month;
 	
@@ -165,27 +157,21 @@ EOHTML;
 			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = {$shift_id}");
 
 			// Find the worker(s) doing this shift (i.e. this job for this meal)
-			// $select = "w.username as worker_name, 
-				// w.id as worker_id, 
-				// a.id as assignment_id, 
-				// a.latest_action,
-				// a.latest_change_id,
-				// a.generated,
-				// a.exists_now"; 
 			$select = "w.username as worker_name, 
 				w.id as worker_id,  
 				a.id as assignment_id,  
 				a.latest_change_id,
+				a.when_last_changed,
 				a.generated,
 				a.exists_now"; 
 			$from = "{$workers_table} as w, 
 				{$assignments_table} as a";
 			$where = "a.worker_id = w.id
-				and a.shift_id = {$shift_id}
-				and a.scheduler_run_id = {$scheduler_run_id}";
+				and a.shift_id = {$shift_id}";
+				// and a.scheduler_run_id = {$scheduler_run_id}";
 			$order_by = "worker_name";
-			$assignments = sqlSelect($select, $from, $where, $order_by, (0), "workers in shift");
-			if (0) deb("dashboard.php.renderAssignmentsForm(): workers = ", $assignments);
+			$assignments = sqlSelect($select, $from, $where, $order_by, (0), "renderAssignmentsForm(): assignments in shift");
+			if (0) deb("dashboard.php.renderAssignmentsForm(): assignments = ", $assignments);
 			
 			// Make the embedded table listing the workers & controls for this shift cell
 			$shift_cell = '<td><table>';
@@ -197,7 +183,6 @@ EOHTML;
 				$exists_now = $assignment['exists_now']; 
 				$has_changed = ($assignment['generated'] != $exists_now ? 1 : 0);
 				if (0) deb("dashboard.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assm_id = {$assignment['assignment_id']}");		
-				// if (0) deb("dashboard.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assm_id = {$assignment['assignment_id']}, latest_action = {$assignment['latest_action']}");		
 				
 				// If assignment's status changed since generation, make a change marker
 				if ($has_changed) {
@@ -210,7 +195,7 @@ EOHTML;
 					if (SHOW_IDS) $chg_id = ' (#' . $latest_change_set['id'] . ')';
 					$change_marker = formatted_date($latest_change_set['when_saved'], "M j g:ia") . $chg_id;
 					
-					// If assignment exists now, make an "added" marker
+					// If assignment exists now, make an "added" marker	 
 					if ($exists_now) {
 						$assignment_color = "LightGreen";
 						$change_marker = ' - added ' . $change_marker; 

@@ -1,4 +1,7 @@
 <?php
+require_once '../public/utils.php';
+require_once '../public/constants.inc';
+
 define('AVOID_PERSON', -2);
 define('PREFER_PERSON', 1);
 
@@ -662,7 +665,7 @@ EOTXT;
 	public function insertAssignmentIntoDB() {
 		global $all_jobs;
 		global $scheduler_timestamp;
-		$scheduler_run_id = scheduler_run()['id'];
+		$scheduler_run = scheduler_run();
 		$season_id = SEASON_ID;
 		if (0) debt("meal.insertAssignmentIntoDB(): this->assigned =", $this->assigned);
 		// for each job
@@ -679,28 +682,23 @@ EOTXT;
 			if (!db_shift_id) debt("meal.insertAssignmentIntoDB(): ERROR no shift id found for shift with job_id = '{$db_job_id}' and string = '{$this->date}'.");
 			// for each assignment to that job
 			foreach($assignments as $assignment_key=>$person) {
-				// $db_shift_id = sqlSelect("id", "shifts", "job_id = '{$db_job_id}' and string = '{$this->date}'", "")[0]['id'];
-				// if (!db_shift_id) debt("meal.insertAssignmentIntoDB(): ERROR no shift id found for shift with job_id = '{$db_job_id}' and string = '{$this->date}'.");
 				// Get id of worker from database based on username
-				$db_worker_id = sqlSelect("id", "workers", "username = '{$person}'", "")[0]['id'];	
-				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker usernamed '{$person}'.");
-			$table = ASSIGNMENTS_TABLE;
-			// $columns = "shift_id, worker_id, season_id, scheduler_run_id";
-			// $values = "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}', {$season_id}, {$scheduler_run_id}";
-			// $columns = "shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now, latest_action";
-			// $values = "{$db_shift_id}, {$db_worker_id}, {$season_id}, {$scheduler_run_id}, 1, 1, 'generate'";
-			$columns = "shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
-			$values = "{$db_shift_id}, {$db_worker_id}, {$season_id}, {$scheduler_run_id}, 1, 1";
-			$rows_affected = sqlInsert($table, $columns, $values, (0));
-			if (0) debt("meal.insertAssignmentIntoDB(): this->date = {$this->date}");
-			if (0) debt("meal.insertAssignmentIntoDB(): assignment_key = $assignment_key");
-			if (0) debt("meal.insertAssignmentIntoDB(): job_id = $job_id");
-			if (0) debt("meal.insertAssignmentIntoDB(): person = $person");
-			if (0) debt("meal.insertAssignmentIntoDB(): db_job_id = $db_job_id");
-			if (0) debt("meal.insertAssignmentIntoDB(): season_id = $season_id");
-			if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id = $db_shift_id");
-			if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id = $db_worker_id");
-			if (0) debt("meal.insertAssignmentIntoDB(): rows_affected = $rows_affected");
+				$db_worker_id = sqlSelect("id", AUTH_USER_TABLE, "username = '{$person}'", "")[0]['id'];	
+				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker user named '{$person}'.");
+				$table = ASSIGNMENT_STATES_TABLE;
+				// $new_id = autoIncrementId(ASSIGNMENTS_TABLE); 
+				$columns = "id, when_last_changed, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
+				$values = autoIncrementId(ASSIGNMENT_STATES_TABLE) . ", '{$scheduler_run['run_timestamp']}', {$db_shift_id}, {$db_worker_id}, {$season_id}, {$scheduler_run['id']}, 1, 1";
+				$rows_affected = sqlInsert($table, $columns, $values, (0)); 
+				if (0) debt("meal.insertAssignmentIntoDB(): this->date = {$this->date}");
+				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key = $assignment_key");
+				if (0) debt("meal.insertAssignmentIntoDB(): job_id = $job_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): person = $person");
+				if (0) debt("meal.insertAssignmentIntoDB(): db_job_id = $db_job_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): season_id = $season_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): db_shift_id = $db_shift_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): db_worker_id = $db_worker_id");
+				if (0) debt("meal.insertAssignmentIntoDB(): rows_affected = $rows_affected");
 			}
 		}
 		if (0) debt("meal.insertAssignmentIntoDB(): rows in table =", sqlSelect("count(*)", "assignments", "", "")[0]['count(*)']);

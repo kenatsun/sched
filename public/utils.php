@@ -42,6 +42,11 @@ function formatted_date($date, $format) {
 	return date_format($date_ob, $format);
 }
 
+function autoIncrementId($table) { 
+	// Returns the highest id in the specified table + 1
+	return sqlSelect("max(id)+1 as id", $table, "", "", (0), "autoIncrementId($table)")[0]['id'];
+}
+
 function meal_date_sort($a, $b) {
 	if (0) deb("utils.meal_date_sort: arg a = ", $a);
 	if (0) deb("utils.meal_date_sort: arg b = ", $b);

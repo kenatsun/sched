@@ -51,5 +51,6 @@ define('ASSIGNMENT_STATES_TABLE', 'assignment_states');
 define('SCHEDULER_RUNS_TABLE', 'scheduler_runs');
 define('CHANGE_SETS_TABLE', 'change_sets');
 define('CHANGES_TABLE', 'changes');
+define('MEALS_TABLE', 'meals');
 
 ?>

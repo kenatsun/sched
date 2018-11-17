@@ -2,7 +2,7 @@
 
 /**
  * Track the list of people.
- * "People" means everybody in the workers table, whether or not they have any offers (ASSIGN_TABLE rows)
+ * "People" means everybody in the workers table, whether or not they have any offers (OFFERS_TABLE rows)
  */
 class PeopleList {
 	public $people;
@@ -50,9 +50,6 @@ class PeopleList {
 	 * Get the list of people.
 	 */
 	public function getPeople() {
-		// if (empty($this->people)) {
-			// $this->load();
-		// }
 		if (0) deb("PeopleList->getPeople(): people:", $this->people);
 		return $this->people;
 	}

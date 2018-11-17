@@ -6,7 +6,7 @@ require_once "classes/survey.php";
 require_once "git_ignored.php";
 
 function finishSurvey($survey, $person_id) {
-	if (0) deb("finish.displayResultsPage(): survey:", $survey);
+	if (0) deb("finish.finishSurvey(): survey:", $survey);
 	$dir = BASE_DIR;
 	$person = new Person($person_id);	
 	$person_email = $person->email;
@@ -19,7 +19,7 @@ function finishSurvey($survey, $person_id) {
 	if (!$survey == NULL) {
 		$insufficient_prefs_msg = $survey->insufficient_prefs_msg;
 		$summary_text .= renderJobOffers($survey, $person);
-		$summary_text .= renderDatePreferences($survey);
+		$summary_text .= renderShiftPreferences($survey);
 		$summary_text .= renderCleanAfterCook($survey);
 		$summary_text .= renderCoworkers($survey);
 		$summary_text .= renderComments($survey);
@@ -44,19 +44,19 @@ function finishSurvey($survey, $person_id) {
 	or <a href="{$dir}/index.php">take the survey for another person</a> at any time until {$deadline}, 
 	when the survey closes.</p>
 EOHTML;
-	print $out;
 	if (0) deb("finish.displayResultsPage(): worker = ", $worker);
 	if (0) deb("finish.displayResultsPage(): summary = ", $summary);
 	if (0) deb("finish.php: SKIP_EMAIL = ", SKIP_EMAIL);
 	sendEmail($person_id, $summary_text, $insufficient_prefs_msg);
+	print $out; 
 }
 
 function renderJobOffers($survey, $person) {
 	$season_name = get_season_name_from_db(SEASON_ID);
+	if (0) deb("finish.renderJobOffers(): shifts_summary = ", $survey->shifts_summary);
 	return "
 <br>
-<h3>Your Job Sign-Ups:</h3>
-{$survey->shifts_summary}
+<h3>Your Job Sign-Ups:</h3>{$survey->shifts_summary}
 ";
 }
 
@@ -64,45 +64,82 @@ function renderJobOffers($survey, $person) {
  * Render a notification message when the data have been saved.
  * @return string HTML of the notification message.
  */
-function renderDatePreferences($survey) {
-	$summary_text = '';
-	$dates = '';
+function renderShiftPreferences($survey) {
+
+	if (0) deb("finish.renderShiftPreferences(): survey->worker_id = $survey->worker_id");
+	if (0) deb("finish.renderShiftPreferences(): survey = ", $survey);
+	if (0) deb("finish.renderShiftPreferences(): survey->summary = ", $survey->summary);
 
 	if (!empty($survey->summary)) {
-		if (0) deb("finish.renderDatePreferences(): summary:", $survey->summary);
-		if (0) deb("finish.renderDatePreferences(): count(summary):", count($survey->summary));
+		if (0) deb("finish.renderShiftPreferences(): summary = ", $survey->summary);
+		if (0) deb("finish.renderShiftPreferences(): count(summary):", count($survey->summary));
 		$num_jobs = count($survey->summary);
-		if (0) deb("finish.renderDatePreferences(): num_jobs:", $num_jobs);
-		$job_num = 0;
+		if (0) deb("finish.renderShiftPreferences(): num_jobs:", $num_jobs);
+		$pref_num = 0;
 		
-		foreach($survey->summary as $job_id=>$info) {
-			$job_num++;
-			$class = ($job_num == $num_jobs ? 'summary_listing_last' : 'summary_listing');
-			if (0) deb("finish.renderDatePreferences(): job_num, class:", $job_num . ', ' . $class);
+		// Get all jobs this worker has offered to do
+		$select = "distinct j.*";
+		$from = SCHEDULE_SHIFTS_TABLE . " as s,
+			" . SCHEDULE_PREFS_TABLE . " as p,
+			" . SURVEY_JOB_TABLE . " as j";
+		$where = "worker_id = {$survey->worker_id}
+			and s.id = p.shift_id
+			and s.job_id = j.id
+			and j.season_id = " . SEASON_ID;
+		$order_by = "j.display_order asc";
+		$jobs = sqlSelect($select, $from, $where, $order_by, (0), "finish.renderShiftPreferences(): jobs");
 		
-			$job_name = get_job_name($job_id);
-			$dates = implode("\n<br>", $info); 
+		foreach($jobs as $job) {
+			// Get all shift_prefs of this worker for this job
+			$select = "p.*, 
+				m.date,
+				j.display_order,
+				j.description as job_name,
+				j.id as job_id";
+			$from = SCHEDULE_SHIFTS_TABLE . " as s,
+				" . SCHEDULE_PREFS_TABLE . " as p,
+				" . MEALS_TABLE . " as m,
+				" . SURVEY_JOB_TABLE . " as j";
+			$where = "worker_id = {$survey->worker_id}
+				and s.meal_id = m.id
+				and s.id = p.shift_id
+				and s.job_id = j.id
+				and j.id = {$job['id']}";
+			$order_by = "m.date asc, p.pref desc";
+			$shift_prefs = sqlSelect($select, $from, $where, $order_by, (0), "finish.renderShiftPreferences(): shift_prefs");
 			
-			$summary_text .= "
-<td class=\"{$class}\">
-<p><strong>{$job_name}</strong></p>
-{$dates}
-</td>
-";
+			$previous_month = date_format(date_create($shift_prefs[0]['date']), "M");
+			// $shift_pref_lines = "";
+			foreach($shift_prefs as $shift_pref) {
+				$pref_num++;
+				$class = ($pref_num == $num_jobs ? 'summary_listing_last' : 'summary_listing');
+				$date_ob = date_create($shift_pref['date']);
+				if (0) deb("finish.renderShiftPreferences(): job_num = $job_id, info = ", $date_job_prefs);
+				if (0) deb("finish.renderShiftPreferences(): job_num, class:", $pref_num . ', ' . $class);
+				$job_name = $shift_pref['job_name'];
+				$month = date_format($date_ob, "M");
+				if ($month !== $previous_month) $shift_pref_lines .= "\n<br>";
+				$previous_month = $month;
+				$date = date_format($date_ob, "D M j");
+				$pref = $shift_pref['pref'];
+				$pref_name = sqlSelect("name", SHIFT_PREF_NAMES_TABLE, "level = {$pref}", "", (0))[0]['name'];
+				$shift_pref_line = "{$date} : {$pref_name}";
+				if ($pref_name == "prefer" || $pref_name == "ok") $shift_pref_line = "<strong>" . $shift_pref_line . "</strong>";
+				$shift_pref_lines .= $shift_pref_line . "\n<br>";
+			}
+			$summary_text .= "<td class=\"{$class}\">
+				\n<p><strong>{$job_name}</strong></p>
+				\n{$shift_pref_lines}</td>";
+			$shift_pref_lines = "";
 		}
 
 		$summary_text = <<<EOHTML
-<div>
-<h3>Your Date Preferences:</h3>
-	<table class="pref_listing" style="font-size: 11pt;"> 
-		<tr>
-		{$summary_text}
-		</tr>
-	</table>
-</div>
+
+<h3>Your Date Preferences:</h3><table class="pref_listing" style="font-size: 11pt;"> <tr>
+		{$summary_text} </tr></table>
 EOHTML;
 	}
-	if (0) deb("finish.renderDatePreferences: summary_text:", $summary_text);
+	if (0) deb("finish.renderShiftPreferences: summary_text:", $summary_text);
 	return $summary_text;
 }
 
@@ -141,7 +178,7 @@ function renderComments($survey) {
 	if (0) deb("finish.renderCleanAfterCook(): comments:", $comments);
 	if (!$comments == '') {
 		return "	
-<h3>Comments for the More Meals Committee:</h3>
+\n<h3>Your comments for the More Meals Committee:</h3>
 <pre>$comments</pre>
 ";
 	} else {
@@ -168,16 +205,14 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	if (0) deb("finish.sendEmail(): person:", $person);
 	if (0) deb("finish.sendEmail(): person_email:", $person_email);
 	if (0) deb("finish.sendEmail(): content:", $content . "<p>END</p>");
-	$tagless_content = strip_tags($content);
-	$empty_lineless_content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $tagless_content);
-	$trimmed_content = trim($empty_lineless_content, " ");
-	if (0) deb("finish.sendEmail(): tagless content: {$tagless_content}", "<p>END</p>");
-	if (0) deb("finish.sendEmail(): empty_lineless_content: {$empty_lineless_content}", "<p>END</p>");
-	if (0) deb("finish.sendEmail(): trimmed_content: {$trimmed_content}", "<p>END</p>");
+	$content = strip_tags($content);  // Strip HTML tags
+	if (0) deb("finish.sendEmail(): tagless content: {$content}", "<p>END</p>");
+	// $content = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $content);  // Remove empty lines
+	// if (0) deb("finish.sendEmail(): empty_lineless_content: {$content}", "<p>END</p>");
 	$email_body = "Dear {$person_name} ~\n\n" .
 		"Thanks for completing the {$community} meals scheduling questionnaire!\n\n";
 	if (!$content == "") {
-		$email_body .= "Here are the preferences you have expressed as of "  . $timestamp . ":\n" . $empty_lineless_content;
+		$email_body .= "Here are the preferences you have expressed as of "  . $timestamp . ":" . $content;
 	} else {
 		$email_body .= "You have told us that you won't be doing any meal jobs this season.\n";	
 	}
@@ -189,7 +224,7 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	if (0) deb("finish.sendEmail: SKIP_EMAIL = ", SKIP_EMAIL);
 	if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
 		$sent = mail($person_email,
-			'Meal Scheduling Survey preferences saved at ' . $timestamp,
+			'Meal Scheduling Survey preferences saved on ' . $timestamp,
 			$email_body,
 			'From: moremeals@sunward.org');
 

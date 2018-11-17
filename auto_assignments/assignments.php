@@ -43,7 +43,6 @@ require_once 'meal.php';
 
 global $dbh;
 global $job_key_clause;
-// global $scheduler_timestamp;
 global $scheduler_run_id;
 $scheduler_timestamp = date("Y/m/d H:i:s");
 if (0) debt("assignments: scheduler_timestamp = $scheduler_timestamp");
@@ -72,7 +71,7 @@ if (array_key_exists('c', $options)) {
 }
 
 if (!empty($options)) {
-	$assignments->printResults($options);
+	$assignments->printMealTeamAutoAssignments($options);
 }
 
 // write assignments in ASSIGNMENTS database table
@@ -154,20 +153,36 @@ class Assignments {
 		$prefs_table = SCHEDULE_PREFS_TABLE;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
+		$meals_table = MEALS_TABLE;
 		$sql = <<<EOSQL
-			SELECT s.string as date, s.job_id, a.username, p.pref
+			SELECT m.date as date, s.job_id, a.username, p.pref
 				FROM {$auth_user_table} as a, {$prefs_table} as p,
-					{$shifts_table} as s
-				WHERE p.pref>0
+					{$shifts_table} as s, {$meals_table} as m
+				WHERE p.pref > 0
 					AND a.id=p.worker_id
-					AND s.id = p.date_id
+					AND s.id = p.shift_id
 				ORDER BY date ASC,
 					p.pref DESC,
 					a.username ASC;
 EOSQL;
-
+		$select = "m.date as date, 
+			s.job_id, 
+			a.username, 
+			p.pref";
+		$from = "{$auth_user_table} as a, 
+			{$prefs_table} as p,
+			{$shifts_table} as s, 
+			{$meals_table} as m";
+		$where = "p.pref > 0
+			AND a.id=p.worker_id
+			AND s.id = p.shift_id
+			AND m.id = p.meal_id";
+		$order_by = "date ASC,
+			p.pref DESC,
+			a.username ASC";
+		$rows = sqlSelect($select, $from, $where, $order_by, (0), "assignments.loadPrefs():");
 		$count = 0;
-		foreach($dbh->query($sql) as $row) {
+		foreach($rows as $row) {
 			$u = $row['username'];
 			$d = $row['date'];
 			$ji = $row['job_id'];
@@ -241,16 +256,16 @@ EOSQL;
 	/**
 	 * Display the results on the screen
 	 */
-	public function printResults($options) {
+	public function printMealTeamAutoAssignments($options) {
 		$display_schedule = array_key_exists('s', $options);
 		if ($display_schedule) {
-			$this->schedule->printResults();
+			$this->schedule->printMealTeamSchedule();
 		}
 
 		$display_workers = array_key_exists('w', $options);
 		if ($display_workers) {
 			$only_unfilled_workers = array_key_exists('u', $options);
-			$this->roster->printResults($only_unfilled_workers);
+			$this->roster->printAssignmentsOfWorkers($only_unfilled_workers); 
 		}
 	}
 
@@ -259,7 +274,7 @@ EOSQL;
 	 * Output the schedule as a series of SQL insert statements
 	 */
 	public function outputSqlInserts() {
-		$this->schedule->printResults('sql');
+		$this->schedule->printMealTeamSchedule('sql');
 	}
 
 
@@ -267,14 +282,14 @@ EOSQL;
 	 * Output the schedule as CSV
 	 */
 	public function outputCSV() {
-		$this->schedule->printResults('csv');
+		$this->schedule->printMealTeamSchedule('csv');
 	}
 
 	/**
 	 * Write results to ASSIGNMENTS_TABLE
 	 */
 	public function outputToDatabase() {
-		$this->schedule->printResults('db');
+		$this->schedule->printMealTeamSchedule('db');
 	}
 
 

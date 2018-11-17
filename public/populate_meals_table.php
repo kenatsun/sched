@@ -11,21 +11,26 @@ sqlUpdate(SCHEDULE_SHIFTS_TABLE, "meal_id = NULL", "", (0));
 sqlDelete(MEALS_TABLE, "", (0)); 
 sqlUpdate("sqlite_sequence", "seq = 0", "name = '" . MEALS_TABLE . "'", (0)); 
 
-
 // Populate meals table from shifts and jobs tables
 $sql = "insert into meals (season_id, date) 
 	select distinct season_id, string 
     from shifts s, jobs j
-    where s.job_id = j.id";
+    where s.job_id = j.id
+	union
+	select season_id, month_number || '/' || day_number || '/2018' as date
+	from skip_dates as sd
+	where month_number || '/' || day_number || '/2018' not in ( 
+		select string from shifts
+	)";
 if (0) deb("populate_meals_table.php: sql:", $sql);
 $rows_affected = $dbh->exec($sql);
-if (0) deb("populate_meals_table.php: rows_affected:", $rows_affected);
+if (0) deb("populate_meals_table.php: rows_affected:", $rows_affected); 
 
 // Populate shifts.meal_id by matching shifts.string with meals.date
 $shifts = sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "", "");
 foreach($shifts as $i=>$shift) {
 	$meal = sqlSelect("*", MEALS_TABLE, "date = '{$shift['string']}'", "", (0))[0];
-	sqlUpdate(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", "string = '{$meal['date']}'", (0));
+	sqlUpdate(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", "string = '{$meal['date']}'", (0)); 
 }
 
 // Populate the other meals columns

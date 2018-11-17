@@ -2,24 +2,15 @@
 
 require_once 'globals.php';
 require_once 'display/includes/header.php';
-
-// require_once 'classes/calendar.php';
-// require_once 'classes/roster1.php';
 require_once 'classes/person.php';
 require_once 'classes/PeopleList.php';
 require_once 'classes/OffersList.php';
 
 class Survey1 {
 	protected $person;
-	// protected $calendar;
-	// protected $roster;
-	// public $offers;
-	// protected $offers_list = array();
-	
 	protected $name;
 	protected $username;
 	protected $id;
-
 	protected $avoid_list;
 	protected $prefer_list;
 	protected $saved = 0;
@@ -62,11 +53,11 @@ class Survey1 {
 		if (0) deb("survey1.setRespondent(): Person data:", $this->person);
 	}
 
-	public function toString() {
-		if (0) deb("survey1.toString(): id:", $this->person->id);
-		if (0) deb("survey1.toString(): offers:", $this->offers);
-		if (0) deb("survey1.toString(): this->person->username:", $this->person->username);
-		if (0) deb("survey1.toString(): _GET['person']:", $_GET['person']);
+	public function renderOffersList() {
+		if (0) deb("survey1.renderOffersList(): id:", $this->person->id);
+		if (0) deb("survey1.renderOffersList(): offers:", $this->offers);
+		if (0) deb("survey1.renderOffersList(): this->person->username:", $this->person->username);
+		if (0) deb("survey1.renderOffersList(): _GET['person']:", $_GET['person']);
 		if ($this->is_save_request) {
 			$out = $this->renderSaved();
 			$this->sendEmail($this->person->username, $out);
@@ -84,7 +75,7 @@ EOHTML;
 			<input type="hidden" name="posted" value="0">
 			{$this->renderInstructions()}
 			{$this->renderHints()}
-			{$this->offers_list->toString($this->offers)}
+			{$this->offers_list->renderOffersList($this->offers)}
 			<button class="pill" type="submit" value="Save" id="end">Next</button>
 		</form>
 EOHTML;
@@ -92,7 +83,6 @@ EOHTML;
 
 	protected function renderInstructions() {
 		$season_name = get_season_name_from_db();
-		// $month_names = get_current_season_months();
 		return <<<EOHTML
 				<br>
 				<p class="question">How many times are you willing and able to do each of these meal jobs during {$season_name}?</p>  
@@ -188,7 +178,7 @@ EOSQL;
 	 */
 	protected function saveOffers() {
 		$this->saved = 0;
-		$assign_table = ASSIGN_TABLE;
+		$OFFERS_TABLE = OFFERS_TABLE;
 		$this->job_count = 0;  // number of jobs in this survey
 		$this->jobs_offered_count = 0;  // number of jobs for which this person is willing to do some shifts (offer > 0)
 		$this->jobs_nixed_count = 0;  // number of jobs this person doesn't want to do (offer = 0)
@@ -206,7 +196,7 @@ EOSQL;
 			if ($offer == NULL) $offer = 0;
 			if (0) deb("Survey1: saveOffers(): job_id=offer", $job_name." = ".$offer);
 			$sql = "
-				REPLACE INTO {$assign_table} (worker_id, job_id, season_id, instances, type) 
+				REPLACE INTO {$OFFERS_TABLE} (worker_id, job_id, season_id, instances, type) 
 					VALUES({$this->id}, {$job_id}, {$this->season_id}, {$offer}, 'a')";
 			if (0) deb("Survey1: saveOffers(): SQL:", $sql);
 			$success = $this->dbh->exec($sql);
@@ -250,22 +240,22 @@ EOSQL;
 		$summary_text = '';
 
 		if ($this->offer_summary) {
-			if ($this->jobs_offered_count == 1) {$string = "this job";} else {$string = "these jobs";};
-			$summary_text .= "You have offered to do {$string} during {$this->season_name}:
+			if ($this->jobs_offered_count == 1) {$phrase = "this job";} else {$phrase = "these jobs";};
+			$summary_text .= "You have offered to do {$phrase} during {$this->season_name}:
 <ul>
 {$this->offer_summary}
 </ul>";
 		} 
 		if ($this->zero_summary) {
-			if ($this->jobs_nixed_count == 1) {$string = "this job";} else {$string = "these jobs";};
-			$summary_text .= "You don't want to do {$string} at all during {$this->season_name}:
+			if ($this->jobs_nixed_count == 1) {$phrase = "this job";} else {$phrase = "these jobs";};
+			$summary_text .= "You don't want to do {$phrase} at all during {$this->season_name}:
 <ul>
 {$this->zero_summary}
 </ul>";
 		} 
 		if ($this->null_summary) {
-			if ($this->jobs_null_count == 1) {$string = "this job";} else {$string = "these jobs";};
-			$summary_text .= "You haven't decided yet about doing {$string} during {$this->season_name}:
+			if ($this->jobs_null_count == 1) {$phrase = "this job";} else {$phrase = "these jobs";};
+			$summary_text .= "You haven't decided yet about doing {$phrase} during {$this->season_name}:
 <ul>
 {$this->null_summary}
 </ul>";

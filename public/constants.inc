@@ -18,21 +18,12 @@ if (($this_month == 11) || ($this_month == 12)) {
 	$this_year++;
 }
 
-// These have been replaced with database definitions in globals.php
-// define('SEASON_START_YEAR', $this_year);
-// define('SEASON_ID', get_season_id());
-// define('SEASON_ID', 2); 
-// define('SEASON_TYPE', get_season_name()); // summer, fall, winter
-// define('SEASON_TYPE', 'SUMMER');  
-// if (0) {deb("constants.inc: SEASON_TYPE:", SEASON_TYPE);}
-
 // -------- sqlite tables --------- 
 // settings tables
-define('SKIP_DATES_TABLE', 'skip_dates');
 
 // tables from the work survey (read-only)
 define('SURVEY_JOB_TABLE', 'jobs'); 
-define('ASSIGN_TABLE', 'offers'); 
+define('OFFERS_TABLE', 'offers'); 
 define('SEASON_TABLE', 'seasons'); 
 define('SEASON_WORKER_TABLE', 'season_workers');  
 
@@ -52,5 +43,8 @@ define('SCHEDULER_RUNS_TABLE', 'scheduler_runs');
 define('CHANGE_SETS_TABLE', 'change_sets');
 define('CHANGES_TABLE', 'changes');
 define('MEALS_TABLE', 'meals');
+
+// config tables
+define('SHIFT_PREF_NAMES_TABLE', 'shift_pref_names');
 
 ?>

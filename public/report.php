@@ -24,8 +24,6 @@ require_once('participation.php');
 $calendar = new Calendar();
 $calendar->job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ? intval($_GET['key']) : 'all';
 $calendar->data_key = (isset($_GET['show'])) ? $_GET['show'] : 'all';
-
-$calendar->loadAssignments();
 $calendar->setIsReport(TRUE);
 
 $job_key_clause = ($job_key != 0) ? "AND s.job_id={$job_key}" : '';
@@ -40,7 +38,7 @@ $sql = <<<EOSQL
 	SELECT u.username as username, p.worker_id, s.job_id, count(*) as num
 		FROM {$prefs_table} as p, {$auth_user_table} as u, {$shifts_table} as s
 		WHERE u.id = p.worker_id
-			AND p.date_id=s.id
+			AND p.shift_id=s.id
 			{$job_key_clause} 
 			AND p.pref > 0
 		GROUP BY p.worker_id, s.job_id
@@ -58,7 +56,7 @@ $job_id_clause = ($job_key != 'all') ?
 $ids_clause = get_job_ids_clause();
 $sid = SEASON_ID;
 $jobs_table = SURVEY_JOB_TABLE;
-$assn_table = ASSIGN_TABLE;
+$assn_table = OFFERS_TABLE;
 $sql = <<<EOSQL
 	SELECT u.username, a.job_id, j.description, a.instances
 		FROM {$assn_table} as a, {$auth_user_table} as u, {$jobs_table} as j
@@ -93,7 +91,6 @@ $file = $json_assignments_file;
 if (file_exists($file)) {
 	$assigned_data = json_decode(file_get_contents($file), true);
 
-	// date => array(job_id => array(workers))
 	foreach($assigned_data as $date=>$info) {
 		// if a job key is specified, then only display info for that job
 		if ($job_key != 'all') {
@@ -177,14 +174,10 @@ EOHTML;
 
 $r = new Respondents();
 $responses = '';
-// if ($_SESSION['access_type'] != 'guest') {
-// if (userIsAdmin()) {
-	// $responses = $r->getSummary((time() < DEADLINE));
-// }
 
-$worker_dates = $calendar->getWorkerDates();
+$worker_dates = $calendar->getWorkerShiftPrefs();
 $selector_html = $calendar->renderDisplaySelectors($calendar->job_key, $calendar->data_key);
-$calendar_body = $calendar->toString(NULL, $worker_dates);
+$calendar_body = $calendar->renderCalendar(NULL, $worker_dates);
 $calendar_headline = (surveyIsClosed() ? "Calendar" : "When we can work");
 $cal_string = <<<EOHTML
 	<br>
@@ -193,7 +186,6 @@ $cal_string = <<<EOHTML
 		{$calendar_body}
 	<ul>{$selector_html}</ul>
 EOHTML;
-// $comments = (userIsAdmin() ? $calendar->getWorkerComments($job_key_clause) : "");
 $comments = (userIsAdmin() ? renderWorkerComments() : "");
 
 $job_name = ($job_key != 0) ? '' : '<th>Job</th>';

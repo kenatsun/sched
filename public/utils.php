@@ -33,7 +33,7 @@ function create_sqlite_connection() {
 }
 
 // Work with assignments and changes from the latest scheduler run in the current season.
-function scheduler_run() {
+function scheduler_run() { 
 	return sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = " . SEASON_ID, "run_timestamp desc", (0))[0];
 }
 
@@ -47,11 +47,18 @@ function autoIncrementId($table) {
 	return sqlSelect("max(id)+1 as id", $table, "", "", (0), "autoIncrementId($table)")[0]['id'];
 }
 
+function zeroPad($int, $length) {
+	$str = (string)$int;
+	for (; $length - strlen($str) > 0; ) {
+		$str = "0" . $str;
+	}
+	return $str;
+}
+
 function meal_date_sort($a, $b) {
 	if (0) deb("utils.meal_date_sort: arg a = ", $a);
 	if (0) deb("utils.meal_date_sort: arg b = ", $b);
     $diff = strtotime($a['meal_date']) - strtotime($b['meal_date']); 
-	// if (!$diff) $diff = 1;
 	if (0) deb("utils.meal_date_sort: diff = ", $diff);
 	return $diff;
 }
@@ -66,15 +73,9 @@ function surveyIsClosed() {
 
 function determineUserStatus() {
 	if (isset($_GET['admin']) || isset($_GET['a'])) { 
-		// if (isset($_COOKIE["admin"])) setcookie("admin", FALSE, time()+86400,"/");
 		promptForAdminPassword();
 	}
-	// else {
-		// if (!$_SESSION['access_type'] == 'admin') $_SESSION['access_type'] = 'guest';	
-	// }
-	// if (0) deb("utils.determineUserStatus: isset(_COOKIE['admin']) before = ", isset($_COOKIE['admin']));
 	if (isset($_POST['password'])) { 
-		// if ($_POST['password'] == 'robotron') {  
 		if ($_POST['password'] == 'r') {  
 			if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
 			$_SESSION['access_type'] = 'admin';
@@ -87,11 +88,9 @@ function determineUserStatus() {
 	}
 	if (0) deb("utils.determineUserStatus: _GET = ", $_GET);
 	if (0) deb("utils.determineUserStatus: _POST = ", $_POST);
-	// if (0) deb("utils.determineUserStatus: isset(_COOKIE['admin']) after = " . isset($_COOKIE["admin"]));
 	if (0) deb("utils.determineUserStatus: _COOKIE = ", $_COOKIE);
 	if (0) deb("utils.determineUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
 	if (0) deb("utils.determineUserStatus: _SESSION = ", $_SESSION);
-	// return $_SESSION['access_type'];
 }
 
 function promptForAdminPassword() {
@@ -375,7 +374,7 @@ function getJobs() {
 
 function getJobSignups() {
 	$person_table = AUTH_USER_TABLE;
-	$offers_table = ASSIGN_TABLE;
+	$offers_table = OFFERS_TABLE;
 	$jobs_table = SURVEY_JOB_TABLE;
 	$season_id = SEASON_ID;
 	$select = "p.id as person_id, p.first_name, p.last_name, o.instances, j.id as job_id, j.description";
@@ -387,18 +386,33 @@ function getJobSignups() {
 	return $signups;
 }
 
-function getJobAssignments($date_string=NULL, $job_id=NULL, $worker_id=NULL) {
-	// list the assigned workers
+function getJobAssignments($meal_id=NULL, $job_id=NULL, $worker_id=NULL) {
+	// list the assignments for the current season, optionally scoped by meal, job, and/or worker
 	$season_id = SEASON_ID;
-	$date_clause = ($date_string ? " and s.string = '{$date_string}'" : "");
-	$job_id_clause = ($job_id ? " and j.id = '{$job_id} '" : "");
-	$worker_id_clause = ($worker_id ? " and w.id = '{$worker_id} '" : "");
-	$select = "w.first_name || ' ' || w.last_name as worker_name, w.first_name, w.last_name, a.*, s.string as meal_date, s.job_id, j.description";
-	$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
-	$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id and j.season_id = {$season_id} {$date_clause} {$job_id_clause} {$worker_id_clause}
+	$meal_id_clause = ($meal_id ? "
+		and m.id = '{$meal_id}'" : "");
+	$job_id_clause = ($job_id ? "
+		and j.id = '{$job_id} '" : "");
+	$worker_id_clause = ($worker_id ? "
+		and w.id = '{$worker_id} '" : "");
+	$select = "w.first_name || ' ' || w.last_name as worker_name, 
+		w.first_name, 
+		w.last_name, a.*, 
+		m.date as meal_date, 
+		s.job_id, 
+		j.description";
+	$from = AUTH_USER_TABLE . " as w, 
+		" . ASSIGNMENTS_TABLE . " as a, 
+		" . MEALS_TABLE . " as m, 
+		" . SCHEDULE_SHIFTS_TABLE . " as s, 
+		" . SURVEY_JOB_TABLE . " as j";
+	$where = "w.id = a.worker_id 
+		and a.shift_id = s.id 
+		and s.job_id = j.id 
+		and j.season_id = {$season_id} 
+		and s.meal_id = m.id {$meal_id_clause} {$job_id_clause} {$worker_id_clause}
 		and a.scheduler_run_id = " . scheduler_run()['id'] . " {$job_id_clause}";
-		// and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . " where season_id = {$season_id}) {$job_id_clause}";
-	$order_by = "j.display_order";
+	$order_by = "m.date, j.display_order";
 	$assignments = sqlSelect($select, $from, $where, $order_by, (0), "getJobAssignments()");
 	if (0) deb("utils.getJobAssignments(): assignments:", $assignments);
 	return $assignments;
@@ -406,7 +420,7 @@ function getJobAssignments($date_string=NULL, $job_id=NULL, $worker_id=NULL) {
 
 function getResponders() {
 	$responder_ids = array();
-	$signups_table = ASSIGN_TABLE;
+	$signups_table = OFFERS_TABLE;
 	$season_id = SEASON_ID;
 	$where = "id IN (select worker_id from {$signups_table} WHERE season_id = {$season_id})";
 	$responders =  new PeopleList($where);
@@ -516,12 +530,10 @@ function renderJobSignups($headline=NULL, $include_details) {
 			$available_count = ($available_count > 0 ? $available_count : '');
 			$assignments_count = ($assignments_count > 0 ? $assignments_count : '');
 			$available_background = ($available_count != '' ? 'style="background:lightpink;" ' : '');
-			// if ($include_details) {
 			$signup_rows .= "
 				<td>{$assignments_count}</td>";
 			$signup_rows .= "
 				<td {$available_background}>{$available_count}</td>";
-			// }
 		}
 	}
 	$signup_rows .= "</tr>";
@@ -554,7 +566,6 @@ function renderJobSignups($headline=NULL, $include_details) {
 		<td {$background}><strong>signups still needed</strong></td>";
 	foreach($jobs as $index=>$job) {
 		$shortfall = $job['instances'] - $job['signups'];
-		// $shortfall = max($job['instances'] - $job['signups'], 0);
 		if ($shortfall == 0) $shortfall = '';
 		$shortfall_row .= "<td {$background}><strong>{$shortfall}</strong></td>";
 		if (userIsAdmin() && $include_details) $shortfall_row .= "<td {$background}></td><td {$background}></td>";

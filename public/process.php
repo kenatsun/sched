@@ -3,6 +3,6 @@ require_once 'classes/survey.php';
 
 $survey = new Survey();
 $survey->run();
-print $survey->toString();
+print $survey->renderSurvey(); 
 
 ?>

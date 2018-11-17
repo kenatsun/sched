@@ -5,27 +5,16 @@ class Worker {
 	public $first_name;
 	public $last_name;
 	public $email;
-
-	// job_id => date => pref
 	public $avail_shifts = array();
-
-	// job_id => array(dates)
 	public $assigned = array();
-
-	// job_id => count
 	public $num_shifts_to_fill = array();
-
 	public $requests = array();
-
 	public $adjacency_limit = 8;
 	public $avoids = array();
 	public $prefers = array();
-
 	public $tasks;
 	public $comments;
-
 	public $dbh;
-
 	public $is_placeholder = FALSE;
 
 	/**
@@ -202,15 +191,15 @@ class Worker {
 	 *
 	 * @param[in] dates_by_shift
 	 */
-	public function addNonResponsePrefs($dates_by_shift) {
+	public function addNonResponsePrefs($meals_by_shift) {
 		foreach($this->num_shifts_to_fill as $job_id=>$instances) {
 			// sanity check
-			if (!isset($dates_by_shift[$job_id])) {
+			if (!isset($meals_by_shift[$job_id])) {
 				echo "shift {$job_id} doesn't have any dates!\n";
 				exit;
 			}
 
-			foreach($dates_by_shift[$job_id] as $date) {
+			foreach($meals_by_shift[$job_id] as $date) {
 				$this->addAvailability($job_id, $date, NON_RESPONSE_PREF);
 			}
 		}
@@ -468,7 +457,7 @@ class Worker {
 	 *     workers and their jobs which have unfilled shifts.
 	 * @return array list of jobs and number of shifts assigned
 	 */
-	public function printResults($only_unfilled_workers=FALSE) {
+	public function printAssignmentsOfWorker($only_unfilled_workers=FALSE) {
 		if (empty($this->assigned)) {
 			return array();
 		}
@@ -532,7 +521,7 @@ EOTXT;
 
 		$sid = SEASON_ID;
 		$jobs_table = SURVEY_JOB_TABLE;
-		$assn_table = ASSIGN_TABLE;
+		$assn_table = OFFERS_TABLE;
 		$task_sql = <<<EOSQL
 			select {$jobs_table}.description, {$jobs_table}.id, {$assn_table}.instances
 				from {$jobs_table}, {$assn_table}
@@ -545,7 +534,6 @@ EOSQL;
 
 		$tasks = array();
 		foreach ($this->dbh->query($task_sql) as $row) {
-			// $tasks[$row['id']] = $row['description'];
 			$tasks[$row['id']] = $row;
 		}
 

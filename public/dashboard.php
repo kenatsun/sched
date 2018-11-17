@@ -74,6 +74,7 @@ function renderAssignmentsForm() {
 	$assignments_table = ASSIGNMENTS_TABLE;
 	$changes_table = CHANGES_TABLE;
 	$change_sets_table = CHANGE_SETS_TABLE;
+	$meals_table = MEALS_TABLE;
 	$season_id = SEASON_ID;
 	
 	$assignments_form_headline = "<h2>Assignments</h2>";
@@ -91,12 +92,18 @@ function renderAssignmentsForm() {
 	// $scheduler_run_date = formatted_date(scheduler_run()['run_timestamp'], "M j g:i a");
 	
 	// Get data for Meals table
-	$select = " DISTINCT s.string as meal_date";
-	$from = "{$jobs_table} j, {$shifts_table} s";
+	// $select = " DISTINCT m.date as meal_date";
+	// $from = "{$jobs_table} j, {$shifts_table} s";
+	// $where = "s.job_id = j.id
+			// and j.season_id = {$season_id}";
+	// $order_by = "date(m.date) asc";
+	$select = " DISTINCT m.date as meal_date";
+	$from = "{$jobs_table} j, {$shifts_table} s, {$meals_table} m";
 	$where = "s.job_id = j.id
-			and j.season_id = {$season_id}";
-	$order_by = "date(s.string) asc";
-	$meals = sqlSelect($select, $from, $where, $order_by);
+		and m.id = s.meal_id
+		and j.season_id = {$season_id}";
+	$order_by = "m.date asc";
+	$meals = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm(): get assignments for season");
 	if (0) deb("dashboard.php.renderAssignmentsForm(): meals = ", $meals); 
 	
 	// Make the table header row
@@ -122,6 +129,7 @@ function renderAssignmentsForm() {
 	$nrows = 3;
 	$save_button_interval = 3;
 	foreach($meals as $m_index=>$meal) {
+		if (0) deb("dashboard.renderAssignmentsForm() meal['meal_date'] = {$meal['meal_date']}");
 		$date_ob = new DateTime($meal['meal_date']);
 		$meal['meal_day_name'] = $date_ob->format('l');
 		$meal_month = $date_ob->format('m');
@@ -148,11 +156,13 @@ EOHTML;
 			
 			// Get the id of this shift (i.e. this job for this meal)
 			$select = "s.id as id";
-			$from = "$shifts_table s";
+			$from = "{$shifts_table} as s,
+				{$meals_table} as m";
 			$where = "s.job_id = {$job['job_id']}
-				and s.string = '{$meal['meal_date']}'";
+				and s.meal_id = m.id
+				and m.date = '{$meal['meal_date']}'";
 			$order_by = "";
-			$shift = sqlSelect($select, $from, $where, $order_by); 
+			$shift = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm()"); 
 			$shift_id = $shift[0]['id'];
 			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = {$shift_id}");
 
@@ -168,7 +178,6 @@ EOHTML;
 				{$assignments_table} as a";
 			$where = "a.worker_id = w.id
 				and a.shift_id = {$shift_id}";
-				// and a.scheduler_run_id = {$scheduler_run_id}";
 			$order_by = "worker_name";
 			$assignments = sqlSelect($select, $from, $where, $order_by, (0), "renderAssignmentsForm(): assignments in shift");
 			if (0) deb("dashboard.php.renderAssignmentsForm(): assignments = ", $assignments);

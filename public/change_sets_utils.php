@@ -18,15 +18,19 @@ if (0) deb("change_sets.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
 function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 	
 	// Read changes in current change set from database
-	$select = "c.*, s.string as meal_date, w.first_name || ' ' || w.last_name as worker_name, j.description as job_name";
+	$select = "c.*, m.date as meal_date, 
+		w.first_name || ' ' || w.last_name as worker_name, 
+		j.description as job_name";
 	$from = SCHEDULE_SHIFTS_TABLE . " as s, " . 
 		CHANGES_TABLE . " as c, " .  
 		AUTH_USER_TABLE . " as w, " .
-		SURVEY_JOB_TABLE . " as j"; 
+		SURVEY_JOB_TABLE . " as j, " .
+		MEALS_TABLE . " as m "; 
 	$where = "c.change_set_id = {$change_set_id}
 		and c.shift_id = s.id
 		and c.worker_id = w.id
-		and s.job_id = j.id";
+		and s.job_id = j.id
+		and s.meal_id = m.id";
 	$order_by = "action desc";
 	$changes = sqlSelect($select, $from, $where, $order_by, (0), "changes in this change set"); 
 
@@ -257,7 +261,6 @@ function saveAssignmentBasedOnChange($change) {
 	
 	// A change is always recorded by inserting a new record into assignment_states
 	$columns = "id, when_last_changed, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
-	// $new_existence_indicator = ($change['action'] == "add" ? 1 : 0);
 	// If assignment record exists, insert a new assignment_state with the existing assignment's id
 	if ($existing_assignment) {
 		$values = "{$existing_assignment['id']}, '{$change_set['when_saved']}', {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, {$existing_assignment['generated']}, " . ($change['action'] == "add" ? 1 : 0);
@@ -319,22 +322,5 @@ function undoChangeSets($undo_back_to_change_set_id, $post) {
 		sqlDelete(CHANGE_SETS_TABLE, "id = {$change_set_to_undo['id']}", (0), "delete undone change set", TRUE);
 	}
 }
-
-
-// function undoChange($change_to_undo) {
-	
-	// // Get existing assignment that was changed by the change that is to be undone
-	// $select = "id, when_last_changed";
-	// $from = ASSIGNMENT_STATES_TABLE;
-	// $where = "shift_id = {$change_to_undo['shift_id']}
-		// and worker_id = {$change_to_undo['worker_id']}";
-	// $order_by = "when_last_changed desc";
-	// $existing_assignment = sqlSelect($select, $from, $where, $order_by, (0), "undoChange(): assignment_state to delete")[0];
-	// if (0) deb("change_sets_utils.saveAssignmentBasedOnChange(): change['action'] = {$change_to_undo['action']}");
-	
-	// // Delete that assignment_states record
-	// sqlDelete(ASSIGNMENT_STATES_TABLE, "id = {$existing_assignment['id']} and when_last_changed = '{$existing_assignment['when_last_changed']}'", (0), "undoChange(): delete action");
-// }
-
 
 ?>

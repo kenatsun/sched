@@ -9,17 +9,12 @@ class Roster {
 	protected $job_id;
 	protected $dbh;
 	protected $num_shifts_per_season = 0;
-
-	// job_id => username => counts
 	protected $least_available = array();
-
 	protected $schedule;
-
 	protected $total_labor_avail = array();
-
 	protected $requests = array();
 
-
+	
 	public function __construct() {
 		global $dbh;
 		$this->dbh = $dbh;
@@ -115,7 +110,7 @@ EOSQL;
 	 * @param[in] slackers array list of usernames who haven't responded.
 	 */
 	public function addNonResponderPrefs($slackers) {
-		$dates_by_shift = $this->schedule->getDatesByShift();
+		$meals_by_shift = $this->schedule->getDatesByShift();
 		// $first_half_dates_by_shift = $this->schedule->getFirstHalfDatesByShift();
 		// $second_half_dates_by_shift = $this->schedule->getSecondHalfDatesByShift();
 
@@ -125,7 +120,7 @@ EOSQL;
 				echo "worker $u is null, they don't have shifts assigned\n";
 				exit;
 			}
-			$w->addNonResponsePrefs($dates_by_shift);
+			$w->addNonResponsePrefs($meals_by_shift);
 		}
 	}
 
@@ -173,7 +168,7 @@ EOSQL;
 
 		// set the number of shifts per assigned worker
 		$sid = SEASON_ID;
-		$assn_table = ASSIGN_TABLE;
+		$assn_table = OFFERS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
 		$sql = <<<EOSQL
 		SELECT u.username, a.job_id, a.instances
@@ -298,7 +293,7 @@ EOSQL;
      * @param[in] only_unfilled_workers boolean if true, then only display the
      *     workers and their jobs which have unfilled shifts.
 	 */
-	public function printResults($only_unfilled_workers=FALSE) {
+	public function printAssignmentsOfWorkers($only_unfilled_workers=FALSE) {
 		global $all_jobs;
 		$num_jobs_assigned = array();
 		foreach(array_keys($all_jobs) as $job_id) {
@@ -307,7 +302,7 @@ EOSQL;
 
 		ksort($this->workers);
 		foreach($this->workers as $username=>$w) {
-			$job_counts = $w->printResults($only_unfilled_workers);
+			$job_counts = $w->printAssignmentsOfWorker($only_unfilled_workers);
 
 			// only give a summary of unfilled workers if all are displayed
 			if (!$only_unfilled_workers) {

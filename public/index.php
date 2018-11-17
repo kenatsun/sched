@@ -28,10 +28,6 @@ if (!$db_is_writable) {
 EOHTML;
 }
 
-// global $user_is_admin;
-// $user_is_admin = ($_SESSION['access_type'] == 'admin' ? TRUE : FALSE);
-// if (0) deb("index: user_is_admin =", $user_is_admin);
-
 // ----- deadline check ----
 global $extended;
 if (0) deb("index: userIsAdmin() = " . userIsAdmin());
@@ -47,7 +43,6 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		display_countdown();
 		if ($extended) echo "...but briefly re-opened to admit a few last-minute responses!";
 		display_instructions();
-		// display_respondents();
 		display_person_menu();
 		display_footer();
 		$community = COMMUNITY;
@@ -56,7 +51,6 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		
 	} else {
 		build_survey($respondent_id);
-		// build_survey($survey, $respondent_id);
 	}
 }
 else {
@@ -170,7 +164,7 @@ function renderPeopleListAsLinks() {
 	if (0) deb("index.getPeopleAsLinks: respondents:", $respondents); 
 	$lines = '';
 	$count = 0;
-	$signups_table = ASSIGN_TABLE;
+	$signups_table = OFFERS_TABLE;
 	$responder_ids = getResponders(); 
 	if (0) deb("index.renderPeopleListAsLinks(): responder_ids =", $responder_ids); 
 	$gold_star = '&nbsp<img src="/display/images/goldstar02.png" height="12">';
@@ -210,6 +204,6 @@ function build_survey($respondent_id) {
 	if (0) deb("index.build_survey: respondent_id = ", $respondent_id);
 	$survey = new Survey1($respondent_id);
 	if (0) deb("index.build_survey: survey = ", $survey);
-	print $survey->toString();
+	print $survey->renderOffersList();
 }
 ?>

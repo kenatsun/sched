@@ -111,6 +111,6 @@ function build_survey($workers, $survey, $get_w) {
 	$w = array_get($workers, $get_w);
 	$survey->setWorker($w['username'], $w['id'], $w['first_name'], $w['last_name']);
 
-	print $survey->toString();
+	print $survey->renderSurvey();
 }
 ?>

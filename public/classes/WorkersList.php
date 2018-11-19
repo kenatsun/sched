@@ -12,7 +12,7 @@ class WorkersList {
 	 */
 	public function load() {
 		$sid = SEASON_ID;
-		$assn_table = ASSIGN_TABLE;
+		$assn_table = OFFERS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
 		
 		// Get all workers (for Sunward) or just those with assignments (for GO)?

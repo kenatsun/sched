@@ -49,20 +49,6 @@ class Calendar {
 		$this->web_display = FALSE;
 	}
 
-	public function loadAssignments() {
-		global $json_assignments_file;
-		$dir = BASE_DIR;
-		$file = $json_assignments_file;
-		if (0) deb("calendar.php loadAssignments(): file = ", $file);
-
-		if (!file_exists($file)) {
-			return FALSE;
-		}
-
-		$this->assignments = json_decode(file_get_contents($file), true);
-		if (0) deb("calendar.loadAssignments(): this->assignments = ", $this->assignments);
-	}
-
 	public function renderMonthsOverlay() {
 		$current_season = get_current_season_months();
 
@@ -156,7 +142,7 @@ EOHTML;
 	 * @param[in] dates array of date/job_id/preference level listing available
 	 *     workers for the shift. Currently only used for reporting.
 	 */
-	public function evalDates($worker=NULL, $dates=NULL) {
+	public function renderMealsInCalendar($worker=NULL, $meals=NULL) {
 		global $sunday_jobs;
 		global $weekday_jobs;
 		global $mtg_jobs;
@@ -174,8 +160,9 @@ EOHTML;
 		$weekly_spacer = '';
 		$weekly_selector = '';
 		if (!is_null($worker)) {
-			$saved_prefs = $this->getSavedPrefs($worker->getId());
-			$day_spacer = '<td class="day_of_week" style="background:yellow;" width="1%"><!-- weekly spacer --></td>';
+			$saved_prefs = $this->getShiftPrefs($worker->getId());
+			if (0) deb("calendar.renderMealsInCalendar(): saved_prefs = ", $saved_prefs);		
+			$day_spacer = '<td class="day_of_week" style="background:yellow;" width="1%"><!-- daily spacer --></td>';
 			$weekly_spacer = '<td class="multiselector" width="1%"><!-- weekly spacer --></td>';
 			$weekly_selector = $this->renderWeekSelector();
 		}
@@ -224,11 +211,11 @@ EOHTML;
 
 		$day_of_week = NULL;
 		$out = '';
-		$dates_and_shifts = array();
+		$meals_and_shifts = array();
 		
 		// for each month in the season
 		$month_count = 0;
-		if (0) deb("calendar.evalDate(): current_season = ", $current_season);		
+		if (0) deb("calendar.renderMealsInCalendar(): current_season = ", $current_season);		
 		foreach($current_season as $month_num=>$month_name) {
 			$month_count++;
 			$month_entries = array();
@@ -262,10 +249,9 @@ EOHTML;
 			for ($i=1; $i<=$days_in_month; $i++) {
 				$tally = '';
 				$this_year = SEASON_START_YEAR;
-				if (0) deb("calendar.evalDate(): month={$month_num}, date={$i}, year={$this_year}");
-				// $today =  $month_num . "/" . $i . "/" . SEASON_START_YEAR;
+				if (0) deb("calendar.renderMealsInCalendar(): month={$month_num}, date={$i}, year={$this_year}");
 
-				// if this is sunday... add the row start
+				// if this is sunday, add the row start
 				if (($day_of_week == 0) && ($i != 1)) {
 					$week_num++;
 					$week_id = "week_{$week_num}_{$month_num}";
@@ -275,67 +261,70 @@ EOHTML;
 EOHTML;
 				}
 
-				$date_string = "{$month_num}/{$i}/" . SEASON_START_YEAR;
-				if (0) deb("calendar.evalDates(): SEASON_START_YEAR: " . SEASON_START_YEAR); 
-				if (0) deb("calendar.evalDates(): date_string: {$date_string}"); 
+				$date_string = SEASON_START_YEAR . "/" . zeroPad($month_num, 2) . "/" . zeroPad($i, 2); 
+				$meal = sqlSelect("*", MEALS_TABLE, "date = '{$date_string}'", "", (0), "calendar.renderMealsInCalendar(): meal")[0];
+				$meal_id = $meal['id'];
+				if (0) deb("calendar.renderMealsInCalendar(): SEASON_START_YEAR: " . SEASON_START_YEAR); 
 				$cell = '';	
-				$skip_dates = get_skip_dates($month_num, $i);
-				if (0) deb("calendar.evalDates(): skip_dates:", $skip_dates); 
-				if (0) deb("calendar.evalDates(): date_string: <b>$date_string</b>"); 				
-				if (0) deb("calendar.evalDates(): month_num = {$month_num}, day_num = {$i}", NULL); 				
-				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
+				if (0) deb("calendar.renderMealsInCalendar(): date_string: {$date_string}"); 				
+				if (0) deb("calendar.renderMealsInCalendar(): month_num = {$month_num}, day_num = {$i}", NULL);			
+				if (0) deb("calendar.renderMealsInCalendars: Meals on Holidays?", MEALS_ON_HOLIDAYS);
 				
-				// check for holidays
+				// if today is a holiday, show that in the cell
 				if (isset($this->holidays[$month_num]) &&
 					in_array($i, $this->holidays[$month_num]) && 
 					!MEALS_ON_HOLIDAYS) {
 					$cell .= '<span class="skip">holiday</span>';
 				}
-				// check for manual skip dates
+
+				// if today's meal is marked as a skip date, show that in the cell
 				// SUNWARD: using manual skip_dates for community meeting nights because the GO formula for CM nights is not true for Sunward
-				else if (count ($skip_dates) > 0) {
-					if (0) deb("calendar.php: skip_dates = ", $skip_dates);
-					$reason = $skip_dates[0]['reason'];
-					if (0) deb("calendar.php: skip_dates[0][reason] = ", $reason);
-					$cell = '<span class="skip">' . $reason . '</span>';
+				elseif ($meal['skip_indicator']) {
+					$cell = '<span class="skip">' . $meal['skip_reason'] . '</span>';				
 				}
 
-				// sundays
-				else if (ARE_SUNDAYS_UNIQUE && ($day_of_week == 0)) {
+				// if today is a Sunday, show that in the cell
+				elseif (ARE_SUNDAYS_UNIQUE && ($day_of_week == 0)) {
 					$this->num_shifts['sunday']++;
 
 					if (!$this->web_display) {
 						$jobs_list = array_keys($sunday_jobs);
 						if (!empty($jobs_list)) {
-							$dates_and_shifts[$date_string] = $jobs_list;
+							$meals_and_shifts[$meal_id] = $jobs_list;
+							// $meals_and_shifts[$date_string] = $jobs_list;
 						}
 					}
-					else if (!is_null($worker)) {
-						foreach($sunday_jobs as $key=>$name) {
+					elseif (!is_null($worker)) {
+						foreach($sunday_jobs as $job_id=>$job_name) {
+							if (0) deb("calendar.renderMealsInCalendar(): worker->num_shifts_to_fill['job_id'] = ", $worker->num_shifts_to_fill[$job_id]);
+							if ($worker->num_shifts_to_fill[$job_id] == 0) continue;
+							// get id of shift for this job in this meal
+							$select = "id";
+							$from = SCHEDULE_SHIFTS_TABLE;
+							$where = "meal_id = {$meal_id} and job_id = {$job_id}";
+							$shift_id = sqlSelect($select, $from, $where, "", (0), "calendar.renderMealsInCalendar(): shift_id")[0]['id'];
 							$saved_pref_val =
-								isset($saved_prefs[$key][$date_string]) ?
-									$saved_prefs[$key][$date_string] : NULL;
+								isset($saved_prefs[$job_id][$shift_id]) ?
+									$saved_prefs[$job_id][$shift_id] : NULL;
 
-							// if this job is in the list of assigned tasks.
-							if (array_key_exists($key, $worker->getTasks())) {
-								$cell .= $this->renderday($date_string, $name, $key,
-									$saved_pref_val);
+							if (array_key_exists($job_id, $worker->getTasks())) {
+								// is this preference saved already?
+								$cell .= $this->renderDay($shift_id, $job_name, $job_id, $saved_pref_val);
 							}
 						}
 					}
 					// generate the date cell for the report
-					else if (!empty($dates) &&
-						array_key_exists($date_string, $dates)) {
+					elseif (!empty($dates) &&
+						array_key_exists($meal_id, $meals)) {
 						// report the available workers
 						$tally = <<<EOHTML
 <span class="type_count">[S{$this->num_shifts['sunday']}]</span>
 EOHTML;
-						$cell = $this->list_available_workers($date_string,
-							$dates[$date_string], TRUE);
+						$cell = $this->list_available_workers($meal_id, $meals[$meal_id], TRUE);
 					}
 				}
 				// process weekday meals nights
-				else if (in_array($day_of_week, $meal_days)) {
+				elseif (in_array($day_of_week, $meal_days)) {
 
 					// is this a meeting night?
 					// is this the nth occurence of a dow in the month?
@@ -368,49 +357,52 @@ EOHTML;
 					if (!$this->web_display) {
 						$jobs_list = array_keys($jobs);
 						if (!empty($jobs_list)) {
-							$dates_and_shifts[$date_string] = $jobs_list;
+							$meals_and_shifts[$meal_id] = $jobs_list;
 						}
 					}
 					else if (!is_null($worker)) {
-						if (0) deb("calendar.evalDates(): worker = ", $worker);
-						if (0) deb("calendar.evalDates(): worker['num_shifts_to_fill'] = ", $worker->num_shifts_to_fill);		
-						foreach($jobs as $key=>$name) {
-							if (0) deb("calendar.evalDates(): worker->num_shifts_to_fill['key'] = ", $worker->num_shifts_to_fill[$key]);
-							if ($worker->num_shifts_to_fill[$key] == 0) continue;
+						if (0) deb("calendar.renderMealsInCalendar(): jobs = ", $jobs);
+						if (0) deb("calendar.renderMealsInCalendar(): worker = ", $worker);
+						if (0) deb("calendar.renderMealsInCalendar(): worker['num_shifts_to_fill'] = ", $worker->num_shifts_to_fill);		
+						foreach($jobs as $job_id=>$job_name) {
+							if (0) deb("calendar.renderMealsInCalendar(): worker->num_shifts_to_fill['job_id'] = ", $worker->num_shifts_to_fill[$job_id]);
+							if ($worker->num_shifts_to_fill[$job_id] == 0) continue;
+							// get id of shift for this job in this meal
+							$select = "id";
+							$from = SCHEDULE_SHIFTS_TABLE;
+							$where = "meal_id = {$meal_id} and job_id = {$job_id}";
+							$shift_id = sqlSelect($select, $from, $where, "", (0), "calendar.renderMealsInCalendar(): shift_id")[0]['id'];
 							$saved_pref_val =
-								isset($saved_prefs[$key][$date_string]) ?
-									$saved_prefs[$key][$date_string] : NULL;
+								isset($saved_prefs[$job_id][$shift_id]) ?
+									$saved_prefs[$job_id][$shift_id] : NULL;
 
-							if (array_key_exists($key, $worker->getTasks())) {
+							if (array_key_exists($job_id, $worker->getTasks())) {
 								// is this preference saved already?
-
-								$cell .= $this->renderday($date_string, $name,
-									$key, $saved_pref_val);
+								$cell .= $this->renderDay($shift_id, $job_name, $job_id, $saved_pref_val);
 							}
 						}
 					}
-					else if ($is_mtg_night) {
+					elseif ($is_mtg_night) {
 						$tally = <<<EOHTML
 <span class="type_count">[M{$this->num_shifts['meeting']}]</span>
 EOHTML;
 						$cell .= '<span class="note">meeting night</span>';
 						// report the available workers
-						$cell .= $this->list_available_workers($date_string,
-							$dates[$date_string]);
+						$cell .= $this->list_available_workers($meal_id, $meals[$meal_id]);
 					}
 					// generate the date cell for the report
-					else if (array_key_exists($date_string, $dates)) {
+					elseif (array_key_exists($meal_id, $meals)) {
 						$tally = <<<EOHTML
 <span class="type_count">[W{$this->num_shifts['weekday']}]</span>
 EOHTML;
 
 						// report the available workers
-						$cell .= $this->list_available_workers($date_string,
-							$dates[$date_string]);
+						$cell .= $this->list_available_workers($meal_id,
+							$meals[$meal_id]);
 					}
 				}
 
-				if (0) deb("calendar.php: evalDates(): current_season = ", $current_season[$month_num]);
+				if (0) deb("calendar.php: renderMealsInCalendar(): current_season = ", $current_season[$month_num]);
 				$month_short_name = substr($current_season[$month_num], 0, 3);
 				$table .= <<<EOHTML
 				<td class="dow_{$day_of_week}">
@@ -421,7 +413,6 @@ EOHTML;
 				if (0) deb("calendar.list_available_workers(): cell = ", $cell);
 
 				// close the row at end of week (saturday)
-				// if ($day_of_week == 6 || $i == $days_in_month) {
 				if ($day_of_week == 6) {
 					$table .= "\n</tr>\n";
 					$month_week_count++;
@@ -451,11 +442,11 @@ EOHTML;
 			$quarterly_month_ord = ($month_num % 4);
 			$season_year = SEASON_START_YEAR;
 			$month_selector = (!$this->is_report ? $this->renderMonthSelector() : ""); 
-			if (0) deb("calendar.evalDates(): day_labels =", '"'.$day_labels.'"');
-			if (0) deb("calendar.evalDates(): day_selectors = ", $day_selectors);
-			if (0) deb("calendar.evalDates(): weekly_spacer = ", '"'.$weekly_spacer.'"');
-			if (0) deb("calendar.evalDates(): selectors = ", $selectors);
-			if (0) deb("calendar.evalDates(): table = ", $table);
+			if (0) deb("calendar.renderMealsInCalendar(): day_labels =", '"'.$day_labels.'"');
+			if (0) deb("calendar.renderMealsInCalendar(): day_selectors = ", $day_selectors);
+			if (0) deb("calendar.renderMealsInCalendar(): weekly_spacer = ", '"'.$weekly_spacer.'"');
+			if (0) deb("calendar.renderMealsInCalendar(): selectors = ", $selectors);
+			if (0) deb("calendar.renderMealsInCalendar(): table = ", $table);
 			
 			$out .= <<<EOHTML
 			<div id="{$month_name}" class="month_wrapper">
@@ -475,12 +466,12 @@ EOHTML;
 				<br>
 			</div>
 EOHTML;
-			if (0) deb("calendar.evalDates(): out = ", $out);			
+			if (0) deb("calendar.renderMealsInCalendar(): out = ", $out);			
 		}
 
 		if (!$this->web_display) {
-			if (0) debt("calendar.evalDates(): dates_and_shifts =", $dates_and_shifts);
-			return $dates_and_shifts;
+			if (0) debt("calendar.renderMealsInCalendar(): dates_and_shifts =", $meals_and_shifts);
+			return $meals_and_shifts;
 		}
 
 		return $out;
@@ -493,32 +484,37 @@ EOHTML;
 	 * @return array of already-saved preferences for this worker. If empty,
 	 *     then this worker has not taken the survey yet.
 	 */
-	private function getSavedPrefs($worker_id) {
+	private function getShiftPrefs($worker_id) {
 		if (!is_numeric($worker_id)) {
 			return array();
 		}
 
 		$prefs_table = SCHEDULE_PREFS_TABLE;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
-		$sql = <<<EOJS
-			select s.id, s.string, s.job_id, p.pref
-				FROM {$shifts_table} as s, {$prefs_table} as p
-				WHERE s.id=p.date_id
-					AND worker_id={$worker_id}
-					ORDER BY s.string, s.job_id
-EOJS;
-		if (0) deb("calendar: SQL to read from shifts and shift_prefs:", $sql);
-
-		global $dbh;
-		$data = array();
-		foreach ($dbh->query($sql) as $row) {
-			if (!array_key_exists($row['job_id'], $data)) {
-				$data[$row['job_id']] = array();
+		$meals_table = MEALS_TABLE;
+		$select = "s.id, 
+			m.date, 
+			s.job_id, 
+			p.pref";
+		$from = "{$shifts_table} as s, 
+			{$prefs_table} as p,
+			{$meals_table} as m";
+		$where = "s.id = p.shift_id
+			and s.meal_id = m.id
+			and p.worker_id = {$worker_id}
+			and m.season_id = " . SEASON_ID;
+		$order_by = "m.date, s.job_id";
+		$shift_prefs = sqlSelect($select, $from, $where, $order_by, (0), "calendar.getShiftPrefs()");
+		
+		$results = array();
+		foreach ($shift_prefs as $shift_pref) {
+			if (!array_key_exists($shift_pref['job_id'], $results)) {
+				$results[$shift_pref['job_id']] = array();
 			}
-			$data[$row['job_id']][$row['string']] = $row['pref'];
+			$results[$shift_pref['job_id']][$shift_pref['id']] = $shift_pref['pref'];
 		}
-
-		return $data;
+		if (0) deb("calendar.getShiftPrefs(): results = ", $results);
+		return $results;
 	}
 
 
@@ -530,10 +526,10 @@ EOJS;
 	 * @param[in] key int the job ID
 	 * @param[in] saved_pref number the preference score previously saved
 	 */
-	private function renderday($date_string, $name, $key, $saved_pref) {
+	private function renderDay($shift_id, $job_name, $job_id, $saved_pref) {
 		global $pref_names;
-
-		$name = preg_replace('/^.*meal /i', '', $name);
+		if (0) deb("calendar.renderDay: shift_id = $shift_id, saved_pref = $saved_pref");
+		$job_name = preg_replace('/^.*meal /i', '', $job_name);
 		// shorten meal names in the survey calendar
 		$drop = array(
 			' (twice a season)',
@@ -541,19 +537,19 @@ EOJS;
 			'Sunday ',
 			' (two meals/season)',
 		);
-		$name = str_replace($drop, '', $name);
-
+		$job_name = str_replace($drop, '', $job_name);
+		
 		$sel = array('', '', '');
 		if (!is_numeric($saved_pref)) {
 			$saved_pref = 1;
 		}
 		$sel[$saved_pref] = 'selected';
 
-		$id = "{$date_string}_{$key}";
+		$id = "{$meal_id}_{$job_id}";
 		return <<<EOHTML
 			<div class="choice">
-			{$name}
-			<select name="{$date_string}_{$key}" class="preference_selection">
+			{$job_name}
+			<select name="{$shift_id}_{$job_id}" class="preference_selection"> 
 				<option value="2" {$sel[2]}>{$pref_names[2]}</option>
 				<option value="1" {$sel[1]}>{$pref_names[1]}</option>
 				<option value="0" {$sel[0]}>{$pref_names[0]}</option>
@@ -610,153 +606,52 @@ EOHTML;
 	/**
 	 * Load which dates the workers have marked as being available.
 	 */
-	function getWorkerDates() {
+	function getWorkerShiftPrefs() {
 		// grab all the preferences for every date in this season
 		$season_id = SEASON_ID;
 		$prefs_table = SCHEDULE_PREFS_TABLE;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
-		$auth_user_table = AUTH_USER_TABLE;
-		$offers_table = ASSIGN_TABLE;
+		$meals_table = MEALS_TABLE;
+		$workers_table = AUTH_USER_TABLE;
+		$offers_table = OFFERS_TABLE;
 		$jobs_table = SURVEY_JOB_TABLE; 
-		$sql = <<<EOSQL
-			SELECT s.string, s.job_id, a.username, p.pref
-				FROM {$auth_user_table} as a, {$prefs_table} as p,
-					{$shifts_table} as s
-					, {$offers_table} as o
-				WHERE p.pref>0
-					AND a.id = p.worker_id
-					AND a.id = o.worker_id
-					AND s.job_id = o.job_id
-					AND s.id = p.date_id
-					AND o.season_id = {$season_id}
-					AND o.instances > 0
-				ORDER BY s.string ASC,
-					p.pref DESC,
-					a.username ASC;
-EOSQL;
 		
-		if (0) deb("calendar.getWorkerDates(): sql = ", $sql);
-		$data = array();
-		global $dbh;
-		foreach($dbh->query($sql) as $row) {
-			$data[] = $row;
+		$select = "s.meal_id,
+			s.job_id, 
+			w.first_name || ' ' || w.last_name as username, 
+			p.pref";
+		$from = "{$workers_table} as w, 
+			{$prefs_table} as p,
+			{$shifts_table} as s,
+			{$offers_table} as o,
+			{$meals_table} as m";
+		$where = "p.pref > 0
+			AND w.id = p.worker_id
+			AND w.id = o.worker_id
+			AND s.job_id = o.job_id
+			AND s.id = p.shift_id
+			AND m.id = s.meal_id
+			AND o.season_id = {$season_id}
+			AND o.instances > 0";
+		$order_by = "m.date ASC,
+			p.pref DESC,
+			w.first_name ASC,
+			w.last_name ASC";
+		$prefs = sqlSelect($select, $from, $where, $order_by, (0), "calendar.getWorkerShiftPrefs()");
+
+		$shifts = array();
+		foreach($prefs as $pref) {
+			if (!array_key_exists($pref['meal_id'], $shifts)) {
+				$shifts[$pref['meal_id']] = array();
+			}
+			if (!array_key_exists($pref['job_id'], $shifts[$pref['meal_id']])) {
+				$shifts[$pref['meal_id']][$pref['job_id']] = array();
+			}
+			$shifts[$pref['meal_id']][$pref['job_id']][$pref['pref']][] = $pref['username'];
 		}
 
-		$dates = array();
-		foreach($data as $d) {
-			if (!array_key_exists($d['string'], $dates)) {
-				$dates[$d['string']] = array();
-			}
-			if (!array_key_exists($d['job_id'], $dates[$d['string']])) {
-				$dates[$d['string']][$d['job_id']] = array();
-			}
-			$dates[$d['string']][$d['job_id']][$d['pref']][] = $d['username'];
-		}
-
-		if (0) deb("Calendar.getWorkerDates(): dates array =", $dates);
-		return $dates;
-	}
-
-	public function XXgetWorkerComments($job_key_clause) {
-		$special_prefs = array(
-			'avoids',
-			'prefers',
-			'clean_after_self',
-			'bunch_shifts',
-			'bundle_shifts',
-		);
-
-		// render the comments
-		$comments_table = SCHEDULE_COMMENTS_TABLE;
-		$prefs_table = SCHEDULE_PREFS_TABLE;
-		$shifts_table = SCHEDULE_SHIFTS_TABLE;
-		$auth_user_table = AUTH_USER_TABLE;
-		$sql = <<<EOSQL
-			SELECT a.username, c.*
-				FROM {$auth_user_table} as a, {$comments_table} as c
-				WHERE c.worker_id=a.id
-					AND a.username in (SELECT u.username
-							FROM {$auth_user_table} as u, {$prefs_table} as p,
-								{$shifts_table} as s
-							WHERE u.id=p.worker_id
-								AND p.date_id=s.id
-								{$job_key_clause}
-							GROUP BY u.username)
-				ORDER BY a.username, c.timestamp
-EOSQL;
-		$comments = array();
-		$out = '</a><h2>Comments</h2>\n';
-		$checks = array();
-		$check_separator = 'echo "-----------";';
-		global $dbh;
-		foreach($dbh->query($sql) as $row) {
-			$username = $row['username'];
-
-			$requests = '';
-			foreach($special_prefs as $req) {
-				if (empty($row[$req])) {
-					continue;
-				}
-				if ($row[$req] === 'dc') {
-					continue;
-				}
-
-				$requests .= "{$req}: {$row[$req]}<br>\n";
-
-				// generate check script lines
-				switch($req) {
-				case 'avoids':
-					$avoids = explode(',', $row[$req]);
-					foreach($avoids as $av) {
-						$checks[] = $check_separator;
-						$checks[] = "echo '{$username}' avoids '{$av}'";
-						$checks[] = "grep '{$username}' " . RESULTS_FILE .
-							" | grep '{$av}'";
-					}
-					break;
-
-				case 'prefers':
-					$prefers = explode(',', $row[$req]);
-					foreach($prefers as $pr) {
-						$checks[] = $check_separator;
-						$checks[] = "echo '{$username}' prefers '{$pr}'";
-						$checks[] = "grep '{$username}' " . RESULTS_FILE .
-							" | grep '{$pr}'";
-					}
-					break;
-
-				case 'clean_after_self':
-					$checks[] = $check_separator;
-					$checks[] = "echo '{$username}' clean after self: '{$row[$req]}'";
-					$checks[] = "grep '{$username}.*{$username}' " . RESULTS_FILE;
-					break;
-
-				/* not sure if these are used right now
-				case 'bunch_shifts':
-				case 'bundle_shifts':
-				*/
-				}
-			}
-
-			$comments[] = $row;
-			$remark = stripslashes($row['comments']);
-			$content = (empty($requests) && empty($remark)) ? '' :
-				"<p>{$requests}<br>{$remark}</p>\n";
-
-			$out .= <<<EOHTML
-		<fieldset>
-			<legend>{$username} - {$row['timestamp']}</legend>
-			{$content}
-		</fieldset>
-EOHTML;
-		}
-
-		$check_script = implode("\n", $checks);
-		$check_script = <<<EOHTML
-<h2 id="confirm_checks">Confirm results check</h2>
-<div class="confirm_results">{$check_script}</div>
-EOHTML;
-		return $out . $check_script;
+		if (0) deb("Calendar.getWorkerShiftPrefs(): shifts array =", $shifts);
+		return $shifts;
 	}
 
 	/**
@@ -808,7 +703,7 @@ EOHTML;
 	/*
 	 * reporting feature - list the workers available for this day
 	 */
-	private function list_available_workers($date_string, $cur_date_prefs, $is_sunday=FALSE) {
+	private function list_available_workers($meal_id, $cur_date_prefs, $is_sunday=FALSE) {
 		$cell = '';
 
 		$job_titles = array();
@@ -836,72 +731,54 @@ EOHTML;
 		if (!empty($cur_date_prefs)) ksort($cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_prefs (sorted) = ", $cur_date_prefs);
 		if (0) deb("calendar.list_available_workers(): cur_date_assignments (sorted) = ", $this->cur_date_assignments);
-		if (0) deb("calendar.list_available_workers(): this->assignments[date_string] (pre-sort) = ", $this->assignments[$date_string]);
-		if (!empty($this->assignments)) ksort($this->assignments[$date_string]);
-		if (0) deb("calendar.list_available_workers(): this->assignments[date_string] (sorted) = ", $this->assignments[$date_string]);
 		
-		foreach($cur_date_prefs as $job=>$info) {
+		foreach($cur_date_prefs as $job_id=>$prefs) {
 			// don't report anything for an empty day
-			if (empty($info)) {
-				if (isset($job_titles[$job])) {
+			if (empty($prefs)) {
+				if (isset($job_titles[$job_id])) {
 					$cell .= '<div class="warning">empty!<div>';
 				}
 				continue;
 			} 
 
 			// show job title
-			$cell .= "<h3 class=\"jobname\">{$job_titles[$job]}</h3>\n";
+			$cell .= "<h3 class=\"jobname\">{$job_titles[$job_id]}</h3>\n";
 
 			// list people assigned to this job on this date
 			if ($this->data_key == 'all' || $this->data_key == 'assignments') {
 				$cell .= '<ul style="background:lightgreen;">';
 				// $assignments = $this->render_assignments($date_string, $job_key);
-				$assignments = getJobAssignments($date_string, $job_key);
+				$assignments = getJobAssignments($meal_id, $job_key);
 				if (0) deb("calendar.list_available_workers(): assignments = ", $assignments);
-				if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
+				if (0) deb("calendar.list_available_workers(): job key = $job_id, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
 				foreach($assignments as $key=>$assignment) {
-					if ($job == $assignment['job_id']) {
-						if (0) deb("calendar.list_available_workers(): job key = $job, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
+					if ($job_id == $assignment['job_id']) {
+						if (0) deb("calendar.list_available_workers(): job key = $job_id, assmt job id = {$assignment['job_id']}, assignee = {$assignment['worker_name']}");
 						$cell .= "<li><strong>{$assignment['worker_name']}</strong></li>";  
 					}
 				}
 				$cell .= "</ul>";
 			}
 
-			if (0) deb("calendar.list_available_workers(): job_key = $job_key, job = $job");			
+			if (0) deb("calendar.list_available_workers(): job_key = $job_key, job = $job_id");			
 			if ($this->data_key == 'all' || $this->data_key == 'preferences') {
 				// list people who prefer the job first
-				if (array_key_exists(2, $info)) {
+				if (array_key_exists(2, $prefs)) {
 					$cell .= '<div class="highlight">prefer:<ul><li>' . 
-						implode("</li>\n<li>\n", $info[2]) . 
+						implode("</li>\n<li>\n", $prefs[2]) . 
 						"</li></ul></div>\n";
 				}
 
 				// next, list people who would be ok with it
-				if (array_key_exists(1, $info)) {
+				if (array_key_exists(1, $prefs)) {
 					$cell .= '<div class="ok">ok:<ul><li>' . 
-						implode("</li>\n<li>\n", $info[1]) . 
+						implode("</li>\n<li>\n", $prefs[1]) . 
 						"</li></ul></div>\n";
 				}
 			}
 		}
 		if (0) deb("calendar.list_available_workers(): cell = ", $cell); 
 		return $cell;
-	}
-
-	private function render_assignments($date_string=NULL, $job_id=NULL) {
-		// list the assigned workers
-		$date_clause = ($date_string ? "and s.string = '{$date_string}'" : "");
-		$job_id_clause = ($job_id ? "and j.id = '{$job_id}'" : "");
-		if (0) deb("calendar.render_assignments(): this->assignments[date_string]:", $this->assignments[$date_string]); 				
-		$select = "w.first_name || ' ' || w.last_name as worker_name, a.shift_id, a.worker_id, a.scheduler_timestamp, s.id as shift_id, s.string as meal_date, j.id as job_id, j.description";
-		$from = AUTH_USER_TABLE . " as w, " . ASSIGNMENTS_TABLE . " as a, " . SCHEDULE_SHIFTS_TABLE . " as s, " . SURVEY_JOB_TABLE . " as j";
-		$where = "w.id = a.worker_id and a.shift_id = s.id and s.job_id = j.id {$date_clause} and j.season_id = " . SEASON_ID . 
-			" and a.scheduler_timestamp = (select max(scheduler_timestamp) from " . ASSIGNMENTS_TABLE . ") {$job_id_clause}";
-		$order_by = "j.display_order";
-		$cur_date_assignments = sqlSelect($select, $from, $where, $order_by);
-		if (0) deb("calendar.render_assignments(): cur_date_assignments:", $cur_date_assignments);
-		return $cur_date_assignments;
 	}
 
 	public function getNumShifts() {
@@ -928,10 +805,10 @@ EOHTML;
 	 * Output this calendar to a string
 	 * @return string html to display.
 	 */
-	public function toString($worker=NULL, $dates=NULL, $show_counts=FALSE) {
-		if (is_null($worker) && empty($dates)) return;
+	public function renderCalendar($worker=NULL, $shifts=NULL, $show_counts=FALSE) {
+		if (is_null($worker) && empty($shifts)) return;
 		
-		$out = $this->evalDates($worker, $dates, TRUE);		
+		$out = $this->renderMealsInCalendar($worker, $shifts, TRUE);		
 		return $out;
 	}
 }

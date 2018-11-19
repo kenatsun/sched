@@ -5,27 +5,16 @@ class Worker {
 	public $first_name;
 	public $last_name;
 	public $email;
-
-	// job_id => date => pref
 	public $avail_shifts = array();
-
-	// job_id => array(dates)
 	public $assigned = array();
-
-	// job_id => count
 	public $num_shifts_to_fill = array();
-
 	public $requests = array();
-
 	public $adjacency_limit = 8;
 	public $avoids = array();
 	public $prefers = array();
-
 	public $tasks;
 	public $comments;
-
 	public $dbh;
-
 	public $is_placeholder = FALSE;
 
 	/**
@@ -202,15 +191,15 @@ class Worker {
 	 *
 	 * @param[in] dates_by_shift
 	 */
-	public function addNonResponsePrefs($dates_by_shift) {
+	public function addNonResponsePrefs($meals_by_shift) {
 		foreach($this->num_shifts_to_fill as $job_id=>$instances) {
 			// sanity check
-			if (!isset($dates_by_shift[$job_id])) {
+			if (!isset($meals_by_shift[$job_id])) {
 				echo "shift {$job_id} doesn't have any dates!\n";
 				exit;
 			}
 
-			foreach($dates_by_shift[$job_id] as $date) {
+			foreach($meals_by_shift[$job_id] as $date) {
 				$this->addAvailability($job_id, $date, NON_RESPONSE_PREF);
 			}
 		}
@@ -267,9 +256,11 @@ class Worker {
 	 */
 	public function getDatesAssigned() {
 		$dates = array();
-		foreach($this->assigned as $job_id=>$d) {
+		if (0) debt("worker.getDatesAssigned(): this->assigned =", $this->assigned);
+		foreach($this->assigned as $i=>$d) {
 			$dates = array_merge($dates, $d);
 		}
+		if (0) debt("worker.getDatesAssigned(): dates =", $dates);
 		return array_unique($dates);
 	}
 
@@ -281,7 +272,7 @@ class Worker {
 	 *     assigned date - 0 if more than the threshold away or none others
 	 *     assigned yet.
 	 */
-	public function getAdjancencyScore($date) {
+	public function getAdjacencyScore($current_meal_id) {
 		// placeholders don't matter for adjacency
 		if ($this->isPlaceholder()) {
 			return 0;
@@ -292,13 +283,18 @@ class Worker {
 			return 0;
 		}
 
+		if (0) debt("worker.getAdjacencyScore(): assigned =", $assigned);
+
+		$current_meal_date = sqlSelect("date", MEALS_TABLE, "id = {$current_meal_id}", "", (0), "worker.getAdjacencyScore()")[0]['date'];
+		if (0) debt("worker.getAdjacencyScore(): current_meal_date =", $current_meal_date);
 		date_default_timezone_set('America/Detroit');
-		$current = date('z', strtotime($date));
+		$current_meal_doy = date('z', strtotime($current_meal_date));
 
 		$min = NULL;
-		foreach($assigned as $a) {
-			$ts = strtotime($a);
-			$diff = abs(date('z', $ts) - $current);
+		foreach($assigned as $i=>$assigned_meal_id) {
+			$assigned_meal_date = sqlSelect("date", MEALS_TABLE, "id = {$assigned_meal_id}", "", (0), "worker.getAdjacencyScore()")[0]['date'];
+			$assigned_meal_doy = date('z', strtotime($assigned_meal_date));
+			$diff = abs($assigned_meal_doy - $current_meal_doy);
 
 			if (is_null($min)) {
 				$min = $diff;
@@ -308,6 +304,10 @@ class Worker {
 			if ($min > $diff) {
 				$min = $diff;
 			}
+			if (0) debt("worker.getAdjacencyScore(): current_meal_doy = {$current_meal_doy}");
+			if (0) debt("worker.getAdjacencyScore(): assigned_meal_doy = {$assigned_meal_doy}");
+			if (0) debt("worker.getAdjacencyScore(): diff = {$diff}, min = {$min}");
+			if (0) debt("worker.getAdjacencyScore(): this->adjacency_limit = {$this->adjacency_limit}");
 		}
 
 		if (is_null($min) || ($min == 0)) {
@@ -315,22 +315,24 @@ class Worker {
 		}
 
 		// if far away, then return with 0, otherwise the ratio
-		return ($min > $this->adjacency_limit) ? 0 :
+		$score = ($min > $this->adjacency_limit) ? 0 :
 			($this->adjacency_limit / $min);
+		if (0) debt("worker.getAdjacencyScore(): score = {$score}");
+		return $score;
 	}
 
 
 	/**
-	 * Get the list of shifts that this worker is assigned for the date
+	 * Get the list of shifts that this worker is assigned for the meal
 	 * provided.
 	 *
 	 * @param[in] d string representing the date
 	 * @return array of job IDs already assigned for a given date.
 	 */
-	public function getShiftsAssignedByDate($d) {
+	public function getShiftsAssignedByDate($meal_id) {
 		$shifts = array();
-		foreach($this->assigned as $job_id=>$dates) {
-			if (in_array($d, $dates)) {
+		foreach($this->assigned as $job_id=>$meal_ids) {
+			if (in_array($meal_id, $meal_ids)) {
 				$shifts[] = $job_id;
 			}
 		}
@@ -439,15 +441,15 @@ class Worker {
 	 * @param[in] job_id int the number of the shift currently being assigned.
 	 * @param[in] date string the date of the shift currently being assigned.
 	 */
-	public function setAssignedShift($job_id, $date) {
+	public function setAssignedShift($job_id, $meal_id) {
 		if (($this->getNumShiftsOpen($job_id) < 1) &&
 				($this->getUsername() != PLACEHOLDER)) {
-			echo "$this->username doesn't have any more shifts to fill ($job_id, $date)!\n";
+			echo "{$this->username} doesn't have any more shifts to fill ($job_id, $meal_id)!\n";
 			return FALSE;
 		}
 
-		$this->assigned[$job_id][] = $date;
-		unset($this->avail_shifts[$job_id][$date]);
+		$this->assigned[$job_id][] = $meal_id;
+		unset($this->avail_shifts[$job_id][$meal_id]);
 
 		return TRUE;
 	}
@@ -468,7 +470,7 @@ class Worker {
 	 *     workers and their jobs which have unfilled shifts.
 	 * @return array list of jobs and number of shifts assigned
 	 */
-	public function printResults($only_unfilled_workers=FALSE) {
+	public function printAssignmentsOfWorker($only_unfilled_workers=FALSE) {
 		if (empty($this->assigned)) {
 			return array();
 		}
@@ -532,7 +534,7 @@ EOTXT;
 
 		$sid = SEASON_ID;
 		$jobs_table = SURVEY_JOB_TABLE;
-		$assn_table = ASSIGN_TABLE;
+		$assn_table = OFFERS_TABLE;
 		$task_sql = <<<EOSQL
 			select {$jobs_table}.description, {$jobs_table}.id, {$assn_table}.instances
 				from {$jobs_table}, {$assn_table}
@@ -545,7 +547,6 @@ EOSQL;
 
 		$tasks = array();
 		foreach ($this->dbh->query($task_sql) as $row) {
-			// $tasks[$row['id']] = $row['description'];
 			$tasks[$row['id']] = $row;
 		}
 

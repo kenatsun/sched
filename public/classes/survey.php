@@ -129,8 +129,6 @@ class Survey {
 
 	public function worker_is_both_cook_and_cleaner() {
 		$shifts = $this->worker->num_shifts_to_fill;
-		// $offers = new Offerslist($this->worker->id);
-		// $shifts = $offers->offers;
 		if (0) deb("survey.worker_is_both_cook_and_cleaner(): shifts:", $shifts);
 
 		$sunday_cook = $sunday_clean = FALSE;
@@ -179,19 +177,17 @@ class Survey {
 	 */
 	public function getShifts() {
 		$tasks = $this->worker->getTasks();
-		// $shifts = $this->worker->getNumShiftsToFill();
 		if (0) deb("survey.getShifts(): tasks = ", $tasks);
-		if (0) deb("survey.getShifts(): shifts = ", $shifts);
 
-		$out = array();
-		foreach($tasks as $id=>$name) {
-			$out[$id] = array(
+		$shifts = array();
+		foreach($tasks as $job_id=>$name) {
+			$shifts[$job_id] = array(
 				'name' => $name['description'],
 				'instances' => $name['instances'],
 			);
 		}
-		if (0) deb("survey.getShifts(): out = ", $out);
-		return $out;
+		if (0) deb("survey.getShifts(): shifts = ", $shifts); 
+		return $shifts;
 	}
 
 
@@ -201,10 +197,10 @@ class Survey {
 			return NULL;
 		}
 
-		$out = '';
+		$summary = '';
 		$li_style = 'style="list-style-type: circle;"';
 		foreach($shifts as $id=>$info) {
-			if ($info['instances'] > 0) $out .= "
+			if ($info['instances'] > 0) $summary .= "
 <li {$li_style}>{$info['name']} - {$info['instances']} times</li>";
 		}
 		$season_name = get_season_name_from_db();
@@ -212,16 +208,17 @@ class Survey {
 		$first_name = $this->worker->getFirstName();
 		if (0) deb("survey.renderShiftsSummary(): first_name =", $first_name);
 		return "
-<ul>{$out}</ul>";
+<ul>{$summary}</ul>";
 	}
 
-	public function toString() {
+	public function renderSurvey() {
 		if (is_null($this->worker)) {
 			$this->reportNoShifts();
 		}
 
 		if ($this->is_save_request) {
 			$this->shifts_summary = $this->renderShiftsSummary();
+			if (0) deb("survey.toString: this->shifts_summary =", $this->shifts_summary);
 			if (0) deb("survey.toString: survey object:", $this);
 			finishSurvey($this, $this->worker->id);
 			return;
@@ -259,7 +256,7 @@ class Survey {
 EOHTML;
 	}
 
-	public function renderCalendar() {
+	private function renderCalendar() {
 		$calendar = <<<EOHTML
 			<p class="question">When can you work?</p>
 			<p>Get out your calendar and tell the Scheduler when you can and can't work in the upcoming season.  </p>
@@ -271,12 +268,12 @@ EOHTML;
 			</ul>
 			<p>To speed your process of marking this calendar, the cells with a gray background provide selectors that you can use to choose the same option for every job in an entire month, in a whole week, or for every weekday.  For example, if you're going to be out of town for most of a particular month, you can click on "mark entire month: avoid".  Then you can go in and mark "ok" or "prefer" for the few jobs that you will be available to do that month.  For another example, if you prefer to cook on Sundays, you can select "mark every Sun: prefer".</p>
 			<br>
-			{$this->calendar->toString($this->worker)} 
+			{$this->calendar->renderCalendar($this->worker)} 
 EOHTML;
 		return $calendar;
 	}
 
-	public function reportNoShifts() {
+	private function reportNoShifts() {
 		$dir = BASE_DIR;
 		echo <<<EOHTML
 			<div style="padding: 50px;">
@@ -295,7 +292,7 @@ EOHTML;
 	 * @param[in] requests key-value pairs of preferences saved to database. 
 	 * @return string rendered html for the clean after cook form input option.
 	 */
-	public function renderCleanAfterSelfPreferences($requests) {
+	private function renderCleanAfterSelfPreferences($requests) {
 		$comments_info = $this->worker->getComments();
 		if (0) deb("survey.renderCleanAfterSelfPreferences: comments_info['clean_after_self'] =", $comments_info['clean_after_self']);
 		$clean_after_self = $comments_info['clean_after_self'];
@@ -334,12 +331,9 @@ EOHTML;
 				</td></tr></table>
 			</div>
 EOHTML;
-							// {$cas_requests['clean_after_self_yes']}>
-							// {$cas_requests['clean_after_self_dc']}>
-							// {$cas_requests['clean_after_self_no']}>
 	}
 
-	public function renderCoWorkerPreferences() {
+	private function renderCoWorkerPreferences() {
 		$comments_info = $this->worker->getComments();
 		if (0) deb("survey.renderRequests: $comments_info =", $comments_info);
 
@@ -379,7 +373,7 @@ EOHTML;
 EOHTML;
 	}
 
-	public function renderBunchShiftsPreferences() {
+	private function renderBunchShiftsPreferences() {
 		$comments_info = $this->worker->getComments();
 
 		$questions = array('clean_after_self', 'bunch_shifts');
@@ -402,10 +396,6 @@ EOHTML;
 				$requests[$q . '_dc'] = ' checked';
 			}
 		}
-
-		// $bundle_checked = (array_get($comments_info, 'bundle_shifts') == 'on') ?
-				// ' checked' : '';
-
 		return <<<EOHTML
 <!--
 #!# This doesn't seem to work, so don't support it for now.
@@ -439,7 +429,7 @@ EOHTML;
 */
 	}
 
-	public function renderComments() {
+	private function renderComments() {
 		$comments_text = $this->worker->getCommentsText();
 		return <<<EOHTML
 			<a name="special_requests"></a><p class="question">Anything else?</p>
@@ -528,7 +518,7 @@ EOSQL;
 			if ($key == 'username') {
 				continue;
 			}
-
+			if (0) deb("survey.processPost(): POST key = $key, value = ", $choice);
 			list($date_string, $task) = explode('_', $key);
 			$this->results[$choice][$task][] = $date_string;
 			if ($choice > 0) {
@@ -538,6 +528,7 @@ EOSQL;
 				$this->positive_count[$task]++;
 			}
 		}
+		if (0) deb("survey.processPost(): this->results = ", $this->results);	
 	}
 
 	protected function lookupAvoidList() {
@@ -577,7 +568,6 @@ EOSQL;
 				$shortage = $num_instances - $pos_count;
 				$day_text = ($shortage == 1 ? "a day" : "days");
 				$insufficient_prefs[] = 
-					// "({$pos_count} avail / <b>{$num_instances} needed</b>) for {$all_jobs[$job_id]}\n";
 					"<strong>{$all_jobs[$job_id]}:</strong>  You signed up for {$num_instances} jobs, but only said 'ok' or 'prefer' for {$pos_count}.  Could you find  {$day_text} to do {$shortage} more?\n";
 			}
 		}
@@ -712,90 +702,40 @@ EOSQL;
 	protected function savePreferences() {
 		global $pref_names;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
+		$meals_table = MEALS_TABLE;
 
 		// reverse the array to process the higher priority preferences first,
 		// which puts them at the top of the prefs summary listing.
 		krsort($this->results);
-		foreach($this->results as $pref=>$data) {
+		if (0) deb("survey.savePreferences(): this->results = ", $this->results);
+		
+		foreach($this->results as $pref_rating=>$job_ids) {
+			if (0) deb("survey.savePreferences(): pref_rating = $pref_rating, job_ids = ", $job_ids); 
 			$job_n++;
-			if (empty($data)) {
-				continue;
-			}
+			if (empty($job_ids)) continue;
 
-			foreach($data as $task=>$dates) {
-				// process each date instance
+			foreach($job_ids as $job_id=>$shift_ids) {
+				// store prefs for each meal
 				$prev_pref = NULL;
-				foreach($dates as $date) {
-
-					$shift_id = NULL;
-					$sql = "select id from {$shifts_table} where string='{$date}' and job_id={$task}";
-					foreach($this->dbh->query($sql) as $row) {
-						$shift_id = $row['id'];
-						break;
-					}
-
-					if (is_null($shift_id)) {
-						$insert = <<<EOSQL
-REPLACE INTO {$shifts_table} (id, string, job_id) VALUES(NULL, '{$date}', {$task})
-EOSQL;
-						$this->dbh->exec($insert);
-
-						// now check to make sure that entry was saved...
-						foreach($this->dbh->query($sql) as $row) {
-							$shift_id = $row['id'];
-							break;
-						}
-
-						if (is_null($shift_id)) {
-							echo <<<EOHTML
-								<p class="error">
-									Couldn't retrieve shifts data after insert - is
-									the database writable? 
-								</p>
-EOHTML;
-							if (0) deb("survey.php: select statement:", $sql);
-							if (0) deb("survey.php: insert statement:", $insert);
-							exit;
-						}
-					}
-
-					$prefs_table = SCHEDULE_PREFS_TABLE;
-					$replace = <<<EOSQL
-REPLACE INTO {$prefs_table} (date_id, worker_id, pref) VALUES ({$shift_id}, {$this->worker_id}, {$pref})
-EOSQL;
-					if (0) deb("SQL to insert shift_prefs", $replace);
-					$success = $this->dbh->exec($replace);
+				foreach($shift_ids as $shift_id) {
+					$into = SCHEDULE_PREFS_TABLE;
+					$columns = "shift_id, worker_id, pref";
+					$values = "{$shift_id}, {$this->worker_id}, {$pref_rating}";
+					$success = sqlReplace($into, $columns, $values, (0), "survey.savePreferences()");
 					if ($success) { 
-						// $dummy = renderDatePreferencesSummary();
 						$this->saved++;
-						if ($prev_pref !== $pref) {
-							$this->summary[$task][] = '<p></p>';
+						if ($prev_pref !== $pref_rating) {
+							$this->summary[$job_id][] = '<p></p>';
 						}
-						$prev_pref = $pref;
+						$prev_pref = $pref_rating;
 
-						$s = "{$date} {$pref_names[$pref]}";
-						if ($pref > 1) {
-							$s = "<strong>{$s}</strong>";
-						}
-						$this->summary[$task][] = $s;
+						$s = "{$date} {$pref_names[$pref_rating]}"; 
+						if (0) deb("survey.php: s = ", $s);
+						$this->summary[$job_id][] = $s;
 					}
 				}
 			}
 		}
-	}
-
-	protected function renderDatePreferencesSummary() {
-		$this->saved++;
-		if ($prev_pref !== $pref) {
-			$this->summary[$task][] = '<p></p>';
-		}
-		$prev_pref = $pref;
-
-		$s = "{$date} {$pref_names[$pref]}";
-		if ($pref > 1) {
-			$s = "<strong>{$s}</strong>";
-		}
-		$this->summary[$task][] = $s;	
 	}
 }
 

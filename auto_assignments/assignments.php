@@ -43,7 +43,6 @@ require_once 'meal.php';
 
 global $dbh;
 global $job_key_clause;
-global $scheduler_timestamp;
 global $scheduler_run_id;
 $scheduler_timestamp = date("Y/m/d H:i:s");
 if (0) debt("assignments: scheduler_timestamp = $scheduler_timestamp");
@@ -72,24 +71,41 @@ if (array_key_exists('c', $options)) {
 }
 
 if (!empty($options)) {
-	$assignments->printResults($options);
+	$assignments->printMealTeamAutoAssignments($options);
 }
 
 // write assignments in ASSIGNMENTS database table
 if (array_key_exists('d', $options) || array_key_exists('D', $options)) { 
+	$season_id = SEASON_ID; 
 	if (array_key_exists('D', $options)) {
-		$season_id = SEASON_ID; 
-		sqlDelete(ASSIGNMENTS_TABLE, "season_id = {$season_id}", (0));
-		sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0));
+		$scheduler_run_ids = "";
+		$change_set_ids = ""; 
+		$scheduler_runs = sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", "", (0), "scheduler_runs");
+		foreach($scheduler_runs as $r=>$scheduler_run) {
+			if ($scheduler_run_ids) $scheduler_run_ids .= ', '; 
+			$scheduler_run_ids .= $scheduler_run['id'];
+		}
+		if (0) debt("assignments.php: scheduler_run_ids = {$scheduler_run_ids}");
+		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id in ({$scheduler_run_ids})", "", (0), "change_sets");
+		if (0) debt("assignments.php: change_sets = ", $change_sets);
+		foreach($change_sets as $s=>$change_set) {
+			if ($change_set_ids) $change_set_ids .= ', '; 
+			$change_set_ids .= $change_set['id'];
+		}
+		if (0) debt("assignments.php: change_set_ids = {$change_set_ids}");
+		sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (0));
+		sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (0));
+		sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (0));
+		sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0)); 
 	}
-	sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, {$scheduler_timestamp}", (0));
-	$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = {$scheduler_timestamp}", (0))[0]['id'];
-	debt("assignments: scheduler_run_id = $scheduler_run_id");
+	sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));
+	$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = '{$scheduler_timestamp}'", (0))[0]['id'];
+	if (0) debt("assignments: scheduler_run_id = ", $scheduler_run_id);
 	$assignments->outputToDatabase(); 
 }
 
 $end = microtime(TRUE);
-echo "elapsed time: " . ($end - $start) . "\n";
+echo "elapsed time: " . ($end - $start) . "\n"; 
 
 class Assignments {
 	public $roster;
@@ -137,20 +153,25 @@ class Assignments {
 		$prefs_table = SCHEDULE_PREFS_TABLE;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
-		$sql = <<<EOSQL
-			SELECT s.string as date, s.job_id, a.username, p.pref
-				FROM {$auth_user_table} as a, {$prefs_table} as p,
-					{$shifts_table} as s
-				WHERE p.pref>0
-					AND a.id=p.worker_id
-					AND s.id = p.date_id
-				ORDER BY date ASC,
-					p.pref DESC,
-					a.username ASC;
-EOSQL;
-
+		$meals_table = MEALS_TABLE;
+		$select = "m.date as date, 
+			s.job_id, 
+			a.username, 
+			p.pref";
+		$from = "{$auth_user_table} as a, 
+			{$prefs_table} as p,
+			{$shifts_table} as s, 
+			{$meals_table} as m";
+		$where = "p.pref > 0
+			AND a.id=p.worker_id
+			AND s.id = p.shift_id
+			AND m.id = p.meal_id";
+		$order_by = "date ASC,
+			p.pref DESC,
+			a.username ASC";
+		$rows = sqlSelect($select, $from, $where, $order_by, (0), "assignments.loadPrefs():");
 		$count = 0;
-		foreach($dbh->query($sql) as $row) {
+		foreach($rows as $row) {
 			$u = $row['username'];
 			$d = $row['date'];
 			$ji = $row['job_id'];
@@ -224,16 +245,16 @@ EOSQL;
 	/**
 	 * Display the results on the screen
 	 */
-	public function printResults($options) {
+	public function printMealTeamAutoAssignments($options) {
 		$display_schedule = array_key_exists('s', $options);
 		if ($display_schedule) {
-			$this->schedule->printResults();
+			$this->schedule->printMealTeamSchedule();
 		}
 
 		$display_workers = array_key_exists('w', $options);
 		if ($display_workers) {
 			$only_unfilled_workers = array_key_exists('u', $options);
-			$this->roster->printResults($only_unfilled_workers);
+			$this->roster->printAssignmentsOfWorkers($only_unfilled_workers); 
 		}
 	}
 
@@ -242,7 +263,7 @@ EOSQL;
 	 * Output the schedule as a series of SQL insert statements
 	 */
 	public function outputSqlInserts() {
-		$this->schedule->printResults('sql');
+		$this->schedule->printMealTeamSchedule('sql');
 	}
 
 
@@ -250,16 +271,17 @@ EOSQL;
 	 * Output the schedule as CSV
 	 */
 	public function outputCSV() {
-		$this->schedule->printResults('csv');
+		$this->schedule->printMealTeamSchedule('csv');
 	}
 
 	/**
 	 * Write results to ASSIGNMENTS_TABLE
 	 */
 	public function outputToDatabase() {
-		$this->schedule->printResults('db');
+		$this->schedule->printMealTeamSchedule('db');
 	}
 
 
 }
 ?>
+

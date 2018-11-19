@@ -40,11 +40,7 @@ class Person {
 				}
 				$row['name'] = $this->name;
 				if (0) deb("Person.__construct: row = ", $row);
-				// foreach($row as $key=>$value) {
-					// if (!is_integer[$key]) $this->key = $row[$key];
-				// }
 				break;
-				// return $row;
 			}
 			if (0) deb("Person.__construct: person name =", $this->name);
 		}

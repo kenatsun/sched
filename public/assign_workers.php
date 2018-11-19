@@ -65,11 +65,11 @@ class Roster {
 	/**
 	 *
 	 */
-	public function printResults() {
+	public function printAssignmentsOfWorkers() {
 		ksort($this->workers);
 		$first = TRUE;
 		foreach($this->workers as $username=>$w) {
-			$w->printResults($first);
+			$w->printAssignmentsOfWorkers($first);
 			$first = FALSE;
 		}
 	}
@@ -149,7 +149,7 @@ class Worker {
 	/**
 	 *
 	 */
-	public function printResults($first) {
+	public function printAssignmentsOfWorkers($first) {
 		if (empty($this->assigned)) {
 			return;
 		}

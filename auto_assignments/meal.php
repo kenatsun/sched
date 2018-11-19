@@ -1,24 +1,18 @@
 <?php
+require_once '../public/utils.php';
+require_once '../public/constants.inc';
+
 define('AVOID_PERSON', -2);
 define('PREFER_PERSON', 1);
 
 class Meal {
 	protected $schedule;
-	protected $date;
 	protected $day_of_week;
-
-	// ratio threshold below which 'ok' should trump 'prefer'
-	protected $prefer_threshold = 1.5;
-
-	// array of username => pref
-	protected $possible_workers = array();
-
-	// username string
-	protected $assigned = array();
-
-	// unique meal ID
-	protected $meal_num;
-
+	protected $prefer_threshold = 1.5; // ratio threshold below which 'ok' should trump 'prefer'
+	protected $possible_workers = array(); // array of username => pref
+	protected $assigned = array(); // username string
+	protected $id; // unique meal ID
+	protected $date; // date of the meal
 
 	/**
 	 * Initialize a meal.
@@ -26,23 +20,12 @@ class Meal {
 	 * @param[in] date string a date string which looks like '5/6/2013'
 	 * @param[in] meal_num int a unique number for this meal
 	 */
-	public function __construct($schedule, $date, $meal_num) {
+	public function __construct($schedule, $id) {
 		$this->schedule = $schedule;
-		$this->setDate($date);
-		$this->meal_num = $meal_num;
-	}
-
-	public function setDate($d) {
-		$this->date = $d;
-		$this->day_of_week = date('N', strtotime($d));
-	}
-
-	public function getDate() {
-		return $this->date;
-	}
-
-	public function getDayOfWeek() {
-		return $this->day_of_week;
+		if (0) debt("meal.__construct: date = ", $date);
+		$this->id = $id;
+		$this->date = sqlSelect("date", MEALS_TABLE, "id = {$this->id}", "", (0), "meal.__construct")[0]['date'];
+		$this->day_of_week = date('N', strtotime($this->date));
 	}
 
 	/**
@@ -51,17 +34,19 @@ class Meal {
 	 */
 	public function addShifts($job_id_list) {
 		$job_instances = get_job_instances();
+		if (0) debt("meal.addShifts(): job_instances = ", $job_instances);
 
 		foreach(array_values($job_id_list) as $job_id) {
 			if (empty($job_instances[$job_id])) {
 				continue;
-			}
+			} 
 
 			// fill in the number of open shifts
 			$num = $job_instances[$job_id][$this->day_of_week];
 			for($i=0; $i<$num; $i++) {
 				$this->assigned[$job_id][] = NULL;
 			}
+		if (0) debt("meal.addShifts(): this->assigned = ", $this->assigned);
 		}
 	}
 
@@ -74,6 +59,7 @@ class Meal {
 		// only add prefs for shifts which are defined on this date.
 		if (!isset($this->assigned[$job_id])) {
 			global $all_jobs;
+			if (0) debt("meal.addWorkerPref(): this->assigned = ", $this->assigned);
 			if (!isset($all_jobs[$job_id])) {
 				echo "Could not find JOB ID: {$job_id}\n";
 				exit;
@@ -82,7 +68,7 @@ class Meal {
 			$all_jobs_out = print_r($all_jobs, TRUE);
 			$assn_out = print_r($this->assigned, TRUE);
 			echo <<<EOTXT
-The job "{$all_jobs[$job_id]}" isn't scheduled for this date: {$this->date}
+The job "{$all_jobs[$job_id]}" isn't scheduled for the meal with id {$this->id}
 U:{$username} P:{$pref}
 all jobs: {$all_jobs_out}
 assigned: {$assn_out}
@@ -100,7 +86,7 @@ EOTXT;
 	 */
 	public function getNumOpenSpacesForShift($job_id) {
 		if (empty($this->assigned[$job_id])) {
-			echo "no jobs assigned for this meal / job: D:{$this->date}, J:{$job_id}\n";
+			echo "no jobs assigned for this meal / job: D:{$this->id}, J:{$job_id}\n";
 			exit;
 		}
 
@@ -139,7 +125,7 @@ EOTXT;
 		if (empty($this->possible_workers[$job_id])) {
 			$job_name = get_job_name($job_id);
 			echo <<<EOTXT
-no possible workers defined for job {$job_id}, {$job_name}, {$this->date}
+no possible workers defined for job {$job_id}, {$job_name}, {$this->id}
 
 EOTXT;
 			return 0;
@@ -208,7 +194,6 @@ EOTXT;
 		$prefer_list = array();
 		foreach($assigned_worker_objects as $worker) {
 			// get list of names worker does not want to work with
-			// Array ( [0] => aaron, [1] => nancy)
 			$av_list = $worker->getAvoids();
 			if (!empty($av_list)) {
 				$avoid_list = array_merge($avoid_list, $av_list);
@@ -224,7 +209,6 @@ EOTXT;
 		$avoids = array();
 		if (!empty($avoid_list)) {
 			// flip from a list to an associative array of name => AVOID_PERSON
-			// AVOIDS: Array ( [aaron] => -2, [nancy] => -2 )
 			$avoids = array_combine(array_values($avoid_list),
 				array_fill(0, count($avoid_list), AVOID_PERSON));
 		}
@@ -292,11 +276,11 @@ EOTXT;
 			$worker = $this->schedule->getWorker($username);
 
 			// skip if this worker is fully assigned
-			if ($worker->isFullyAssigned($this->date, $job_id)) {
+			if ($worker->isFullyAssigned($this->id, $job_id)) {
 				continue;
 			}
 
-			$today = $worker->getDateScore($this->date, $job_id);
+			$today = $worker->getDateScore($this->id, $job_id);
 			// skip if there's a date conflict
 			if ($today == HAS_CONFLICT) {
 				continue;
@@ -349,7 +333,7 @@ EOTXT;
 			$promotes += $this->possible_workers[$job_id][$username];
 
 			// conjure up a worker point rating
-			$adjacent = $worker->getAdjancencyScore($this->date);
+			$adjacent = $worker->getAdjacencyScore($this->id);
 			$denominator = ($drawbacks + $adjacent) * $avail_pref;
 			$worker_points[$username] = ($denominator == 0) ?
 				$promotes : ($promotes / $denominator);
@@ -376,7 +360,7 @@ EOTXT;
 	public function fill($job_id, $worker_freedom) {
 		// don't add anymore workers, this meal is fully assigned
 		if (!$this->hasOpenShifts($job_id)) {
-			echo "this meal {$this->date} $job_id is filled\n";
+			echo "this meal {$this->id} $job_id is filled\n";
 			sleep(1 );
 			return NULL;
 		}
@@ -438,7 +422,7 @@ EOTXT;
 
 				// // #!# this breaks shit... but without it, people get
 				// // over-assigned.
-				// // $worker->setAssignedShift($job_id, $this->date);
+				// // $worker->setAssignedShift($job_id, $this->id);
 			// }
 		// }
 // */
@@ -494,7 +478,7 @@ EOTXT;
 	 * @return boolean, if false then a hobart shift was needed and not filled
 	 *     with a hobarter. TRUE either means it was filled or not needed.
 	 */
-	public function printResults($format='txt') { 
+	public function printMealTeam($format='txt') { 
 		if (empty($this->assigned)) {
 			return;
 		}
@@ -512,6 +496,8 @@ EOTXT;
 
 		// check to make sure that all of the required instances are filled
 		// $all_jobs_from_db = getJobsFromDB(SEASON_ID);
+		if (0) debt("meal.printMealTeam(): this->assigned = ", $this->assigned);
+
 		foreach($this->assigned as $job_id=>$assignments) {
 			// check for un-assigned names
 			foreach($assignments as $shift_num=>$name) {
@@ -557,6 +543,7 @@ EOTXT;
 				continue;
 			}
 
+			if (0) debt("meal.printMealTeam(): assignments = ", $assignments);
 			switch($format) {
 			case 'txt':
 				$line = implode("\t", $assignments);
@@ -564,27 +551,31 @@ EOTXT;
 				break;
 			case 'sql':
 			case 'csv':
+				if (0) debt("meal.printMealTeam(): out_jobs before = ", $out_jobs);
 				$out_jobs = array_merge($out_jobs, $assignments);
+				if (0) debt("meal.printMealTeam(): out_jobs after = ", $out_jobs);
 				break;			
 			}
 		}
 		ksort($out_jobs);
+		
+		if (0) debt("meal.printMealTeam(): out_jobs = ", $out_jobs);
 
 		switch($format) {
 		case 'txt':
-			print "$this->date\t" . implode("\t", $out_jobs) . "\n";
+			print "$this->date\t" . implode("\t", $out_jobs) . "\n"; 
 			break;
 
 		case 'sql':
-			$cols = ($is_mtg_night_job) ? '(meal_date, cook, cleaner1)' :
-				'(meal_date, cook, asst1, asst2, cleaner1, cleaner2, cleaner3)';
+			$cols = ($is_mtg_night_job) ? '(id, cook, cleaner1)' :
+				'(id, cook, asst1, asst2, cleaner1, cleaner2, cleaner3)'; 
 			$workers = array();
 			foreach($out_jobs as $j) {
 				$workers[] = "'{$j}'";
 			}
 			$names = implode(', ', $workers);
 
-			print "insert into go_meal {$cols} values ('{$this->date}', {$names});\n";
+			print "insert into go_meal {$cols} values ('{$this->id}', {$names});\n"; 
 			break;
 
 		case 'csv':
@@ -662,6 +653,7 @@ EOTXT;
 	public function insertAssignmentIntoDB() {
 		global $all_jobs;
 		global $scheduler_timestamp;
+		$scheduler_run = scheduler_run();
 		$season_id = SEASON_ID;
 		if (0) debt("meal.insertAssignmentIntoDB(): this->assigned =", $this->assigned);
 		// for each job
@@ -670,19 +662,26 @@ EOTXT;
 			if (0) debt("meal.insertAssignmentIntoDB(): job_id =", $job_id);
 			if (0) debt("meal.insertAssignmentIntoDB(): job_description =", $job_description);
 			if (0) debt("meal.insertAssignmentIntoDB(): assignments =", $assignments);
+			// Get id of job from database based on description
+			$db_job_id = sqlSelect("id", "jobs", "description = '{$job_description}' and season_id = {$season_id}", "")[0]['id'];
+			if (!db_job_id) debt("meal.insertAssignmentIntoDB(): ERROR no job id found for job named '{$job_description}'.");
+			// Get id of the shift 
+			$select = "id";
+			$from = SCHEDULE_SHIFTS_TABLE;
+			$where = "job_id = '{$db_job_id}' 
+				and meal_id = '{$this->id}'";
+			$db_shift_id = sqlSelect($select, $from, $where, "", (0), "meal.insertAssignmentIntoDB(): shift_id")[0]['id'];
+			if (!db_shift_id) debt("meal.insertAssignmentIntoDB(): ERROR no shift id found for shift with job_id = '{$db_job_id}' and id = '{$this->id}'.");
 			// for each assignment to that job
 			foreach($assignments as $assignment_key=>$person) {
-				// Get id of job from database based on description
-				$db_job_id = sqlSelect("id", "jobs", "description = '{$job_description}' and season_id = {$season_id}", "")[0]['id'];
-				if (!db_job_id) debt("meal.insertAssignmentIntoDB(): ERROR no job id found for job named '{$job_description}'.");
-				// Get id of shift from database based on db_job_id and meal date ('string')
-				$db_shift_id = sqlSelect("id", "shifts", "job_id = '{$db_job_id}' and string = '{$this->date}'", "")[0]['id'];
-				if (!db_shift_id) debt("meal.insertAssignmentIntoDB(): ERROR no shift id found for shift with job_id = '{$db_job_id}' and string = '{$this->date}'.");
 				// Get id of worker from database based on username
-				$db_worker_id = sqlSelect("id", "workers", "username = '{$person}'", "")[0]['id'];	
-				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker usernamed '{$person}'.");
-			$rows_affected = sqlReplace("assignments", "shift_id, worker_id, scheduler_timestamp, season_id", "{$db_shift_id}, {$db_worker_id}, '{$scheduler_timestamp}', {$season_id}");
-				if (0) debt("meal.insertAssignmentIntoDB(): this->date = {$this->date}");
+				$db_worker_id = sqlSelect("id", AUTH_USER_TABLE, "username = '{$person}'", "")[0]['id'];	
+				if (!db_worker_id) debt("meal.insertAssignmentIntoDB(): ERROR no worker id found for worker user named '{$person}'.");
+				$table = ASSIGNMENT_STATES_TABLE;
+				$columns = "id, when_last_changed, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
+				$values = autoIncrementId(ASSIGNMENT_STATES_TABLE) . ", '{$scheduler_run['run_timestamp']}', {$db_shift_id}, {$db_worker_id}, {$season_id}, {$scheduler_run['id']}, 1, 1";
+				$rows_affected = sqlInsert($table, $columns, $values, (0), "meal.insertAssignmentIntoDB()"); 
+				if (0) debt("meal.insertAssignmentIntoDB(): this->id = {$this->id}");
 				if (0) debt("meal.insertAssignmentIntoDB(): assignment_key = $assignment_key");
 				if (0) debt("meal.insertAssignmentIntoDB(): job_id = $job_id");
 				if (0) debt("meal.insertAssignmentIntoDB(): person = $person");

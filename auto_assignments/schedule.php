@@ -23,15 +23,15 @@ class Schedule {
 		'prefers' => DEFAULT_PREFERS_SCORE,
 	);
 
-	// which shifts happen on which dates
-	protected $dates_and_shifts = array();
+	// which shifts happen for which meals
+	protected $meals_and_shifts = array();
 
 	// the most difficult shifts to fill
 	// date => job_id => counts
 	protected $least_possible = array();
 
 	// make this a member variable as a cache
-	protected $dates_by_shift = array();
+	protected $meals_by_shift = array();
 
 	public function __construct() {
 		$this->calendar = new Calendar();
@@ -106,14 +106,16 @@ class Schedule {
 	 */
 	public function initializeShifts() {
 		$this->calendar->disableWebDisplay();
-		$this->dates_and_shifts = $this->calendar->evalDates();
-
-		foreach($this->dates_and_shifts as $date=>$shifts) {
+		$this->dates_and_shifts = $this->calendar->renderMealsInCalendar();
+		if (0) debt("schedule.initializeShifts(): this->dates_and_shifts =", $this->dates_and_shifts);
+		foreach($this->dates_and_shifts as $meal_id=>$shifts) {
 			$num_meals = count($this->meals);
-			$this->meals[$date] = new Meal($this, $date, $num_meals);
-			$this->meals[$date]->addShifts($shifts);
+			$this->meals[$meal_id] = new Meal($this, $meal_id, $num_meals);
+			$this->meals[$meal_id]->addShifts($shifts);
+			if (0) debt("schedule.initializeShifts(): this->meals[date] =", $this->meals[$meal_id]);
 		}
-	}
+		if (0) debt("schedule.initializeShifts(): this->meals =", $this->meals);
+		}
 
 
 	/**
@@ -124,9 +126,9 @@ class Schedule {
 	 */
 	public function getDatesByShift() {
 		if (empty($this->dates_by_shift)) {
-			foreach($this->dates_and_shifts as $date=>$shifts) {
+			foreach($this->dates_and_shifts as $meal_id=>$shifts) {
 				foreach($shifts as $index=>$job_id) {
-					$this->dates_by_shift[$job_id][] = $date;
+					$this->dates_by_shift[$job_id][] = $meal_id;
 				}
 			}
 		}
@@ -144,13 +146,15 @@ class Schedule {
 	 * @param[in] date string the date of the job.
 	 * @param[in] pref num the numeric value preference score.
 	 */
-	public function addPrefs($username, $job_id, $date, $pref) {
+	public function addPrefs($username, $job_id, $meal_id, $pref) {
+		if (0) debt("schedule.initializeShifts(): this->meals[date] =", $this->meals[$meal_id]);
+		
 		// only add preferences for scheduled approved meals
-		if (!isset($this->meals[$date])) {
+		if (!isset($this->meals[$meal_id])) {
 			return FALSE;
 		}
 
-		$this->meals[$date]->addWorkerPref($username, $job_id, $pref);
+		$this->meals[$meal_id]->addWorkerPref($username, $job_id, $pref);
 		return TRUE;
 	}
 
@@ -164,7 +168,8 @@ class Schedule {
 	 * their survey.
 	 */
 	public function addNonResponderPrefs($slackers) {
-		$dates_by_shift = $this->getDatesByShift();
+		$meals_by_shift = $this->getDatesByShift();
+		if (0) debt("schedule.addNonResponderPrefs(): this->meals[date] = ", $this->meals[$meal_id]);
 
 		foreach($slackers as $username) {
 			$w = $this->getWorker($username);
@@ -177,14 +182,14 @@ class Schedule {
 
 			foreach($shifts_assigned as $job_id) {
 				// figure out which dates and shifts to assign
-				$d_by_s = $dates_by_shift;
-				foreach ($d_by_s[$job_id] as $date) {
-					if (!isset($this->meals[$date])) {
-						echo "meal for date:{$date} doesn't exist\n";
+				$d_by_s = $meals_by_shift;
+				foreach ($d_by_s[$job_id] as $meal_id) {
+					if (!isset($this->meals[$meal_id])) {
+						echo "meal for date:{$meal_id} doesn't exist\n";
 						exit;
 					}
 
-					$m = $this->meals[$date];
+					$m = $this->meals[$meal_id];
 					$m->addWorkerPref($username, $job_id, $pref);
 				}
 			}
@@ -196,7 +201,7 @@ class Schedule {
 	 * Check to see if the assignments for this job have been completed
 	 */
 	public function isFinished() {
-		foreach($this->meals as $date=>$meal) {
+		foreach($this->meals as $meal_id=>$meal) {
 			if ($meal->hasOpenShifts($this->job_id)) {
 				return FALSE;
 			}
@@ -225,8 +230,8 @@ class Schedule {
 			array_keys($this->least_possible);
 		$this->least_possible = [];
 
-		foreach($prev as $date) {
-			$m = $this->meals[$date];
+		foreach($prev as $meal_id) {
+			$m = $this->meals[$meal_id];
 
 			// skip dates which don't need workers
 			if (!$m->hasOpenShifts($j)) {
@@ -244,14 +249,14 @@ class Schedule {
 			if ($poss < 1) {
 				$job_name = get_job_name($j);
 				echo <<<EOTXT
-D:{$date}, job:{$j} {$job_name} may not have enough workers: {$poss}
+D:{$meal_id}, job:{$j} {$job_name} may not have enough workers: {$poss}
 
 EOTXT;
 				continue;
 			}
 
 			// record the possibility ratio
-			$this->least_possible[$date] = $poss;
+			$this->least_possible[$meal_id] = $poss;
 		}
 
 		if (empty($this->least_possible)) {
@@ -275,12 +280,12 @@ EOTXT;
 	public function fillMeal($worker_freedom) {
 		$job_id = $this->job_id;
 
-		$date = get_first_associative_key($this->least_possible);
-		if ($date == '') {
-			echo "EMPTY DATE\n";
+		$meal_id = get_first_associative_key($this->least_possible);
+		if ($meal_id == '') {
+			echo "EMPTY MEAL ID\n";
 			return FALSE;
 		}
-		$meal = $this->meals[$date];
+		$meal = $this->meals[$meal_id];
 		$username = $meal->fill($job_id, $worker_freedom);
 		if (is_null($username)) {
 			echo "null user\n";
@@ -290,10 +295,10 @@ EOTXT;
 		// update the current meal's possibility ratio
 		$poss = $meal->getNumPossibleWorkerRatio($job_id);
 		if ($poss == 0) {
-			unset($this->least_possible[$date]);
+			unset($this->least_possible[$meal_id]);
 		}
 		else {
-			$this->least_possible[$date] = $poss;
+			$this->least_possible[$meal_id] = $poss;
 			asort($this->least_possible);
 		}
 
@@ -304,7 +309,7 @@ EOTXT;
 		}
 
 		// update this worker's availability
-		if (!($worker->setAssignedShift($job_id, $date))) {
+		if (!($worker->setAssignedShift($job_id, $meal_id))) {
 			echo "unable to set assigned shift!\n";
 			return FALSE;
 		}
@@ -341,14 +346,14 @@ EOTXT;
 	 * @param[in] format string the chosen output format (txt, or sql). How the
 	 *     output should be displayed.
 	 */
-	public function printResults($format='txt' ) {
+	public function printMealTeamSchedule($format='txt' ) {
 		if ($format === 'txt') {
 			$this->printTabbedHeaders();
 		}
 
 		$missed_hobarters = 0;
-		foreach($this->meals as $date=>$m) {
-			if (!$m->printResults($format)) {
+		foreach($this->meals as $meal_id=>$meal) {
+			if (!$meal->printMealTeam($format)) {
 				$missed_hobarters++;
 			}
 		}
@@ -375,8 +380,8 @@ EOTXT;
 	 */
 	public function getNumMeals() {
 		$count = 0;
-		foreach($this->meals as $date=>$m) {
-			if (is_object($m)) {
+		foreach($this->meals as $meal_id=>$meal) {
+			if (is_object($meal)) {
 				$count++;
 			}
 		}
@@ -391,8 +396,8 @@ EOTXT;
 	 */
 	public function getAssigned() {
 		$assignments = array();
-		foreach($this->meals as $date=>$m) {
-			$assignments[$date] = $m->getAssigned();
+		foreach($this->meals as $meal_id=>$meal) {
+			$assignments[$meal_id] = $meal->getAssigned();
 		}
 		return $assignments;
 	}

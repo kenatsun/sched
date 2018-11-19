@@ -14,22 +14,10 @@ define('COMMUNITY', 'Sunward');
 
 create_sqlite_connection();
 
-/* -------- seasonal config --------- */
-// define('DEADLINE', strtotime('June 20, 2018, 11pm'));
+define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
+/* -------- seasonal config --------- */
 /* ----------- job ids --------------- */
-// define('MEETING_NIGHT_ORDERER', 4194);
-// define('MEETING_NIGHT_CLEANER', 4197);
-// define('SUNDAY_HEAD_COOK', 4192);
-// define('SUNDAY_ASST_COOK', 4193);
-// define('SUNDAY_CLEANER', 4196);
-// define('WEEKDAY_HEAD_COOK', 4190);
-// define('WEEKDAY_ASST_COOK', 4191);
-// define('WEEKDAY_CLEANER', 4195);
-// define('WEEKDAY_HEAD_COOK', 4); 
-// define('WEEKDAY_ASST_COOK', 5); 
-// define('WEEKDAY_CLEANER', 6); 
-// define('WEEKDAY_TABLE_SETTER', 4184);
 set_season_constants();
 
 
@@ -67,19 +55,6 @@ function get_num_shift_overrides() {
 		],
 		*/
 	];
-}
-
-function get_skip_dates($month_num = NULL, $day_num = NULL) {
-	$season_id = SEASON_ID;
-	$select = "*";
-	$from = SKIP_DATES_TABLE;
-	$where = "season_id = {$season_id}";
-	if ($month_num && $day_num) {
-		$where .= " AND month_number = {$month_num} AND day_number = {$day_num}";
-	}
-	$skip_dates = sqlSelect($select, $from, $where, '', (0));
-	if (0) deb("config.skip_dates() = ", $skip_dates);
-	return $skip_dates;
 }
 
 // If these names change, be sure to update the is_a_*_job() functions.
@@ -136,7 +111,6 @@ function get_num_dinners_per_assignment($job_id=NULL) {
 	return array_get($dinners, $job_id, 0);
 }
 
-// job_id => array( dow => count), 1 = MON, 7 = SUN
 // per job, list number of open shifts per day of week
 function get_job_instances() {
 	return [
@@ -235,26 +209,6 @@ function set_season_constants() {
 	define('WEEKDAY_CLEANER', "{$season_job['id']}");
 	if (0) deb("config.php: WEEKDAY_CLEANER = ", WEEKDAY_CLEANER);
 
-	// Not sure why this earlier attempt to set these constants failed.
-	// $season_job_ids = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = {$season['id']}", "id", (0));
-	// if (0) deb("config.php: season_job_ids = " . $season_job_ids);
-	// define('WEEKDAY_HEAD_COOK', $season_job_id['id']);
-	// foreach ($season_job_ids as $i=>$season_job_id) {
-		// if (0) deb("config.php: season_job_id['constant_name'] = ", $season_job_id['constant_name']);
-		// if (0) deb("config.php: season_job_id['description'] = ", $season_job_id['description']);
-		// if ($season_job_id['constant_name'] = 'WEEKDAY_HEAD_COOK') {
-			// // define('WEEKDAY_HEAD_COOK', $season_job_id['id']);
-			// if (0) deb("config.php: WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
-		// }
-		// if ($season_job_id['constant_name'] = 'WEEKDAY_ASST_COOK') {
-			// // define('WEEKDAY_ASST_COOK', $season_job_id['id']);
-			// if (0) deb("config.php: WEEKDAY_ASST_COOK! = ", WEEKDAY_ASST_COOK);
-		// }
-		// if ($season_job_id['constant_name'] = 'WEEKDAY_CLEANER') {
-			// // define('WEEKDAY_CLEANER', $season_job_id['id']);
-			// if (0) deb("config.php: WEEKDAY_CLEANER = ", WEEKDAY_CLEANER); 
-		// }
-	// }
 }
 
 ?>

@@ -23,7 +23,7 @@ class Respondents {
 	public function getWorkers() {
 		// all the workers who should respond:
 		$sid = SEASON_ID;
-		$assn_table = ASSIGN_TABLE;
+		$assn_table = OFFERS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
 		$sql = <<<EOSQL
 			SELECT a.id, a.username
@@ -93,11 +93,9 @@ EOHTML;
 		}
 
 		$mins = $seconds/60%60;
-		// $parts[] = sprintf('%02d', $mins);
 		$min_string = $mins . ' minutes, ';
 
 		$secs = $seconds%60;
-		// $parts[] = sprintf('%02d', $secs);
 		$sec_string = 'and ' . $secs . ' seconds';
 
 
@@ -111,7 +109,6 @@ EOHTML;
 			$color = '#eee';
 		}
 
-		// $out = implode(':', $parts);
 		$out = $hour_string . $min_string . $sec_string;
 		return <<<EOHTML
 			<p><i>Please respond ASAP, but by <b>{$deadline}</b> at the latest!</i><p> 

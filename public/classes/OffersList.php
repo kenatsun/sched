@@ -8,22 +8,11 @@ require_once 'PeopleList.php';
 require_once $relative_dir . 'utils.php';
 
 class OffersList {
-	// public $offers = array();
-	// protected $id;
-	// protected $type;
-	// protected $instances;
-	// protected $person_id;
-	// protected $job_id;
-	// protected $season_id;
-	// protected $job_offers;
-	
-//	protected job_offers array();
-	
 		
 	public function __construct($person_id) {
 		global $dbh;
 		$season_id = SEASON_ID;
-		$this->offers_table = ASSIGN_TABLE;
+		$this->offers_table = OFFERS_TABLE;
 		$jobs_table = SURVEY_JOB_TABLE;
 		$sql = "
 			SELECT j.description, j.id as job_id, o.id, o.instances, o.season_id, {$person_id} as person_id
@@ -41,9 +30,6 @@ class OffersList {
 		
 		// $this->offers = array();
 		foreach($this->offers as $key=>$offer) {
-			// if (!array_key_exists($offer['id'], $this->offers)) {
-				// $this->offers[$offer['id']] = array();
-			// }
 			$this->offers[$key] = array(
 				'description' => $offer['description'],
 				'job_id' => $offer['job_id'],
@@ -55,9 +41,9 @@ class OffersList {
 		if (0) deb("OffersList->__construct(): offers array:", $this->offers);
 		}
 	
-	public function toString($offers) {
+	public function renderOffersList($offers) {
 		
-		if (0) deb("OffersList->toString(): offers:", $offers);
+		if (0) deb("OffersList->renderOffersList(): offers:", $offers);
 		$html = <<<EOHTML
 		<table ><tr><td style="background:yellow">
 			<table style="border-spacing: 3px;" border="1" cellpadding="8"> 
@@ -67,7 +53,7 @@ class OffersList {
 				</tr>
 EOHTML;
 		foreach($offers as $offer) {
-			if (0) deb("OffersList->toString(): offer:", $offer);
+			if (0) deb("OffersList->renderOffersList(): offer:", $offer);
 			$html .= <<<EOHTML
 				<tr>
 					<td style="text-align:right; vertical-align:middle; font-size:11pt;"><strong>{$offer['description']}</strong></td> 
@@ -76,7 +62,7 @@ EOHTML;
 		}
 		$html .= "</table>
 		</td></tr></table>";
-		if (0) deb("OffersList->toString():", $html);
+		if (0) deb("OffersList->renderOffersList():", $html);
 		return $html;
 	}
 }

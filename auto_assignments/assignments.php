@@ -154,17 +154,6 @@ class Assignments {
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
 		$meals_table = MEALS_TABLE;
-		$sql = <<<EOSQL
-			SELECT m.date as date, s.job_id, a.username, p.pref
-				FROM {$auth_user_table} as a, {$prefs_table} as p,
-					{$shifts_table} as s, {$meals_table} as m
-				WHERE p.pref > 0
-					AND a.id=p.worker_id
-					AND s.id = p.shift_id
-				ORDER BY date ASC,
-					p.pref DESC,
-					a.username ASC;
-EOSQL;
 		$select = "m.date as date, 
 			s.job_id, 
 			a.username, 

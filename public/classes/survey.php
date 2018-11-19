@@ -218,6 +218,7 @@ class Survey {
 
 		if ($this->is_save_request) {
 			$this->shifts_summary = $this->renderShiftsSummary();
+			if (0) deb("survey.toString: this->shifts_summary =", $this->shifts_summary);
 			if (0) deb("survey.toString: survey object:", $this);
 			finishSurvey($this, $this->worker->id);
 			return;
@@ -527,6 +528,7 @@ EOSQL;
 				$this->positive_count[$task]++;
 			}
 		}
+		if (0) deb("survey.processPost(): this->results = ", $this->results);	
 	}
 
 	protected function lookupAvoidList() {
@@ -716,12 +718,11 @@ EOSQL;
 				// store prefs for each meal
 				$prev_pref = NULL;
 				foreach($shift_ids as $shift_id) {
-					$into = "SCHEDULE_PREFS_TABLE";
+					$into = SCHEDULE_PREFS_TABLE;
 					$columns = "shift_id, worker_id, pref";
 					$values = "{$shift_id}, {$this->worker_id}, {$pref_rating}";
 					$success = sqlReplace($into, $columns, $values, (0), "survey.savePreferences()");
 					if ($success) { 
-						// $dummy = renderShiftPreferencesSummary();
 						$this->saved++;
 						if ($prev_pref !== $pref_rating) {
 							$this->summary[$job_id][] = '<p></p>';
@@ -735,18 +736,6 @@ EOSQL;
 				}
 			}
 		}
-	}
-
-	protected function renderShiftPreferencesSummary() {
-		$this->saved++;
-		if ($prev_pref !== $pref) {
-			$this->summary[$job_id][] = '<p></p>';
-		}
-		$prev_pref = $pref;
-
-		$s = "{$date} {$pref_names[$pref]}";
-		$this->summary[$job_id][] = $s;	
-		if (0) deb("survey.renderShiftPreferencesSummary(): this->summary[job_id] = ", $this->summary);
 	}
 }
 

@@ -333,7 +333,7 @@ EOTXT;
 			$promotes += $this->possible_workers[$job_id][$username];
 
 			// conjure up a worker point rating
-			$adjacent = $worker->getAdjancencyScore($this->id);
+			$adjacent = $worker->getAdjacencyScore($this->id);
 			$denominator = ($drawbacks + $adjacent) * $avail_pref;
 			$worker_points[$username] = ($denominator == 0) ?
 				$promotes : ($promotes / $denominator);

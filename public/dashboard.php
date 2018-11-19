@@ -89,15 +89,9 @@ function renderAssignmentsForm() {
 	
 	// Get id of the most recent scheduler run
 	$scheduler_run_id = scheduler_run()['id'];
-	// $scheduler_run_date = formatted_date(scheduler_run()['run_timestamp'], "M j g:i a");
-	
-	// Get data for Meals table
-	// $select = " DISTINCT m.date as meal_date";
-	// $from = "{$jobs_table} j, {$shifts_table} s";
-	// $where = "s.job_id = j.id
-			// and j.season_id = {$season_id}";
-	// $order_by = "date(m.date) asc";
-	$select = " DISTINCT m.date as meal_date";
+	if (0) deb("dashboard.php.renderAssignmentsForm(): scheduler_run_id = ", $scheduler_run_id); 
+
+	$select = " DISTINCT m.date as meal_date, m.id";
 	$from = "{$jobs_table} j, {$shifts_table} s, {$meals_table} m";
 	$where = "s.job_id = j.id
 		and m.id = s.meal_id
@@ -128,7 +122,7 @@ function renderAssignmentsForm() {
 	// Make the table row for each meal
 	$nrows = 3;
 	$save_button_interval = 3;
-	foreach($meals as $m_index=>$meal) {
+	foreach($meals as $i=>$meal) {
 		if (0) deb("dashboard.renderAssignmentsForm() meal['meal_date'] = {$meal['meal_date']}");
 		$date_ob = new DateTime($meal['meal_date']);
 		$meal['meal_day_name'] = $date_ob->format('l');
@@ -150,7 +144,7 @@ EOHTML;
 	
 		// Make the worker cell for each job in this row
 		$shift_cells = "";
-		foreach($jobs as $m_index=>$job){
+		foreach($jobs as $i=>$job){
 			
 			if (0) deb("dashboard.php.renderAssignmentsForm(): job_id = {$job['job_id']}, meal_id = {$meal['id']}");
 			
@@ -160,10 +154,10 @@ EOHTML;
 				{$meals_table} as m";
 			$where = "s.job_id = {$job['job_id']}
 				and s.meal_id = m.id
-				and m.date = '{$meal['meal_date']}'";
+				and m.id = {$meal['id']}";
 			$order_by = "";
-			$shift = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm()"); 
-			$shift_id = $shift[0]['id'];
+			$shifts = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm()"); 
+			$shift_id = $shifts[0]['id'];
 			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = {$shift_id}");
 
 			// Find the worker(s) doing this shift (i.e. this job for this meal)
@@ -201,8 +195,11 @@ EOHTML;
 					$where = "c.id = {$assignment['latest_change_id']}
 						and s.id = c.change_set_id";
 					$latest_change_set = sqlSelect($select, $from, $where, "", (0), "latest change set")[0];
-					if (SHOW_IDS) $chg_id = ' (#' . $latest_change_set['id'] . ')';
+					if (0) deb("dashboard.php.renderAssignmentsForm(): latest_change_set = ", $latest_change_set); 
+					
+					if (SHOW_IDS) $chg_id = '<br>(chg set #' . $latest_change_set['id'] . ')';
 					$change_marker = formatted_date($latest_change_set['when_saved'], "M j g:ia") . $chg_id;
+					if (0) deb("dashboard.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
 					
 					// If assignment exists now, make an "added" marker	 
 					if ($exists_now) {

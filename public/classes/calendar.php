@@ -161,7 +161,7 @@ EOHTML;
 		$weekly_selector = '';
 		if (!is_null($worker)) {
 			$saved_prefs = $this->getShiftPrefs($worker->getId());
-			if (0) deb("calendar.evalDate(): saved_prefs = ", $saved_prefs);		
+			if (0) deb("calendar.renderMealsInCalendar(): saved_prefs = ", $saved_prefs);		
 			$day_spacer = '<td class="day_of_week" style="background:yellow;" width="1%"><!-- daily spacer --></td>';
 			$weekly_spacer = '<td class="multiselector" width="1%"><!-- weekly spacer --></td>';
 			$weekly_selector = $this->renderWeekSelector();
@@ -215,7 +215,7 @@ EOHTML;
 		
 		// for each month in the season
 		$month_count = 0;
-		if (0) deb("calendar.evalDate(): current_season = ", $current_season);		
+		if (0) deb("calendar.renderMealsInCalendar(): current_season = ", $current_season);		
 		foreach($current_season as $month_num=>$month_name) {
 			$month_count++;
 			$month_entries = array();
@@ -249,7 +249,7 @@ EOHTML;
 			for ($i=1; $i<=$days_in_month; $i++) {
 				$tally = '';
 				$this_year = SEASON_START_YEAR;
-				if (0) deb("calendar.evalDate(): month={$month_num}, date={$i}, year={$this_year}");
+				if (0) deb("calendar.renderMealsInCalendar(): month={$month_num}, date={$i}, year={$this_year}");
 
 				// if this is sunday, add the row start
 				if (($day_of_week == 0) && ($i != 1)) {
@@ -268,7 +268,7 @@ EOHTML;
 				$cell = '';	
 				if (0) deb("calendar.renderMealsInCalendar(): date_string: {$date_string}"); 				
 				if (0) deb("calendar.renderMealsInCalendar(): month_num = {$month_num}, day_num = {$i}", NULL);			
-				if (0) deb("calendar.evalDates: Meals on Holidays?", MEALS_ON_HOLIDAYS);
+				if (0) deb("calendar.renderMealsInCalendars: Meals on Holidays?", MEALS_ON_HOLIDAYS);
 				
 				// if today is a holiday, show that in the cell
 				if (isset($this->holidays[$month_num]) &&

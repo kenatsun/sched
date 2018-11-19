@@ -260,16 +260,16 @@ function saveAssignmentBasedOnChange($change) {
 	if (0) deb("change_sets_utils.saveAssignmentBasedOnChange(): change['action'] = {$change['action']}");
 	
 	// A change is always recorded by inserting a new record into assignment_states
-	$columns = "id, when_last_changed, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
+	$columns = "id, when_last_changed, latest_change_id, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
 	// If assignment record exists, insert a new assignment_state with the existing assignment's id
 	if ($existing_assignment) {
-		$values = "{$existing_assignment['id']}, '{$change_set['when_saved']}', {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, {$existing_assignment['generated']}, " . ($change['action'] == "add" ? 1 : 0);
+		$values = "{$existing_assignment['id']}, '{$change_set['when_saved']}', {$change['id']}, {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, {$existing_assignment['generated']}, " . ($change['action'] == "add" ? 1 : 0);
 	} 
 	// Else insert a new assignment_state with a new id and generated = 0 (thus creating a new assignment)
 	// Note: The action should always be "add" on an assignment whose record doesn't already exist. 
 	// Maybe there should be an error trap here in case the UI lets in a bad case.
 	else {
-		$values = autoIncrementId(ASSIGNMENT_STATES_TABLE) . ", " . "'{$change_set['when_saved']}', {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, 0, 1";
+		$values = autoIncrementId(ASSIGNMENT_STATES_TABLE) . ", " . "'{$change_set['when_saved']}', {$change['id']}, {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, 0, 1";
 	}
 	sqlInsert(ASSIGNMENT_STATES_TABLE, $columns, $values, (0), "saveAssignmentBasedOnChange(): add an assignment state");	 				
 }

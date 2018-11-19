@@ -14,7 +14,7 @@ define('COMMUNITY', 'Sunward');
 
 create_sqlite_connection();
 
-define ('SHOW_IDS', '1');  // set to 1 to display object ids for debugging
+define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
 /* -------- seasonal config --------- */
 /* ----------- job ids --------------- */

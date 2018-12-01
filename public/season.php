@@ -3,7 +3,7 @@ session_start();
 
 require_once 'globals.php';
 require_once 'utils.php';
-// require_once 'display/includes/header.php';
+require_once 'display/includes/header.php';
 $dir = BASE_DIR;
 
 // Read the current data for this season (if it exists)
@@ -24,7 +24,7 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = {$season_id}", "", (0), "season.ph
 // Display the page
 $page = "";
 $page .= renderHeadline((($season) ? $season['name'] : "New") . " Season", HOME_LINK . SEASONS_LINK); 
-$page .= '<p><a href="' . $dir . '/seasons.php">Back to Seasons List</a></p>';
+// $page .= '<p><a href="' . $dir . '/seasons.php">Back to Seasons List</a></p>';
 $page .= renderSeasonForm($season);
 print $page;
 
@@ -62,12 +62,14 @@ function renderSeasonForm($season) {
 	$survey_closing_value = '<input type="text" name="survey_closing_date" value="' . $survey_closing_date . '">';
 	$form .= '<tr><td style="text-align:right">last day of survey:</td><td>' . $survey_closing_value . '</td></tr>';
 	
-	// Mark the current season
-	$checked = (sqlSelect("season_id", SEASONS_TABLE, "current_season = 1", "")[0]['id']) ? "checked" : "";
-	$form .= '<tr><td style="text-align:right">current season?:</td><td><input type="checkbox" name="make_current" ' . $checked . '></td></tr>';
+	// // Mark the current season
+	// $checked = (sqlSelect("season_id", SEASONS_TABLE, "current_season = 1", "")[0]['id']) ? "checked" : "";
+	// $form .= '<tr><td style="text-align:right">current season?:</td><td><input type="checkbox" name="make_current" ' . $checked . '></td></tr>';
+
 	$form .= '</table>'; 
+	$form .= '<br>'; 
 	$form .= '<input type="submit" value="Save Changes"> <input type="reset" value="Cancel Changes">';
-	$form .= '</form>';
+	$form .= '</form>'; 
 	
 	return $form;
 }

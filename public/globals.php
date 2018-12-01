@@ -1,7 +1,13 @@
 <?php
-#ini_set('error_log', '/home/gocoho/error_log');
+
+require_once "utils.php";
+
+if (0) deb("globals.php: start _COOKIE =", $_COOKIE);
+
+define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
 date_default_timezone_set('America/Detroit');
+if (0) deb("globals.php: datetime = " . date("Y-m-d H:i:s") );
 
 require_once('utils.php');
 require_once('config.php');
@@ -48,22 +54,55 @@ foreach ($pref_names as $k=>$prefname) {
 	$tester++;
 }
 
-global $all_jobs;
-$all_jobs = array();
-$all_jobs['all'] = 'all';
-$all_jobs += $mtg_jobs + $sunday_jobs + $weekday_jobs;
-if (0) {deb('globals.php: all_jobs =', $all_jobs);}
 
-global $all_cook_jobs;
-global $all_clean_jobs;
-foreach($all_jobs as $jid=>$name) {
-	if ((stripos($name, 'cook') !== FALSE) ||
-		(stripos($name, 'takeout orderer') !== FALSE)) {
-		$all_cook_jobs[] = $jid;
-	}
-	if ((stripos($name, 'clean') !== FALSE) ||
-		(stripos($name, 'Meeting night cleaner') !== FALSE)) {
-		$all_clean_jobs[] = $jid;
+///////////////////////////////////////////////////////// FUNCTIONS
+
+function defineJobCategories() {
+	// If these names change, be sure to update the is_a_*_job() functions.
+	// List in order of importance.
+	global $mtg_jobs;
+	$mtg_jobs = array(
+		// MEETING_NIGHT_ORDERER => 'Meeting night takeout orderer',
+		// MEETING_NIGHT_CLEANER => 'Meeting night cleaner',
+	);
+	// list in order of importance
+	global $sunday_jobs;
+	$sunday_jobs = array(
+		// #!# note, we're looking for the string 'asst cook' in the code
+		// SUNDAY_HEAD_COOK => 'Sunday head cook (two meals/season)',
+		// SUNDAY_ASST_COOK => 'Sunday meal asst cook (two meals/season)',
+		// SUNDAY_CLEANER => 'Sunday Meal Cleaner',
+	);
+	// list in order of importance
+	global $weekday_jobs;
+	$weekday_jobs = array(
+		WEEKDAY_HEAD_COOK => 'head cook', 
+		WEEKDAY_ASST_COOK => 'asst cook', 
+		WEEKDAY_CLEANER => 'cleaner', 
+		// WEEKDAY_TABLE_SETTER => 'Weekday Table Setter',
+	);
+	if (0) deb("globals.php: weekday_jobs (just after setting) = ", $weekday_jobs);
+
+	global $all_jobs;
+	$all_jobs = array();
+	$all_jobs['all'] = 'all';
+	if (0) {deb('globals.php: mtg_jobs =', $mtg_jobs);}
+	if (0) {deb('globals.php: sunday_jobs =', $sunday_jobs);}
+	if (0) {deb('globals.php: weekday_jobs =', $weekday_jobs);}
+	$all_jobs += $mtg_jobs + $sunday_jobs + $weekday_jobs;
+	if (0) {deb('globals.php: all_jobs =', $all_jobs);}
+
+	global $all_cook_jobs;
+	global $all_clean_jobs;
+	foreach($all_jobs as $jid=>$name) {
+		if ((stripos($name, 'cook') !== FALSE) ||
+			(stripos($name, 'takeout orderer') !== FALSE)) {
+			$all_cook_jobs[] = $jid;
+		}
+		if ((stripos($name, 'clean') !== FALSE) ||
+			(stripos($name, 'Meeting night cleaner') !== FALSE)) {
+			$all_clean_jobs[] = $jid;
+		}
 	}
 }
 
@@ -80,9 +119,6 @@ $mtg_nights = array(
 	WEDNESDAY => 1,
 	MONDAY => 3,
 );
-
-
-// -------- function declarations here ------
 
 
 // create the job IDs 'OR' clause

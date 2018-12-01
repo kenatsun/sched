@@ -1,5 +1,12 @@
 @import url(http://fonts.googleapis.com/css?family=Lobster);
 
+plain_table {
+	font-size: 11pt; 
+	width: auto; 
+	border: 1px solid gray; 
+	border-collapse: collapse;
+}
+
 body {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 11pt;
@@ -418,4 +425,5 @@ svg {
 	font-weight: bold;
 	background: #d9d9d9;
 }
+
 

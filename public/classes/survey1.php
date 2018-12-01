@@ -54,6 +54,7 @@ class Survey1 {
 	}
 
 	public function renderOffersList() {
+		if (0) deb("survey1.renderOffersList(): _GET", $_GET);
 		if (0) deb("survey1.renderOffersList(): id:", $this->person->id);
 		if (0) deb("survey1.renderOffersList(): offers:", $this->offers);
 		if (0) deb("survey1.renderOffersList(): this->person->username:", $this->person->username);
@@ -65,7 +66,7 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs"); 
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", HOME_LINK); 
 		return <<<EOHTML
 		{$headline}
 		<p>Welcome, {$this->person->name}!</p>

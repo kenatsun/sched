@@ -2,12 +2,14 @@
 require_once 'constants.inc';
 require_once 'git_ignored.php';
 
+if (0) deb("utils.php: start"); //_COOKIE =", $_COOKIE);
+
+// connect to SQLite database
 function create_sqlite_connection() {
 	global $dbh;
 	global $db_is_writable;
 	$db_is_writable = FALSE;
 
-	// connect to SQLite database
 	try {
 		global $relative_dir;
 		if (!isset($relative_dir)) { 
@@ -37,23 +39,114 @@ function scheduler_run() {
 	return sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = " . SEASON_ID, "run_timestamp desc", (0))[0];
 }
 
+// DATE-RELATED FUNCTIONS - start ----------------------------------------------------
+
+// An array containing various formattings of the months of the year
+function months($start_month_num=1, $end_month_num=12) {
+	$month = array();
+	for($m=$start_month_num; $m<=$end_month_num; $m++) {
+		// $month[] = array(); 
+		$month[$m]['full_name'] = date('F', mktime(0,0,0, $m, 1));
+		$month[$m]['short_name'] = date('M', mktime(0,0,0, $m, 1));
+		$month[$m]['number'] = date('n', mktime(0,0,0, $m, 1));
+		$month[$m]['number_zero_padded'] = date('m', mktime(0,0,0, $m, 1));
+	}
+	return $month;
+}
+
+// An HTML select field for the months of the next num_years years,
+// starting with the current month of the current year,
+// with the selected month shown as the current value
+function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NULL, $num_years=1) {
+	if ($selected_date) {
+		$selected_month_num = date("n", strtotime($selected_date));
+		$selected_year = date("Y", strtotime($selected_date));
+	}
+	$start_year = date("Y");
+	$start_month_num = date("m");
+	$extra_year = ($start_month_num == 1) ? 0 : 1;
+	$end_year = $start_year + $num_years-1 + $extra_year;
+	if (0) deb("utils.renderUpcomingMonthsSelectList: start_year = $start_year, start_month_num = $start_month_num");
+	if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, selected_year = $selected_year, selected_date = $selected_date");
+	$select_field = '<select name="' . $field_name . '">';
+	$none_selected = (!$selected_month_num && !$selected_year) ? 'selected' : '';	
+	$select_field .= '<option value="" ' . $none_selected . ' ></option>'; 	
+	if (0) deb("utils.renderUpcomingMonthsSelectList: select first line =", $select);
+	for($year=$start_year; $year<=$end_year; $year++) {
+		if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year");
+		if ($year == $start_year) {
+			$months = months($start_month_num, 12);
+		} elseif ($year == $end_year) {
+			$months = months(1, ($start_month_num-1)%12);			
+		} else {
+			$months = months(1, 12);			
+		}	
+		if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year, months = ", $months);
+		foreach($months as $i=>$month) {
+			if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, month['number_zero_padded'] = {$month['number_zero_padded']}, selected_year = $selected_year, year = $year");
+			$selected = ($month['number_zero_padded'] == $selected_month_num && $year == $selected_year) ? 'selected' : '';
+			if (0) deb("utils.renderMonthsSelectList(): selected = ", $selected);	
+			$select_field .= '<option value="' . $year . '-' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . ' ' . $year . '</option>';
+		}
+	}
+	$select_field .= '</select>';
+	if (0) deb("utils.renderUpcomingMonthsSelectList: final select =", $select_field);
+	return $select_field;
+}
+
+function renderYearsSelectList($num_years=3, $field_name="years") {
+	$first_year = date("Y");
+	$select = '<select name=' . $field_name . '>';
+	for($year=$first_year; $year<$first_year+$num_years; $year++) {
+		$selected = ($year == $first_year) ? 'selected' : '';
+		if (0) deb("utils.renderYearsSelectList(): year = $year");	
+		$select .= '<option value="' . $year . '" ' . $selected . '>' . $year . '</option>';
+	}
+	$select .= '</select>';	
+	if (0) deb("utils.renderYearsSelectList(): select = ", $select);	
+}
+
+// An HTML select field for the months of the year, with the selected one highlighted
+function renderMonthsSelectList($selected_month_num=NULL, $field_name="months") {
+	$select = '<select name="' . $field_name . '">';
+	$months = months();
+	foreach($months as $i=>$month) {
+		$selected = ($month['number_zero_padded'] == $selected_month_num) ? 'selected' : '';
+		if (0) deb("utils.renderMonthsSelectList(): selected = ", $selected);	
+		$select .= '<option value="' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . '</option>';
+	}
+	$select .= '</select>';
+	
+	return $select;
+}
+
+
 function formatted_date($date, $format) {
 	$date_ob = date_create($date);
 	return date_format($date_ob, $format);
 }
+
+function zeroPad($int, $length) {
+	$str = (string)$int;
+	for (; $length - strlen($str) > 0; ) { 
+		$str = "0" . $str;
+	}
+	return $str;
+}
+
+function validateDate($date, $format = 'Y-m-d H:i:s')
+{
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) === $date;
+}
+// DATE-RELATED FUNCTIONS - end ----------------------------------------------------
+
 
 function autoIncrementId($table) { 
 	// Returns the highest id in the specified table + 1
 	return sqlSelect("max(id)+1 as id", $table, "", "", (0), "autoIncrementId($table)")[0]['id'];
 }
 
-function zeroPad($int, $length) {
-	$str = (string)$int;
-	for (; $length - strlen($str) > 0; ) {
-		$str = "0" . $str;
-	}
-	return $str;
-}
 
 function meal_date_sort($a, $b) {
 	if (0) deb("utils.meal_date_sort: arg a = ", $a);
@@ -76,7 +169,7 @@ function determineUserStatus() {
 		promptForAdminPassword();
 	}
 	if (isset($_POST['password'])) { 
-		if ($_POST['password'] == 'r') {  
+		if ($_POST['password'] == 'a') {  
 			if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
 			$_SESSION['access_type'] = 'admin';
 			// setcookie("admin", TRUE, time()+86400,"/");
@@ -139,10 +232,10 @@ function get_season_id() {
  */
 function get_season_name_from_db() {
 	global $dbh;
-	$season_table = SEASON_TABLE;
+	$SEASONS_TABLE = SEASONS_TABLE;
 	$season_id = SEASON_ID;
 	$sql = <<<EOSQL
-		SELECT name FROM {$season_table} WHERE id = {$season_id};
+		SELECT name FROM {$SEASONS_TABLE} WHERE id = {$season_id};
 EOSQL;
 	$season_name = array();
 	foreach($dbh->query($sql) as $row) {
@@ -338,7 +431,22 @@ function debt($label, $data=NULL) {
 /*
 Print a headline for a page
 */
-function renderHeadline($text) {
+function renderHeadline($text, $breadcrumbs_str="") {
+	if (0) deb ("utils.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
+	
+	if ($breadcrumbs_str) {
+		$breadcrumbs = 'Go back to:';
+		$breadcrumbs_arr = explode(';', $breadcrumbs_str);
+		foreach($breadcrumbs_arr as $i=>$breadcrumb) {
+			if (0) deb ("utils.renderHeadline(): breadcrumb =", $breadcrumb);
+			$name = explode(',', $breadcrumb)[0];
+			if (0) deb ("utils.renderHeadline(): name =", $name);
+			$url = explode(',', $breadcrumb)[1];
+			if (0) deb ("utils.renderHeadline(): url =", $url);
+			$breadcrumbs .= '&nbsp;&nbsp;<a style="font-size:10pt;" href="'. $url . '">' . $name . '</a>'; 
+		}
+		$breadcrumbs = '<tr><td colspan="2" style="text-align:right";>' . $breadcrumbs . '</td></tr>';
+	}
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
 	$instance = INSTANCE;
 	$database = DATABASE;
@@ -350,10 +458,14 @@ function renderHeadline($text) {
 		<p><strong>You're signed into this session as an admin.</strong></p>
 		</div>"
 		: "");
+	// if (!$at_home) $home_link = '<a style="font-size:10pt; font-weight:bold" href="index.php">Back to Home</a>';
+
 	return <<<EOHTML
 	{$instance_notice}
 	{$admin_notice}
-	<table><tr>
+	<table>
+		{$breadcrumbs}
+		<tr>
 		<td><img src={$community_logo}></td>
 		<td class="headline">{$text}</td>
 	</tr></table>
@@ -595,23 +707,23 @@ EOHTML;
 // SQL FUNCTIONS
 
 // Generic SQL SELECT
-function sqlSelect($select, $from, $where, $order_by, $debs=0, $tag="") {
+function sqlSelect($select, $from, $where=NULL, $order_by=NULL, $debs=0, $tag="") {
 	global $dbh;
 	if ($debs && $tag) $tag = " [$tag]";
 	$sql = <<<EOSQL
-		SELECT {$select} 
-		FROM {$from} 
+SELECT {$select} 
+FROM {$from} 
 EOSQL;
 	if ($where) {
 		$sql .= <<<EOSQL
 		
-		WHERE {$where}
+WHERE {$where}
 EOSQL;
 	}
 	if ($order_by) {
 		$sql .= <<<EOSQL
 		
-		ORDER BY {$order_by}
+ORDER BY {$order_by}
 EOSQL;
 	}
 	if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $sql); 
@@ -636,13 +748,13 @@ function sqlUpdate($table, $set, $where, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	if ($debs && $tag) $tag = " [$tag]";
 	$sql = <<<EOSQL
-		UPDATE {$table} 
-		SET {$set}
+UPDATE {$table} 
+SET {$set}
 EOSQL;
 	if ($where) {
 		$sql .= <<<EOSQL
 		
-		WHERE {$where}
+WHERE {$where}
 EOSQL;
 	}
 	if ($debs) deb("utils.sqlUpdate(){$tag}: sql:", $sql); 
@@ -656,8 +768,8 @@ EOSQL;
 function sqlInsert($table, $columns, $values, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	$sql = <<<EOSQL
-		INSERT INTO {$table} ({$columns})
-		VALUES ({$values}) 
+INSERT INTO {$table} ({$columns})
+VALUES ({$values}) 
 EOSQL;
 	if ($debs) deb("utils.sqlInsert() {$tag}: sql:", $sql);
 	if ($do_it) $rows_affected = $dbh->exec($sql);
@@ -672,8 +784,8 @@ EOSQL;
 function sqlReplace($table, $columns, $values, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	$sql = <<<EOSQL
-		REPLACE INTO {$table} ({$columns})
-		VALUES ({$values}) 
+REPLACE INTO {$table} ({$columns})
+VALUES ({$values}); 
 EOSQL;
 	if ($debs) deb("utils.sqlReplace: sql:", $sql);
 	if ($do_it) $rows_affected = $dbh->exec($sql);

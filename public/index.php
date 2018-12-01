@@ -13,6 +13,8 @@ require_once 'classes/survey1.php';
 require_once 'display/includes/header.php';
 require_once 'participation.php';
 
+if (0) deb("index.php: start _COOKIE =", $_COOKIE);
+
 $dir = BASE_DIR;
 
 $season_id = SEASON_ID;
@@ -59,7 +61,14 @@ else {
 	display_countdown();
 	display_report_link("View the schedule");		
 }
-if (userIsAdmin()) display_dashboard_link("Administrator Dashboard");	
+if (userIsAdmin()) {
+	echo "<br><p><h3><em>Admin Tools</em></h3></p>";
+	display_seasons_link("Manage Seasons");
+	display_scheduler_link("Run the Scheduler");
+	display_dashboard_link("Edit Assignments");	
+	echo "<br><br>";
+}
+
 print <<<EOHTML
 </body>
 </html>
@@ -141,17 +150,22 @@ EOHTML;
 }
 
 function display_report_link($text) {
+	$dir = PUBLIC_DIR;
+	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/report.php">' . $text . '</a></p>';
+}
+
+function display_seasons_link($text) {
 	$dir = BASE_DIR;
-	echo <<<EOHTML
-<p class="summary_report"><a href="{$dir}/report.php">{$text}</a></p>
-EOHTML;
+	echo '<p class="summary_report"><strong><a href="'. PUBLIC_DIR . '/seasons.php">' . $text . '</a></strong></p>';
+}
+
+function display_scheduler_link($text) {
+	echo '<p class="summary_report"><strong><a href="'. PUBLIC_DIR . '/run_scheduler_from_web.php">' . $text . '</a></strong></p>';
 }
 
 function display_dashboard_link($text) {
 	$dir = BASE_DIR;
-	echo <<<EOHTML
-<p class="summary_report"><strong><a href="{$dir}/dashboard.php">{$text}</a></strong></p>
-EOHTML;
+	echo '<p class="summary_report"><strong><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></strong></p>';
 }
 
 /**

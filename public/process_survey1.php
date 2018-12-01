@@ -10,19 +10,26 @@ global $dbh;
 
 resetPostedVariable(); // Not sure this is needed 
 if (0) deb("process_survey1: POST =", $_POST);
-$respondent = getRespondentFromPost();
+if (0) deb("process_survey1: GET =", $_GET);
+$respondent = getSurveyRespondent();
 if (0) deb("process_survey1: respondent =", $respondent);
 $shifts_offered_count = saveOffers($respondent, $offers);
 if (0) deb("process_survey1: shifts_offered_count =", $shifts_offered_count);
 displayNextPage($respondent, $shifts_offered_count);
 
 
-function getRespondentFromPost() {
-	if (0) deb("process_survey1.getRespondentFromPost(): POST =", $_POST);
-	if (0) deb("process_survey1.getRespondentFromPost(): POST[id] =", $_POST['person']);
-	if (0) deb("process_survey1.getRespondentFromPost(): POST[username] =", $_POST['username']);
-	$respondent = new Person($_POST['person']);
-	if (0) deb("process_survey1.getRespondentFromPost(): respondent", $respondent);
+function getSurveyRespondent() {
+	if (0) deb("process_survey1.getSurveyRespondent(): POST =", $_POST);
+	if (0) deb("process_survey1.getSurveyRespondent(): POST[id] =", $_POST['person']);
+	if (0) deb("process_survey1.getSurveyRespondent(): POST[username] =", $_POST['username']);
+	if ($_GET) {
+		$person_id = $_GET['person'];
+	}
+	elseif ($_POST) {
+		$person_id = $_POST['person'];
+	}
+	$respondent = new Person($person_id);
+	if (0) deb("process_survey1.getSurveyRespondent(): respondent =", $respondent);
 	return $respondent;
 }
 

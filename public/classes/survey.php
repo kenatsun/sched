@@ -10,7 +10,7 @@ require_once 'classes/worker.php';
 require_once 'classes/WorkersList.php';
 require_once 'classes/OffersList.php';
 require_once 'finish.php';
-
+	
 class Survey {
 	public $worker;
 	public $calendar;
@@ -208,7 +208,7 @@ class Survey {
 		$first_name = $this->worker->getFirstName();
 		if (0) deb("survey.renderShiftsSummary(): first_name =", $first_name);
 		return "
-<ul>{$summary}</ul>";
+<ul>{$summary}</ul>"; 
 	}
 
 	public function renderSurvey() {
@@ -218,8 +218,8 @@ class Survey {
 
 		if ($this->is_save_request) {
 			$this->shifts_summary = $this->renderShiftsSummary();
-			if (0) deb("survey.toString: this->shifts_summary =", $this->shifts_summary);
-			if (0) deb("survey.toString: survey object:", $this);
+			if (0) deb("survey.renderSurvey: this->shifts_summary =", $this->shifts_summary);
+			if (0) deb("survey.renderSurvey: survey object:", $this);
 			finishSurvey($this, $this->worker->id);
 			return;
 		}
@@ -230,7 +230,9 @@ class Survey {
 			$this->reportNoShifts();
 		}
 
-		$headline = renderHeadline("Step 2: Tell Us Your Preferences");
+		if (0) deb("survey.renderSurvey: _GET =", $_GET);		
+		if (0) deb("survey.renderSurvey: _POST =", $_POST);  
+		$headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();
 		

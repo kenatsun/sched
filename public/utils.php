@@ -172,6 +172,8 @@ function surveyIsClosed() {
 	return DEADLINE < time();
 }
 
+// ADMIN LOGIN FUNCTIONS ---------------------------------------------------------------
+
 function determineUserStatus() {
 	if (isset($_GET['admin']) || isset($_GET['a'])) { 
 		promptForAdminPassword();
@@ -186,6 +188,9 @@ function determineUserStatus() {
 			// setcookie("admin", FALSE, time()+86400,"/");
 			print "Wrong password for 'admin' access.  You're in this session as a 'guest'.";
 		}
+	}
+	if (isset($_POST['sign_in_as_guest'])) {
+		$_SESSION['access_type'] = 'guest';
 	}
 	if (0) deb("utils.determineUserStatus: _GET = ", $_GET);
 	if (0) deb("utils.determineUserStatus: _POST = ", $_POST);
@@ -205,10 +210,24 @@ function promptForAdminPassword() {
 EOHTML;
 }
 
+function signInAsGuest() {
+	$_SESSION['access_type'] = 'admin';
+	print <<<EOHTML
+		<form method="post" action="{$_SERVER['PHP_SELF']}">
+			<input type="hidden" name="sign_in_as_guest" value="1">
+			<input type="submit" value="sign in as guest">
+		</form>
+EOHTML;
+}
+
+
 function userIsAdmin() {
 	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
 	return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
 }
+
+// ADMIN LOGIN FUNCTIONS - end ----------------------------------------------------
+
 
 /**
  * Get an element from an array, with a backup.
@@ -442,6 +461,7 @@ Print a headline for a page
 function renderHeadline($text, $breadcrumbs_str="") {
 	if (0) deb ("utils.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
 	
+	$td_style = 'background-color:white;';
 	if ($breadcrumbs_str) {
 		$breadcrumbs = 'Go back to:';
 		$breadcrumbs_arr = explode(';', $breadcrumbs_str);
@@ -451,9 +471,9 @@ function renderHeadline($text, $breadcrumbs_str="") {
 			if (0) deb ("utils.renderHeadline(): name =", $name);
 			$url = explode(',', $breadcrumb)[1];
 			if (0) deb ("utils.renderHeadline(): url =", $url);
-			$breadcrumbs .= '&nbsp;&nbsp;<a style="font-size:10pt;" href="'. $url . '">' . $name . '</a>'; 
+			$breadcrumbs .= '&nbsp;&nbsp;<a  href="'. $url . '">' . $name . '</a>'; 
 		}
-		$breadcrumbs = '<tr><td colspan="2" style="text-align:right";>' . $breadcrumbs . '</td></tr>';
+		$breadcrumbs = '<tr style="font-size:10pt; font-style:italic"><td colspan="2" style="text-align:right; ' . $td_style . '">' . $breadcrumbs . '</td></tr>';
 	}
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
 	$instance = INSTANCE;
@@ -462,10 +482,19 @@ function renderHeadline($text, $breadcrumbs_str="") {
 	$instance_notice = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
 	$end_session_label = "End this session and start a new one.";
 	$sign_in_as_guest_label = "Sign in as a guest";
-	$admin_notice = (userIsAdmin() ? "<div style={$color}>
-		<p><strong>You're signed into this session as an admin.</strong></p>
-		</div>"
-		: "");
+	$admin_notice = (userIsAdmin())
+		? '
+		<div style=' . $color . '><p>
+		<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
+			<input type="hidden" name="sign_in_as_guest" value="1">
+			<p><strong>You are signed into this session as an admin. </strong>
+			<input type="submit" value="Sign in as a plain old ordinary user.">
+		</form>
+		</p></div><br>'
+		: "";
+
+	// "<div style={$color}><p><strong>You're signed into this session as an admin.</strong>" . $sign_in_as_guest_button . "</p></div>"
+		// : "");
 	// if (!$at_home) $home_link = '<a style="font-size:10pt; font-weight:bold" href="index.php">Back to Home</a>';
 
 	return <<<EOHTML
@@ -474,8 +503,8 @@ function renderHeadline($text, $breadcrumbs_str="") {
 	<table>
 		{$breadcrumbs}
 		<tr>
-		<td><img src={$community_logo}></td>
-		<td class="headline">{$text}</td>
+		<td style="$td_style"><img src={$community_logo}></td>
+		<td style="$td_style" class="headline">{$text}</td>
 	</tr></table>
 EOHTML;
 }

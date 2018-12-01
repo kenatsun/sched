@@ -58,7 +58,8 @@ function months($start_month_num=1, $end_month_num=12) {
 // starting with the current month of the current year,
 // with the selected month shown as the current value
 function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NULL, $num_years=1) {
-	if ($selected_date) {
+	if (0) deb("utils.renderUpcomingMonthsSelectList: start selected_date = $selected_date");
+	if ($selected_date) { 
 		$selected_month_num = date("n", strtotime($selected_date));
 		$selected_year = date("Y", strtotime($selected_date));
 	}
@@ -68,8 +69,10 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 	$end_year = $start_year + $num_years-1 + $extra_year;
 	if (0) deb("utils.renderUpcomingMonthsSelectList: start_year = $start_year, start_month_num = $start_month_num");
 	if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, selected_year = $selected_year, selected_date = $selected_date");
-	if (strtotime($selected_date) < strtotime("now")) {
+	if ($selected_date && strtotime($selected_date) < strtotime("now")) {
+		if (0) deb("utils.renderUpcomingMonthsSelectList: selected_date = $selected_date");
 		$select_field = date("F Y", strtotime($selected_date));
+		$select_field .= '<input type="hidden" name="' . $field_name . '" value="' . $selected_year. '-' .$selected_month_num . '">';
 	}
 	else {
 		$select_field = '<select name="' . $field_name . '">';

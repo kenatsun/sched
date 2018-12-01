@@ -68,28 +68,33 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 	$end_year = $start_year + $num_years-1 + $extra_year;
 	if (0) deb("utils.renderUpcomingMonthsSelectList: start_year = $start_year, start_month_num = $start_month_num");
 	if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, selected_year = $selected_year, selected_date = $selected_date");
-	$select_field = '<select name="' . $field_name . '">';
-	$none_selected = (!$selected_month_num && !$selected_year) ? 'selected' : '';	
-	$select_field .= '<option value="" ' . $none_selected . ' ></option>'; 	
-	if (0) deb("utils.renderUpcomingMonthsSelectList: select first line =", $select);
-	for($year=$start_year; $year<=$end_year; $year++) {
-		if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year");
-		if ($year == $start_year) {
-			$months = months($start_month_num, 12);
-		} elseif ($year == $end_year) {
-			$months = months(1, ($start_month_num-1)%12);			
-		} else {
-			$months = months(1, 12);			
-		}	
-		if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year, months = ", $months);
-		foreach($months as $i=>$month) {
-			if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, month['number_zero_padded'] = {$month['number_zero_padded']}, selected_year = $selected_year, year = $year");
-			$selected = ($month['number_zero_padded'] == $selected_month_num && $year == $selected_year) ? 'selected' : '';
-			if (0) deb("utils.renderMonthsSelectList(): selected = ", $selected);	
-			$select_field .= '<option value="' . $year . '-' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . ' ' . $year . '</option>';
-		}
+	if (strtotime($selected_date) < strtotime("now")) {
+		$select_field = date("F Y", strtotime($selected_date));
 	}
-	$select_field .= '</select>';
+	else {
+		$select_field = '<select name="' . $field_name . '">';
+		$none_selected = (!$selected_month_num && !$selected_year) ? 'selected' : '';	
+		$select_field .= '<option value="" ' . $none_selected . ' ></option>'; 	
+		if (0) deb("utils.renderUpcomingMonthsSelectList: select first line =", $select);
+		for($year=$start_year; $year<=$end_year; $year++) {
+			if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year");
+			if ($year == $start_year) {
+				$months = months($start_month_num, 12);
+			} elseif ($year == $end_year) {
+				$months = months(1, ($start_month_num-1)%12);			
+			} else {
+				$months = months(1, 12);			
+			}	
+			if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year, months = ", $months);
+			foreach($months as $i=>$month) {
+				if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, month['number_zero_padded'] = {$month['number_zero_padded']}, selected_year = $selected_year, year = $year");
+				$selected = ($month['number_zero_padded'] == $selected_month_num && $year == $selected_year) ? 'selected' : '';
+				if (0) deb("utils.renderMonthsSelectList(): selected = ", $selected);	
+				$select_field .= '<option value="' . $year . '-' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . ' ' . $year . '</option>';
+			}
+		}
+		$select_field .= '</select>';
+	}
 	if (0) deb("utils.renderUpcomingMonthsSelectList: final select =", $select_field);
 	return $select_field;
 }

@@ -33,6 +33,7 @@ EOHTML;
 // ----- deadline check ----
 global $extended;
 if (0) deb("index: userIsAdmin() = " . userIsAdmin());
+$extended = (sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['survey_extended']) ? 1 : 0;
 $now = time();
 if ($now <= DEADLINE || $extended || userIsAdmin()) {
 	// If a person has been specified in the request, do their survey
@@ -84,7 +85,7 @@ function display_headline() {
 
 function display_instructions() {
 	$month_names = get_current_season_months();
-	$deadline = date('ga l, F j', DEADLINE);
+	$deadline = date('g:i a l, F j', DEADLINE);
 	if (0) deb("index.display_introduction(): deadline = ", $deadline);
 	echo <<<EOHTML
 <p>  

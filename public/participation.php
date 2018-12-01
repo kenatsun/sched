@@ -71,7 +71,7 @@ EOSQL;
 
 	public function getTimeRemaining() {
 		$seconds = DEADLINE - time();
-		$deadline = date('g:ia l, F j', DEADLINE);
+		$deadline = date('g:i a l, F j', DEADLINE);
 
 		if ($seconds <= 0) {
 			return <<<EOHTML

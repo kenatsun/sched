@@ -127,7 +127,7 @@ function setSeasonConstants() {
 	}
 	
 	if ($season['end_date']) {
-		define('DEADLINE', strtotime($season['survey_end_date'] . " 23:59:59"));
+		define('DEADLINE', strtotime($season['survey_closing_date'] . " 23:59:59"));
 		if (0) deb("config.setSeasonConstants(): DEADLINE = " . DEADLINE);
 	}
 	

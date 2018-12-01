@@ -1,4 +1,4 @@
-<?php
+	<?php
 
 if (0) deb("constants.inc: start"); //_COOKIE =", $_COOKIE);
 

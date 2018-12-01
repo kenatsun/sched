@@ -44,6 +44,8 @@ $head = <<<EOHTML
 EOHTML;
 print $head;
 
+if (0) deb("header.php :start"); //_COOKIE =", $_COOKIE);
+
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 // if (isset($_REQUEST['worker'])) {
 	echo <<<EOHTML

@@ -29,7 +29,7 @@ function finishSurvey($survey, $person_id) {
 		$insufficient_prefs_msg = '';
 		// $summary_text .= "Rats.";	
 	}
-	$headline = renderHeadline("Thank you, {$person_name}!");
+	$headline = renderHeadline("Thank you, {$person_name}!", HOME_LINK . SIGNUPS_LINK . $person_id); // . PREFS_LINK . $person_id);
 	$out = <<<EOHTML
 	{$headline}
 <p>Dear {$person_first_name} ~

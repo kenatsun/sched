@@ -351,18 +351,31 @@ EOTXT;
 			$this->printTabbedHeaders();
 		}
 
-		$missed_hobarters = 0;
-		foreach($this->meals as $meal_id=>$meal) {
-			if (!$meal->printMealTeam($format)) {
-				$missed_hobarters++;
+		if ($format === 'html') {
+			$schedule_table = $this->renderHTMLHeaders();
+			foreach($this->meals as $meal_id=>$meal) {
+				$schedule_table .= $meal->printMealTeam($format);
 			}
 		}
-
+		else {
+			$missed_hobarters = 0;
+			foreach($this->meals as $meal_id=>$meal) {
+				if (!$meal->printMealTeam($format)) {
+					$missed_hobarters++;
+				}
+			}
+		}
+		
 		if ($format == 'txt') {
 			$count = $this->getNumMeals();
 			echo "MISSED HOBARTERS: {$missed_hobarters} of {$count} " . 
 				round($missed_hobarters / $count, 2) . "\n";
 		}
+
+		if ($format === 'html') {
+			$schedule_table .= $this->renderHTMLFooter();
+			return $schedule_table;
+		}		
 	}
 
 	/**
@@ -373,6 +386,20 @@ EOTXT;
 		echo "date\thead_cook\tasst1\tasst2\tcleaner1\tcleaner2\tcleaner3\ttable_setter\n";
 	}
 
+	public function renderHTMLHeaders() {
+		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc", (0), "schedule.renderHTMLHeaders()");
+		$column_heads = "<th>Date</th>";
+		foreach($jobs as $job) {
+			$column_heads .= "<th>" . $job['description'] . "</th>";
+		}
+		$table_header = "";
+		$table_header .= '<table style="width:50%; font-size:11pt; border-collapse: collapse;"><tr>' . $column_heads . '</tr>';
+		return $table_header;
+	}
+
+	public function renderHTMLFooter() {
+		return "</table>";
+	}
 
 	/**
 	 * Count the number of meals in the schedule

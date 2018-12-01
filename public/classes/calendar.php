@@ -46,7 +46,9 @@ class Calendar {
 	 * dates.
 	 */
 	public function disableWebDisplay() {
+		if (0) deb("calendar.disableWebDisplay(before): this->web_display () = " . $this->web_display);
 		$this->web_display = FALSE;
+		if (0) deb("calendar.disableWebDisplay(after): this->web_display () = " . $this->web_display);
 	}
 
 	public function renderMonthsOverlay() {
@@ -147,6 +149,7 @@ EOHTML;
 		global $weekday_jobs;
 		global $mtg_jobs;
 		global $mtg_nights;
+		if (0) deb("calendar.renderMealsInCalendar(): weekday_jobs =", $weekday_jobs);
 
 		$current_season = get_current_season_months();
 
@@ -351,8 +354,11 @@ EOHTML;
 					}
 					else {
 						$this->num_shifts['weekday']++;
+						if (0) deb("calendar.renderMealsInCalendar(): weekday_jobs =", $weekday_jobs);
 						$jobs = $weekday_jobs;
 					}
+					if (0) deb("calendar.renderMealsInCalendar(): jobs = ", $jobs);
+					if (0) deb("calendar.renderMealsInCalendar(): this->web_display = " . $this->web_display);
 
 					if (!$this->web_display) {
 						$jobs_list = array_keys($jobs);

@@ -6,10 +6,8 @@ if (!strlen($relative_dir)) {
     $relative_dir = '.';
 }
 require_once "{$relative_dir}/utils.php";
-require_once "{$relative_dir}/change_sets_utils.php";
-require_once "{$relative_dir}/constants.inc";
 require_once "{$relative_dir}/config.php";
-require_once "{$relative_dir}/globals.php";
+require_once "{$relative_dir}/change_sets_utils.php";
 require_once "{$relative_dir}/display/includes/header.php";
 
 if ($_POST) {
@@ -43,7 +41,7 @@ if ($_POST) {
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();  
 
-$headline = renderHeadline("Dashboard"); 
+$headline = renderHeadline("Edit Assignments"); 
 $seasons_section = renderSeasonSection();
 $assignments_form = renderAssignmentsForm();
 $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';

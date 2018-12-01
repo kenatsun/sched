@@ -1,115 +1,104 @@
 <?php
-ini_set('display_errors', 1);
 
-# set the include path to be the top-level of the meals scheduling project
-set_include_path('../' . PATH_SEPARATOR . '../public/');
+function runScheduler($options) {
+	global $relative_dir;
+	$relative_dir = '';
+	// $relative_dir = '../';
+	// $relative_dir = '../public/';
+	if (0) debt ("assignments.runScheduler(): options  =", $options);
 
-require_once 'public/utils.php';
+	require_once $relative_dir . 'globals.php';
+	require_once $relative_dir . 'config.php';
+	require_once $relative_dir . 'classes/calendar.php';
+	require_once $relative_dir . 'classes/worker.php';
+	require_once $relative_dir . 'classes/roster.php';
+	require_once 'schedule.php';
+	require_once 'meal.php';
 
-/*
- * Automated meals scheduling assignments
- * $Id: assignments.php,v 1.38 2014/11/03 02:16:29 willn Exp $
- */
-$start = microtime(TRUE);
+	global $dbh;
+	global $job_key_clause;
+	global $scheduler_run_id;
+	$scheduler_timestamp = date("Y/m/d H:i:s");
+	if (0) debt("assignments: scheduler_timestamp = $scheduler_timestamp");
 
-$options = getopt('cijdsxwquD');
-if (empty($options)) {
-	echo <<<EOTXT
-Usage:
-	-c  output as CSV
-	-i  output as SQL insert statements
-	-j  output to json format
-	-s  display schedule
-	-u  only unfulfilled workers
-	-w  display workers
-	-x  run many combinations looking for a full allocation
-	-q  quiet mode: don't display the results (used for debugging)
-	-d  insert assignments into database
-	-D  insert assignments into database, after deleting previous ones for this season
+	// remove special case...
+	unset($all_jobs['all']);
 
-EOTXT;
-	exit;
-}
+	$job_ids_clause = get_job_ids_clause();
 
-global $relative_dir;
-$relative_dir = '../public/';
+	$assignments = new Assignments();
+	$assignments->run();
 
-require_once $relative_dir . 'globals.php';
-require_once $relative_dir . 'classes/calendar.php';
-require_once $relative_dir . 'classes/worker.php';
-require_once $relative_dir . 'classes/roster.php';
-require_once 'schedule.php';
-require_once 'meal.php';
-
-global $dbh;
-global $job_key_clause;
-global $scheduler_run_id;
-$scheduler_timestamp = date("Y/m/d H:i:s");
-if (0) debt("assignments: scheduler_timestamp = $scheduler_timestamp");
-
-// remove special case...
-unset($all_jobs['all']);
-
-$job_ids_clause = get_job_ids_clause();
-
-$assignments = new Assignments();
-$assignments->run();
-
-// output to json for integration with the report
-if (array_key_exists('j', $options)) {
-	$assignments->saveResults();
-}
-
-// output as SQL insert statements
-if (array_key_exists('i', $options)) {
-	$assignments->outputSqlInserts();
-}
-
-// output as CSV
-if (array_key_exists('c', $options)) {
-	$assignments->outputCSV();
-}
-
-if (!empty($options)) {
-	$assignments->printMealTeamAutoAssignments($options);
-}
-
-// write assignments in ASSIGNMENTS database table
-if (array_key_exists('d', $options) || array_key_exists('D', $options)) { 
-	$season_id = SEASON_ID; 
-	if (array_key_exists('D', $options)) {
-		$scheduler_run_ids = "";
-		$change_set_ids = ""; 
-		$scheduler_runs = sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", "", (0), "scheduler_runs");
-		foreach($scheduler_runs as $r=>$scheduler_run) {
-			if ($scheduler_run_ids) $scheduler_run_ids .= ', '; 
-			$scheduler_run_ids .= $scheduler_run['id'];
-		}
-		if (0) debt("assignments.php: scheduler_run_ids = {$scheduler_run_ids}");
-		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id in ({$scheduler_run_ids})", "", (0), "change_sets");
-		if (0) debt("assignments.php: change_sets = ", $change_sets);
-		foreach($change_sets as $s=>$change_set) {
-			if ($change_set_ids) $change_set_ids .= ', '; 
-			$change_set_ids .= $change_set['id'];
-		}
-		if (0) debt("assignments.php: change_set_ids = {$change_set_ids}");
-		sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (0));
-		sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (0));
-		sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (0));
-		sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0)); 
+	// output to json for integration with the report
+	if (array_key_exists('j', $options)) {
+		$assignments->saveResults();
 	}
-	sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));
-	$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = '{$scheduler_timestamp}'", (0))[0]['id'];
-	if (0) debt("assignments: scheduler_run_id = ", $scheduler_run_id);
-	$assignments->outputToDatabase(); 
-}
 
-$end = microtime(TRUE);
-echo "elapsed time: " . ($end - $start) . "\n"; 
+	// output as SQL insert statements
+	if (array_key_exists('i', $options)) {
+		$assignments->outputSqlInserts();
+	}
+
+	// output as CSV
+	if (array_key_exists('c', $options)) {
+		$assignments->outputCSV();
+	}
+
+	// output as HTML table
+	if (array_key_exists('h', $options)) {
+		$return = $assignments->outputHTML();
+	}
+
+	if (!empty($options)) {
+		$assignments->printMealTeamAutoAssignments($options);
+	}
+
+	// write assignments in ASSIGNMENTS database table
+	if (array_key_exists('d', $options) || array_key_exists('D', $options)) { 
+		$season_id = SEASON_ID; 
+		// delete existing assignments for the current season
+		if (array_key_exists('D', $options)) {
+			$scheduler_run_ids = "";
+			$change_set_ids = ""; 
+			$scheduler_runs = sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", "", (0), "scheduler_runs");
+			foreach($scheduler_runs as $r=>$scheduler_run) {
+				if ($scheduler_run_ids) $scheduler_run_ids .= ', '; 
+				$scheduler_run_ids .= $scheduler_run['id'];
+			}
+			if (0) debt("assignments.php: scheduler_run_ids = {$scheduler_run_ids}");
+			$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id in ({$scheduler_run_ids})", "", (0), "change_sets");
+			if (0) debt("assignments.php: change_sets = ", $change_sets);
+			foreach($change_sets as $s=>$change_set) {
+				if ($change_set_ids) $change_set_ids .= ', '; 
+				$change_set_ids .= $change_set['id'];
+			}
+			if (0) debt("assignments.php: change_set_ids = {$change_set_ids}");
+			sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (0));
+			sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (0));
+			sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (0));
+			sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0)); 
+		}
+		sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));
+		$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = '{$scheduler_timestamp}'", (0))[0]['id'];
+		if (0) debt("assignments: scheduler_run_id = ", $scheduler_run_id);
+		$assignments->outputToDatabase(); 
+	}
+
+	$end = microtime(TRUE);
+	if (array_key_exists('h', $options)) {
+		// $return .= "<p>elapsed time: " . date("m", strtotime($end - $start)) . " microseconds</p>"; 
+		if (0) debt("assignments.runScheduler: return = ", $return); 
+	}
+	else {
+		echo "elapsed time: " . ($end - $start) . "\n"; 
+	}
+	return $return;
+	
+}
 
 class Assignments {
 	public $roster;
-	public $schedule;
+	public $schedule; 
 
 	/**
 	 * Construct a new Assignments object.
@@ -281,7 +270,12 @@ class Assignments {
 		$this->schedule->printMealTeamSchedule('db');
 	}
 
-
+	/**
+	 * Output the schedule as HTML
+	 */
+	public function outputHTML() {
+		return $this->schedule->printMealTeamSchedule('html');
+	}
 }
 ?>
 

@@ -60,7 +60,8 @@ function renderCurrentSeasonControl($seasons) {
 	if (0) deb("seasons.renderCurrentSeasonControl(): SEASON_ID = " . SEASON_ID);	
 	if (0) deb("seasons.renderCurrentSeasonControl(): post['current_season_id'] = " . $_POST['current_season_id']);	
 	foreach($seasons as $i=>$season) {
-		$selected = ($season['id'] == $_POST['current_season_id']) ? 'selected ' : '';
+		// $selected = ($season['id'] == $_POST['current_season_id']) ? 'selected ' : '';
+		$selected = ($season['current_season'] == 1) ? 'selected ' : '';
 		$select .= '<option value="' . $season['id'] . '" ' . $selected . '>' . $season['name'] . '</option>';
 	}
 	$form .= '<tr><td style="text-align:right">current season:</td><td>' . $select . '</td></tr>';

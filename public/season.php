@@ -53,18 +53,22 @@ function renderSeasonForm($season) {
 	$form .= '<tr><td style="text-align:right">last month of season:</td><td>' . $end_month_value . '</td></tr>';	
 
 	// Survey opening date
-	$survey_opening_date = ($season['survey_opening_date']) ? date("m-d-Y", strtotime($season['survey_opening_date'])) : "";
-	$survey_opening_value = '<input type="text" name="survey_opening_date" value="' . $survey_opening_date . '">';
-	$form .= '<tr><td style="text-align:right">first day of survey:</td><td>' . $survey_opening_value . '</td></tr>';
+	$survey_opening_date = renderDateInputFields($season['survey_opening_date'], "survey_opening");
+	$form .= '<tr><td style="text-align:right">first day of survey (mm/dd/yyyy):</td><td>' . $survey_opening_date . '</td></tr>';
+	// $survey_opening_date = ($season['survey_opening_date']) ? date("m-d-Y", strtotime($season['survey_opening_date'])) : "";
+	// $survey_opening_value = '<input type="text" name="survey_opening_date" value="' . $survey_opening_date . '">';
+	// $form .= '<tr><td style="text-align:right">first day of survey:</td><td>' . $survey_opening_value . '</td></tr>';
 
 	// Survey closing date
-	$survey_closing_date = ($season['survey_closing_date']) ? date("m-d-Y", strtotime($season['survey_closing_date'])) : "";
-	$survey_closing_value = '<input type="text" name="survey_closing_date" value="' . $survey_closing_date . '">';
-	$form .= '<tr><td style="text-align:right">last day of survey:</td><td>' . $survey_closing_value . '</td></tr>';
+	$survey_closing_date = renderDateInputFields($season['survey_closing_date'], "survey_closing");
+	$form .= '<tr><td style="text-align:right">last day of survey (mm/dd/yyyy):</td><td>' . $survey_closing_date . '</td></tr>';
+	// $survey_closing_date = ($season['survey_closing_date']) ? date("m-d-Y", strtotime($season['survey_closing_date'])) : "";
+	// $survey_closing_value = '<input type="text" name="survey_closing_date" value="' . $survey_closing_date . '">';
+	// $form .= '<tr><td style="text-align:right">last day of survey:</td><td>' . $survey_closing_value . '</td></tr>';
 	
-	// // Mark the current season
-	// $checked = (sqlSelect("season_id", SEASONS_TABLE, "current_season = 1", "")[0]['id']) ? "checked" : "";
-	// $form .= '<tr><td style="text-align:right">current season?:</td><td><input type="checkbox" name="make_current" ' . $checked . '></td></tr>';
+	// Manually extend closed season, or re-close it
+	$checked = (sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['survey_extended']) ? "checked" : ""; 
+	$form .= '<tr><td style="text-align:right">extend survey?:</td><td><input type="checkbox" name="extend_survey" ' . $checked . '></td></tr>';
 
 	$form .= '</table>'; 
 	$form .= '<br>'; 
@@ -72,6 +76,20 @@ function renderSeasonForm($season) {
 	$form .= '</form>'; 
 	
 	return $form;
+}
+
+function renderDateInputFields($date, $prefix="") {
+	if ($date) {
+		$month = date("m", strtotime($date));
+		$day = date("d", strtotime($date));
+		$year = date("Y", strtotime($date));
+	}
+	if ($prefix) $prefix .= "_";
+	$fields = "";
+	$fields .= '<input type="text" style="width: 24px;" name="' . $prefix . 'month" value="' . $month . '"> / ';
+	$fields .= '<input type="text" style="width: 24px;" name="' . $prefix . 'day" value="' . $day . '"> / ';
+	$fields .= '<input type="text" style="width: 48px;" name="' . $prefix . 'year" value="' . $year . '">';
+	return $fields;	
 }
 
 // Create or update season in the database
@@ -83,14 +101,19 @@ function saveChangesToSeason($post) {
 	$start_date = ($post['season_start_month']) ? $post['season_start_month'] . "-01" : ""; 
 	$end_date = ($post['season_end_month']) ? $post['season_end_month'] . "-" . date("t", strtotime($post['season_end_month']) . "-01") : ""; 
 	$year = ($post['season_end_month']) ? date("Y", strtotime($post['season_end_month'])) : "";
-	// $start_date = $post['season_start_month'] . "-01";
-	// if (!validateDate($start_date, 'Y-m-d')) $start_date = "";
-	// $end_date = $post['season_end_month'] . "-" . date("t", strtotime($post['season_end_month'] . "-01"));
-	// if (!validateDate($end_date, 'Y-m-d')) $end_date = "";
-	// $year = date("Y", strtotime($post['season_end_month']) . "-01");
-	// if (!validateDate($year, 'Y')) $year = "";
-	$survey_opening_date = ($post['survey_opening_date']) ? date("Y-m-d", strtotime($post['survey_opening_date'])) : "";
-	$survey_closing_date = ($post['survey_closing_date']) ? date("Y-m-d", strtotime($post['survey_closing_date'])) : "";
+	if (0) deb("season.saveChangesToSeason(): post['extend_survey'] =", $post['extend_survey']);
+	$opening_month = $post['survey_opening_month'];
+	$opening_day = $post['survey_opening_day'];
+	$opening_year = $post['survey_opening_year'];
+	$survey_opening_date = (checkdate($opening_month, $opening_day, $opening_year)) ? $opening_year."-".$opening_month."-".$opening_day : ""; 
+	$closing_month = $post['survey_closing_month'];
+	$closing_day = $post['survey_closing_day'];
+	$closing_year = $post['survey_closing_year'];
+	$survey_closing_date = (checkdate($closing_month, $closing_day, $closing_year)) ? $closing_year."-".$closing_month."-".$closing_day : ""; 
+	// $survey_opening_date = ($post['survey_opening_date']) ? date("Y-m-d", strtotime($post['survey_opening_date'])) : "";
+	// $survey_closing_date = ($post['survey_closing_date']) ? date("Y-m-d", strtotime($post['survey_closing_date'])) : "";
+	$extend_survey = ($post['extend_survey']) ? 1 : 0;
+	
 
 	// If season_id exists, it's an existing season, so update its data
 	if ($season_id) {
@@ -99,7 +122,8 @@ function saveChangesToSeason($post) {
 			end_date = '$end_date', 
 			year = '$year', 
 			survey_opening_date = '$survey_opening_date',
-			survey_closing_date = '$survey_closing_date'
+			survey_closing_date = '$survey_closing_date',
+			survey_extended = '$extend_survey'
 			";
 		$where = "id = $season_id";
 		sqlUpdate(SEASONS_TABLE, $set, $where, (0), "season.saveChangesToSeason(): update");

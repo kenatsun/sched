@@ -66,32 +66,6 @@ function get_num_shift_overrides() {
 	];
 }
 
-// MOVED TO GLOBALS.PHP 2018-11-30
-// // If these names change, be sure to update the is_a_*_job() functions.
-// // List in order of importance.
-// global $mtg_jobs;
-// $mtg_jobs = array(
-	// // MEETING_NIGHT_ORDERER => 'Meeting night takeout orderer',
-	// // MEETING_NIGHT_CLEANER => 'Meeting night cleaner',
-// );
-// // list in order of importance
-// global $sunday_jobs;
-// $sunday_jobs = array(
-	// // #!# note, we're looking for the string 'asst cook' in the code
-	// // SUNDAY_HEAD_COOK => 'Sunday head cook (two meals/season)',
-	// // SUNDAY_ASST_COOK => 'Sunday meal asst cook (two meals/season)',
-	// // SUNDAY_CLEANER => 'Sunday Meal Cleaner',
-// );
-// // list in order of importance
-// global $weekday_jobs;
-// $weekday_jobs = array(
-	// WEEKDAY_HEAD_COOK => 'head cook', 
-	// WEEKDAY_ASST_COOK => 'asst cook', 
-	// WEEKDAY_CLEANER => 'cleaner', 
-	// // WEEKDAY_TABLE_SETTER => 'Weekday Table Setter',
-// );
-// if (0) deb("config.php: weekday_jobs (just after setting) = ", $weekday_jobs);
-
 
 //////////////////////////////////////////////////////// FUNCTIONS
 
@@ -135,19 +109,19 @@ function setSeasonConstants() {
 	$where = "season_id = {$season['id']} and constant_name = 'WEEKDAY_HEAD_COOK'";
 	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSeasonConstants")[0];
 	if (0) deb("config.setSeasonConstants(): season_job = ", $season_job);
-	define('WEEKDAY_HEAD_COOK', "{$season_job['id']}");
+	define('WEEKDAY_HEAD_COOK', $season_job['id']);
 	if (0) deb("config.setSeasonConstants(): WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
 
 	$where = "season_id = {$season['id']} and constant_name = 'WEEKDAY_ASST_COOK'";
 	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSeasonConstants")[0];
 	if (0) deb("config.setSeasonConstants(): season_job = ", $season_job);
-	define('WEEKDAY_ASST_COOK', "{$season_job['id']}");
+	define('WEEKDAY_ASST_COOK', $season_job['id']);
 	if (0) deb("config.setSeasonConstants(): WEEKDAY_ASST_COOK = ", WEEKDAY_ASST_COOK);
 
 	$where = "season_id = {$season['id']} and constant_name = 'WEEKDAY_CLEANER'";
 	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSeasonConstants")[0];
 	if (0) deb("config.setSeasonConstants(): season_job = ", $season_job);
-	define('WEEKDAY_CLEANER', "{$season_job['id']}");
+	define('WEEKDAY_CLEANER', $season_job['id']);
 	if (0) deb("config.setSeasonConstants(): WEEKDAY_CLEANER = ", WEEKDAY_CLEANER); 
 }
 

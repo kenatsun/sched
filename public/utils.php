@@ -42,16 +42,69 @@ function scheduler_run() {
 // DATE-RELATED FUNCTIONS - start ----------------------------------------------------
 
 // An array containing various formattings of the months of the year
-function months($start_month_num=1, $end_month_num=12) {
-	$month = array();
-	for($m=$start_month_num; $m<=$end_month_num; $m++) {
-		// $month[] = array(); 
-		$month[$m]['full_name'] = date('F', mktime(0,0,0, $m, 1));
-		$month[$m]['short_name'] = date('M', mktime(0,0,0, $m, 1));
-		$month[$m]['number'] = date('n', mktime(0,0,0, $m, 1));
-		$month[$m]['number_zero_padded'] = date('m', mktime(0,0,0, $m, 1));
+function months($start_month_num=1, $end_month_num=12, $attribute="") {
+	$months = array();
+	$attributes = array('full_name', 'short_name', 'number_zero_padded', 'number', '');
+	if (in_array($attribute, $attributes)) {
+		for($m=$start_month_num; $m<=$end_month_num; $m++) {
+			if (!$attribute) {
+				// return an array of months, each expressed as an array of attributes
+				// $months[] = array(); 
+				$months[$m]['full_name'] = date('F', mktime(0,0,0, $m, 1));
+				$months[$m]['short_name'] = date('M', mktime(0,0,0, $m, 1));
+				$months[$m]['number'] = date('n', mktime(0,0,0, $m, 1));
+				$months[$m]['number_zero_padded'] = date('m', mktime(0,0,0, $m, 1));
+				} 
+			else {
+				// return an array of months, each just expressed as the requested attribute
+				switch ($attribute) { 
+					case 'full_name': $months[$m] = date('F', mktime(0,0,0, $m, 1)); break;
+					case 'short_name': $months[$m] = date('M', mktime(0,0,0, $m, 1)); break;
+					case 'number': $months[$m] = date('n', mktime(0,0,0, $m, 1)); break;
+					case 'number_zero_padded': $months[$m] = date('m', mktime(0,0,0, $m, 1)); break;
+				}
+			}
+		}
 	}
-	return $month;
+	return $months;
+}
+
+// An array containing various formattings of days of the week
+function days_of_week($dows_arg="", $attribute="") {
+	if (!$dows_arg) $dows_arg="0 1 2 3 4 5 6"; // Default is to return all days of the week
+	$dows_to_do = explode(" ", $dows_arg);
+	$dows = array();
+	$attributes = array('full_name', 'full_name_uppercase', 'short_name', 'number', '');
+	if (in_array($attribute, $attributes)) {
+		if (0) deb("utils.days_of_week(): dows_to_do =", $dows_to_do);
+		foreach($dows_to_do as $i=>$dow_to_do) {
+			if (is_numeric($dow_to_do)) {
+				$increment = 2 + (int)$dow_to_do;
+				$dow = date_create("2018/12/$increment"); // 2018/12/02 is known to be a Sunday
+				// $dow = date_add($sunday, "P".$i."D");
+				if (!$attribute) {
+					// return an array of days, each expressed as an array of attributes
+					$today = array(); 
+					$today['full_name'] = date_format($dow, 'l');
+					$today['full_name_uppercase'] = strtoupper(date_format($dow, 'l'));
+					$today['short_name'] = date_format($dow, 'D');
+					$today['number'] = (int)date_format($dow, 'w');
+					$dows[$dow_to_do] = $today;
+				} 
+				else {
+					// return an array of days, each just expressed as the requested attribute
+					switch ($attribute) { 
+						case 'full_name': $dows[$dow_to_do] = date_format($dow, 'l'); break;
+						case 'full_name_uppercase': $dows[$dow_to_do] = strtoupper(date_format($dow, 'l')); break;
+						case 'short_name': $dows[$dow_to_do] = date_format($dow, 'D'); break;
+						case 'number': $dows[$dow_to_do] = (int)date_format($dow, 'w'); break;
+					}
+				}
+			}
+		} 
+	}
+	if (0) deb("utils.days_of_week(): dows =", $dows);
+	return $dows;
 }
 
 // An HTML select field for the months of the next num_years years,

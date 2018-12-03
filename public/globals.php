@@ -2,8 +2,6 @@
 
 require_once "utils.php";
 
-if (0) deb("globals.php: start _COOKIE =", $_COOKIE);
-
 define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
 date_default_timezone_set('America/Detroit');
@@ -17,28 +15,47 @@ define('PLACEHOLDER', 'XXXXXXXX');
 define('DOMAIN', '@gocoho.org');
 define('HAS_CONFLICT', -1);
 
-define('SUNDAY', 0);
-define('MONDAY', 1);
-define('TUESDAY', 2);
-define('WEDNESDAY', 3);
-define('THURSDAY', 4);
-define('FRIDAY', 5);
-define('SATURDAY', 6);
+$dows = days_of_week();
+foreach($dows as $i=>$dow) {
+	define($dow['full_name_uppercase'], (int)$dow['number']);
+}
+
+if (0) deb("globals.php: SUNDAY = " . SUNDAY);
+if (0) deb("globals.php: THURSDAY = " . THURSDAY);
+if (0) deb("globals.php: SATURDAY = " . SATURDAY);
+
+// define('SUNDAY', 0);
+// define('MONDAY', 1);
+// define('TUESDAY', 2);
+// define('WEDNESDAY', 3);
+// define('THURSDAY', 4);
+// define('FRIDAY', 5);
+// define('SATURDAY', 6);
 
 
 /**
  * Get the names of the days of the week.
  */
 function get_days_of_week() {
-	return [
-		'Sun',
-		'Mon',
-		'Tue',
-		'Wed',
-		'Thu',
-		'Fri',
-		'Sat',
-	];
+	$dows = days_of_week("", "short_name");
+	if (0) deb("globals.get_days_of_week(): dows short_names = ", $dows);
+	return $dows;
+	// $dows = days_of_week();
+	// $short_names = array();
+	// foreach($dows as $dow) {
+		// $short_names[] = $dow['short_name'];
+	// }
+	// if (0) deb("globals.get_days_of_week(): short_names = ", $short_names);
+	// return $short_names;
+	// return [
+		// 'Sun',
+		// 'Mon',
+		// 'Tue',
+		// 'Wed',
+		// 'Thu',
+		// 'Fri',
+		// 'Sat',
+	// ];
 }
 
 global $pref_names;
@@ -110,8 +127,12 @@ function defineJobCategories() {
  * Get the list of the weekdays where meals are served.
  */
 function get_weekday_meal_days() {
-	return [THURSDAY, SUNDAY]; 
+	$wmds = days_of_week("4 0", "number");
+	if (0) deb("globals.get_weekday_meal_days(): wmds =", $wmds);
+	return $wmds; 
+	// return [THURSDAY, SUNDAY];
 }
+if (0) get_weekday_meal_days(); 
 
 global $mtg_nights;
 // key = day of week, value = ordinal occurrence of day/week

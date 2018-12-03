@@ -1,6 +1,4 @@
-	<?php
-
-if (0) deb("constants.inc: start"); //_COOKIE =", $_COOKIE);
+<?php
 
 /*
  * Collection of constant declarations
@@ -29,9 +27,6 @@ define('ASSIGNMENTS_LINK', ';Edit Assignments,dashboard.php');
 define('CHANGE_SETS_LINK', ';Change Sets,change_sets.php');
 
 // -------- sqlite tables --------- 
-// settings tables
-// define('CURRENT_SEASONS_TABLE', 'current_season');   
-// define('SESSIONS_TABLE', 'sessions'); 
 
 // tables from the work survey
 define('SURVEY_JOB_TABLE', 'jobs'); 

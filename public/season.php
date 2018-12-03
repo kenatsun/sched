@@ -28,6 +28,7 @@ $page .= renderHeadline((($season) ? $season['name'] : "New") . " Season", HOME_
 $page .= renderSeasonForm($season);
 print $page;
 
+
 //////////////////////////////////////////////////////////////// FUNCTIONS
 
 // Render the form to display, create, or update this season
@@ -110,11 +111,8 @@ function saveChangesToSeason($post) {
 	$closing_day = $post['survey_closing_day'];
 	$closing_year = $post['survey_closing_year'];
 	$survey_closing_date = (checkdate($closing_month, $closing_day, $closing_year)) ? $closing_year."-".$closing_month."-".$closing_day : ""; 
-	// $survey_opening_date = ($post['survey_opening_date']) ? date("Y-m-d", strtotime($post['survey_opening_date'])) : "";
-	// $survey_closing_date = ($post['survey_closing_date']) ? date("Y-m-d", strtotime($post['survey_closing_date'])) : "";
 	$extend_survey = ($post['extend_survey']) ? 1 : 0;
 	
-
 	// If season_id exists, it's an existing season, so update its data
 	if ($season_id) {
 		$set = "name = '$name', 
@@ -148,8 +146,39 @@ function saveChangesToSeason($post) {
 		if (0) deb("season.saveChangesToSeason(): values =", $values);
 		sqlInsert(SEASONS_TABLE, $columns, $values, (0), "seasons.saveChangesToSeason()", TRUE);
 		$season_id = sqlSelect("max(id) as id", SEASONS_TABLE, "", "")[0]['id'];
+		// generateMealsForSeason($season_id);
 	}
+	generateMealsForSeason($season_id);
 	return $season_id;
 
 }
+
+function generateMealsForSeason($season_id) {
+	$season = sqlSelect("*", SEASONS_TABLE, "id = $season_id", "", (1), "generateMealsForSeason()")[0];
+	$start_date = new DateTime($season['start_date']);
+	$end_date = new DateTime($season['end_date']);
+	$interval = DateInterval::createFromDateString('1 day');
+	$period = new DatePeriod($start_date, $interval, $end_date);
+	$meal_dows = get_weekday_meal_days();
+	foreach ($period as $date) {
+		if (in_array(date_format($date, "w"), $meal_dows)) {
+			$meal_date = $date->format("Y-m-d");
+			if (!sqlSelect("*", MEALS_TABLE, "date in ('" . $meal_date . "')", "", (0))[0]) {
+				sqlInsert(MEALS_TABLE, "season_id, date", $season_id . ", '" . $meal_date . "'", (0), "generateMealsForSeason()", TRUE);
+			}
+			$meal_id = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (1))[0]['id'];
+			generateShiftsForMeal($meal_id, $season_id);
+		}
+	}
+}
+	
+function generateShiftsForMeal($meal_id, $season_id) {
+	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (1), "season.generateShiftsForSeason()");
+	foreach($jobs as $i=>$job) {
+		if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = $job_id and meal_id = $meal_id", "", (0))[0]) {
+			sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", $job['id'] . ", " . $meal_id, (1), "generateShiftsForMeal()", TRUE);
+		}		
+	}
+}
+
 ?>

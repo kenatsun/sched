@@ -9,7 +9,7 @@ require_once "constants.inc";
 require_once "globals.php";
 require_once "git_ignored.php";
 
-if (0) deb("config.php: _POST =", $_POST); 
+if (0) deb("config.php: start"); 
 
 define('BASE_DIR', '');
 // define('BASE_DIR', getRootPath()); 

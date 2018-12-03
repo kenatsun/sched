@@ -19,11 +19,11 @@ if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
 purgeUnsavedChangeSets();
 
 // Link back to dashboard
-$dashboard_link = '
-	<p class="summary_report"><strong><a href="dashboard.php">View Dashboard</a></strong></p>
-';
+// $dashboard_link = '
+	// <p class="summary_report"><strong><a href="dashboard.php">View Dashboard</a></strong></p>
+// ';
 
-$headline = renderHeadline("Saved Change Sets (newest first)"); 
+$headline = renderHeadline("Saved Change Sets (newest first)", HOME_LINK . ASSIGNMENTS_LINK); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id}", "when_saved desc", (0));
 
 // $change_sets_table = '<table style="table-layout:auto; width:1px; white-space: nowrap;">';
@@ -59,8 +59,12 @@ EOHTML;
 $page = <<<EOHTML
 	{$headline}
 	{$change_sets_form}
-	{$dashboard_link}
 EOHTML;
+// $page = <<<EOHTML
+	// {$headline}
+	// {$change_sets_form}
+	// {$dashboard_link}
+// EOHTML;
 print $page;
 
 

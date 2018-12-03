@@ -13,7 +13,7 @@ require_once 'classes/survey1.php';
 require_once 'display/includes/header.php';
 require_once 'participation.php';
 
-if (0) deb("index.php: start _COOKIE =", $_COOKIE);
+if (0) deb("index.php: start");
 
 $dir = BASE_DIR;
 
@@ -48,10 +48,9 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		display_instructions();
 		display_person_menu();
 		display_footer();
-		$community = COMMUNITY;
 		display_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
-		display_report_link("Click here for details of the responses");	
-		
+		display_report_link("<strong>View details of the sign-ups</strong>");	
+		display_assignments_link("<strong>View the job assignments</strong>");			
 	} else {
 		build_survey($respondent_id);
 	}
@@ -153,6 +152,11 @@ EOHTML;
 function display_report_link($text) {
 	$dir = PUBLIC_DIR;
 	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/report.php">' . $text . '</a></p>';
+}
+
+function display_assignments_link($text) {
+	$dir = PUBLIC_DIR;
+	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></p>';
 }
 
 function display_seasons_link($text) {

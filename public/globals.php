@@ -2,6 +2,8 @@
 
 require_once "utils.php";
 
+if (0) deb("globals.php: start");
+
 define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
 date_default_timezone_set('America/Detroit');
@@ -24,40 +26,6 @@ if (0) deb("globals.php: SUNDAY = " . SUNDAY);
 if (0) deb("globals.php: THURSDAY = " . THURSDAY);
 if (0) deb("globals.php: SATURDAY = " . SATURDAY);
 
-// define('SUNDAY', 0);
-// define('MONDAY', 1);
-// define('TUESDAY', 2);
-// define('WEDNESDAY', 3);
-// define('THURSDAY', 4);
-// define('FRIDAY', 5);
-// define('SATURDAY', 6);
-
-
-/**
- * Get the names of the days of the week.
- */
-function get_days_of_week() {
-	$dows = days_of_week("", "short_name");
-	if (0) deb("globals.get_days_of_week(): dows short_names = ", $dows);
-	return $dows;
-	// $dows = days_of_week();
-	// $short_names = array();
-	// foreach($dows as $dow) {
-		// $short_names[] = $dow['short_name'];
-	// }
-	// if (0) deb("globals.get_days_of_week(): short_names = ", $short_names);
-	// return $short_names;
-	// return [
-		// 'Sun',
-		// 'Mon',
-		// 'Tue',
-		// 'Wed',
-		// 'Thu',
-		// 'Fri',
-		// 'Sat',
-	// ];
-}
-
 global $pref_names;
 $pref_names = array(
 	0 => 'avoid',
@@ -73,6 +41,15 @@ foreach ($pref_names as $k=>$prefname) {
 
 
 ///////////////////////////////////////////////////////// FUNCTIONS
+
+/**
+ * Get the short names of the days of the week.
+ */
+function get_days_of_week() {
+	$dows = days_of_week("", "short_name");
+	if (0) deb("globals.get_days_of_week(): dows short_names = ", $dows);
+	return $dows;
+}
 
 function defineJobCategories() {
 	// If these names change, be sure to update the is_a_*_job() functions.
@@ -93,6 +70,7 @@ function defineJobCategories() {
 	// list in order of importance
 	global $weekday_jobs;
 	$weekday_jobs = array(
+		// #!# note, we're looking for the string 'asst cook' in the code
 		WEEKDAY_HEAD_COOK => 'head cook', 
 		WEEKDAY_ASST_COOK => 'asst cook', 
 		WEEKDAY_CLEANER => 'cleaner', 

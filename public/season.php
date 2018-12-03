@@ -23,7 +23,7 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = {$season_id}", "", (0), "season.ph
 
 // Display the page
 $page = "";
-$page .= renderHeadline((($season) ? $season['name'] : "New") . " Season", HOME_LINK . SEASONS_LINK); 
+$page .= renderHeadline((($season) ? $season['name'] : "New") . " Season", HOME_LINK . SEASONS_LINK);  
 // $page .= '<p><a href="' . $dir . '/seasons.php">Back to Seasons List</a></p>';
 $page .= renderSeasonForm($season);
 print $page;
@@ -154,7 +154,7 @@ function saveChangesToSeason($post) {
 }
 
 function generateMealsForSeason($season_id) {
-	$season = sqlSelect("*", SEASONS_TABLE, "id = $season_id", "", (1), "generateMealsForSeason()")[0];
+	$season = sqlSelect("*", SEASONS_TABLE, "id = $season_id", "", (0), "generateMealsForSeason()")[0];
 	$start_date = new DateTime($season['start_date']);
 	$end_date = new DateTime($season['end_date']);
 	$interval = DateInterval::createFromDateString('1 day');
@@ -166,17 +166,17 @@ function generateMealsForSeason($season_id) {
 			if (!sqlSelect("*", MEALS_TABLE, "date in ('" . $meal_date . "')", "", (0))[0]) {
 				sqlInsert(MEALS_TABLE, "season_id, date", $season_id . ", '" . $meal_date . "'", (0), "generateMealsForSeason()", TRUE);
 			}
-			$meal_id = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (1))[0]['id'];
+			$meal_id = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (0))[0]['id'];
 			generateShiftsForMeal($meal_id, $season_id);
 		}
 	}
 }
 	
 function generateShiftsForMeal($meal_id, $season_id) {
-	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (1), "season.generateShiftsForSeason()");
+	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateShiftsForSeason()");
 	foreach($jobs as $i=>$job) {
 		if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = $job_id and meal_id = $meal_id", "", (0))[0]) {
-			sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", $job['id'] . ", " . $meal_id, (1), "generateShiftsForMeal()", TRUE);
+			sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", $job['id'] . ", " . $meal_id, (0), "generateShiftsForMeal()", TRUE);
 		}		
 	}
 }

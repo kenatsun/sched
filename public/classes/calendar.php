@@ -264,7 +264,7 @@ EOHTML;
 EOHTML;
 				}
 
-				$date_string = SEASON_START_YEAR . "/" . zeroPad($month_num, 2) . "/" . zeroPad($i, 2); 
+				$date_string = SEASON_START_YEAR . "-" . zeroPad($month_num, 2) . "-" . zeroPad($i, 2); 
 				$meal = sqlSelect("*", MEALS_TABLE, "date = '{$date_string}'", "", (0), "calendar.renderMealsInCalendar(): meal")[0];
 				$meal_id = $meal['id'];
 				if (0) deb("calendar.renderMealsInCalendar(): SEASON_START_YEAR: " . SEASON_START_YEAR); 
@@ -272,6 +272,8 @@ EOHTML;
 				if (0) deb("calendar.renderMealsInCalendar(): date_string: {$date_string}"); 				
 				if (0) deb("calendar.renderMealsInCalendar(): month_num = {$month_num}, day_num = {$i}", NULL);			
 				if (0) deb("calendar.renderMealsInCalendars: Meals on Holidays?", MEALS_ON_HOLIDAYS);
+				if (0) deb("calendar.renderMealsInCalendars: meal = ", $meal);
+				if (0) deb("calendar.renderMealsInCalendars: meal['skip_indicator'] = ", $meal['skip_indicator']);
 				
 				// if today is a holiday, show that in the cell
 				if (isset($this->holidays[$month_num]) &&
@@ -326,7 +328,7 @@ EOHTML;
 						$cell = $this->list_available_workers($meal_id, $meals[$meal_id], TRUE);
 					}
 				}
-				// process weekday meals nights
+				// if today is a weekday, show that in the cell
 				elseif (in_array($day_of_week, $meal_days)) {
 
 					// is this a meeting night?
@@ -354,6 +356,7 @@ EOHTML;
 					}
 					else {
 						$this->num_shifts['weekday']++;
+						if (0) deb("calendar.renderMealsInCalendar(): this->num_shifts['weekday'] =", $this->num_shifts['weekday']);
 						if (0) deb("calendar.renderMealsInCalendar(): weekday_jobs =", $weekday_jobs);
 						$jobs = $weekday_jobs;
 					}

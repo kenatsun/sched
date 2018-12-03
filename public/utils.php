@@ -4,6 +4,9 @@ require_once 'git_ignored.php';
 
 if (0) deb("utils.php: start"); //_COOKIE =", $_COOKIE);
 
+
+//////////////////////////////////////////////////////// FUNCTIONS
+
 // connect to SQLite database
 function create_sqlite_connection() {
 	global $dbh;
@@ -228,19 +231,23 @@ function surveyIsClosed() {
 // ADMIN LOGIN FUNCTIONS ---------------------------------------------------------------
 
 function determineUserStatus() {
+	// if (isset($_GET['admin']) || isset($_GET['a'])) { 
+		// promptForAdminPassword();
+	// }
+	// if (isset($_POST['password'])) { 
+		// if ($_POST['password'] == 'a') {  
+			// if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
+			// $_SESSION['access_type'] = 'admin';
+			// // setcookie("admin", TRUE, time()+86400,"/");
+		// } else {
+			// $_SESSION['access_type'] = 'guest';
+			// // setcookie("admin", FALSE, time()+86400,"/");
+			// print "Wrong password for 'admin' access.  You're in this session as a 'guest'.";
+		// }
+	// }
 	if (isset($_GET['admin']) || isset($_GET['a'])) { 
-		promptForAdminPassword();
-	}
-	if (isset($_POST['password'])) { 
-		if ($_POST['password'] == 'a') {  
-			if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
-			$_SESSION['access_type'] = 'admin';
-			// setcookie("admin", TRUE, time()+86400,"/");
-		} else {
-			$_SESSION['access_type'] = 'guest';
-			// setcookie("admin", FALSE, time()+86400,"/");
-			print "Wrong password for 'admin' access.  You're in this session as a 'guest'.";
-		}
+		if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
+		$_SESSION['access_type'] = 'admin';
 	}
 	if (isset($_POST['sign_in_as_guest'])) {
 		$_SESSION['access_type'] = 'guest';
@@ -322,7 +329,7 @@ EOSQL;
 		$season_name[] = $row['name'];
 		break;
 	}
-	if (0) deb("	Utils: Season name from DB:", $season_name);
+	if (0) deb("utils.get_season_name_from_db(): Season name = $season_name");
 	return $season_name[0];
 }
 
@@ -332,42 +339,53 @@ EOSQL;
  * @return array list of month names contained in the requested season.
  */
 function get_current_season_months() {
-	if (0) deb("utils.get_current_season_months: SEASON_TYPE = ", SEASON_TYPE);
-	switch(SEASON_TYPE) {
-		case "SPRING":
-			return [
-				4=>'April',
-				5=>'May',
-				6=>'June',
-			];
-			break;		
-		case "SUMMER":
-			return [	
-				7=>'July',
-				8=>'August',
-				9=>'September',
-			];
-			break;
-		case "FALL":
-			return [
-				10=>'October',
-				11=>'November',
-				12=>'December',
-			];
-			break;
-		case "WINTER":
-			return [
-				1=>'January',
-				2=>'February',
-				3=>'March',
-			];
-			break;
-		case 'test':
-			return [
-				1=>'January',
-			];
-			break;
+	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0];
+	$start_month_num = date_format(date_create($season['start_date']), "n");
+	$end_month_num = date_format(date_create($season['end_date']), "n");
+	$season_months = array();
+	$months = months($start_month_num, $end_month_num);
+	foreach($months as $i=>$month) {
+		$season_months[$month['number']] = $month['full_name'];
 	}
+	if (0) deb("utils.get_current_season_months: season_months = ", $season_months);
+	return $season_months; 
+	
+	// if (0) deb("utils.get_current_season_months: SEASON_TYPE = ", SEASON_TYPE);
+	// switch(SEASON_TYPE) {
+		// case "SPRING":
+			// return [
+				// 4=>'April',
+				// 5=>'May',
+				// 6=>'June',
+			// ];
+			// break;		
+		// case "SUMMER":
+			// return [	
+				// 7=>'July',
+				// 8=>'August',
+				// 9=>'September',
+			// ];
+			// break;
+		// case "FALL":
+			// return [
+				// 10=>'October',
+				// 11=>'November',
+				// 12=>'December',
+			// ];
+			// break;
+		// case "WINTER":
+			// return [
+				// 1=>'January',
+				// 2=>'February',
+				// 3=>'March',
+			// ];
+			// break;
+		// case 'test':
+			// return [
+				// 1=>'January',
+			// ];
+			// break;
+	// }
 }
 
 /**
@@ -516,7 +534,7 @@ function renderHeadline($text, $breadcrumbs_str="") {
 	
 	$td_style = 'background-color:white;';
 	if ($breadcrumbs_str) {
-		$breadcrumbs = 'Go back to:';
+		$breadcrumbs = '<<<<< &nbsp;&nbsp;go back to:';
 		$breadcrumbs_arr = explode(';', $breadcrumbs_str);
 		foreach($breadcrumbs_arr as $i=>$breadcrumb) {
 			if (0) deb ("utils.renderHeadline(): breadcrumb =", $breadcrumb);

@@ -1,5 +1,7 @@
 <?php
 
+if (0) deb("constants.php: start");
+
 /*
  * Collection of constant declarations
  */

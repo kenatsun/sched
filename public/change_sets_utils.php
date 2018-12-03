@@ -8,9 +8,14 @@ require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/constants.inc";
 require_once "{$relative_dir}/config.php";
 require_once "{$relative_dir}/globals.php";
+
+if (0) deb("change_sets.php: _POST = ", $_POST);
  
 define('OK_CHANGE_VALUE', 'ok_change');
 if (0) deb("change_sets.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
+
+define('ADDED_COLOR', '#ffff66');		// Background color for worker added to shift
+define('REMOVED_COLOR', 'LightBlue');	// Background color for worker removed from shift
 
 
 // Show change set from form data, get user confirmation
@@ -60,10 +65,10 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 		$meal_date = $dt->format('M j (D)');
 		switch ($change['action']) {
 			case "add":
-				$background_color = "LightGreen";
+				$background_color = ADDED_COLOR;
 				break;
 			case "remove":
-				$background_color = "Pink";
+				$background_color = REMOVED_COLOR;
 				break;
 			default:
 				$background_color = "White";
@@ -286,6 +291,8 @@ function purgeUnsavedChangeSets() {
 
 // Undo selected change sets
 function undoChangeSets($undo_back_to_change_set_id, $post) {
+
+	if (!isset($post['undo'])) return;  // Don't undo changes unless the "undo" button was pushed
 
 	// Get the earliest change set in the series of change sets to undo
 	$earliest_change_set = sqlSelect("*", CHANGE_SETS_TABLE, "id = {$undo_back_to_change_set_id}", "", (0), "earliest change set to undo")[0];

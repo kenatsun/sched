@@ -147,10 +147,15 @@ function saveChangesToSeason($post) {
 		sqlInsert(SEASONS_TABLE, $columns, $values, (0), "seasons.saveChangesToSeason()");
 		$season_id = sqlSelect("max(id) as id", SEASONS_TABLE, "", "")[0]['id'];
 	}
-	// Create or update the meals and shifts for this season
-	generateMealsForSeason($season_id);
+
+	// Generate the jobs for this season
+	$jobs = generateJobsForSeason($season_id);
+	
+	// Generate the meals and shifts for this season
+	generateMealsForSeason($season_id, $jobs);
+	
 	// Record the number of shifts this season for each job
-	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateShiftsForSeason()");
+	// $jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateShiftsForSeason()");
 	foreach($jobs as $i=>$job) {
 		$shift_count = sqlSelect("count(distinct id) as count", SCHEDULE_SHIFTS_TABLE, "job_id = " . $job['id'], "", (0), "season.saveChangesToSeason(): shifts count")[0]['count'];
 		$workers_count = $shift_count * $job['workers_per_shift'];
@@ -160,12 +165,27 @@ function saveChangesToSeason($post) {
 
 }
 
-function generateMealsForSeason($season_id) {
+function generateJobsForSeason($season_id) {
+	// For now, these are just a copy of last season's jobs
+	// and we assume the last season had an id one less than this one
+	$prev_id = $season_id - 1;
+	$prev_jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $prev_id, "display_order", (0), "season.generateJobsForSeason(): last season's jobs");
+	foreach ($prev_jobs as $i=>$prev_job) {
+		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $prev_job['description'] . "'", "")[0]) {
+			$columns = "season_id, active, description, display_order, constant_name, workers_per_shift";
+			$values = "$season_id, '{$prev_job['active']}', '{$prev_job['description']}', {$prev_job['display_order']}, '{$prev_job['constant_name']}', {$prev_job['workers_per_shift']}";
+			sqlInsert(SURVEY_JOB_TABLE, $columns, $values, (0), "season.generateJobsForSeason(): insert new job");
+		}
+	}
+	return sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason()");
+}
+
+function generateMealsForSeason($season_id, $jobs) {
 	$season = sqlSelect("*", SEASONS_TABLE, "id = $season_id", "", (0), "generateMealsForSeason()")[0];
 	$start_date = new DateTime($season['start_date']);
 	$end_date = new DateTime($season['end_date']);
 	$interval = DateInterval::createFromDateString('1 day');
-	$period = new DatePeriod($start_date, $interval, $end_date);
+	$period = new DatePeriod($start_date, $interval, $end_date); 
 	$meal_dows = get_weekday_meal_days();
 	foreach ($period as $date) {
 		if (in_array(date_format($date, "w"), $meal_dows)) {
@@ -175,18 +195,20 @@ function generateMealsForSeason($season_id) {
 				sqlInsert(MEALS_TABLE, "season_id, date", $season_id . ", '" . $meal_date . "'", (0), "generateMealsForSeason()");
 			}
 			$meal = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (0))[0];
+			
 			// Generate the shifts for this meal
-			generateShiftsForMeal($meal, $season_id);
+			generateShiftsForMeal($season_id, $jobs, $meal);
+
 			// A skipped meal should have no shifts
 			if ($meal['skip_indicator']) {
-				sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}"); 
+				sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}");
 			}
 		}
 	}	
 }
 	
-function generateShiftsForMeal($meal, $season_id) {
-	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateShiftsForSeason()");
+function generateShiftsForMeal($season_id, $jobs, $meal) {
+	// $jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateShiftsForSeason()");
 	foreach($jobs as $i=>$job) {
 		if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = {$job['id']} and meal_id = {$meal['id']}", "", (0))[0]) {
 			sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", "{$job['id']}, {$meal['id']}", (0), "generateShiftsForMeal()");

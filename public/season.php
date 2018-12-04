@@ -176,10 +176,10 @@ function generateMealsForSeason($season_id) {
 			}
 			$meal = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (0))[0];
 			// Generate the shifts for this meal
-			generateShiftsForMeal($meal, $season_id, (0), "generateMealsForSeason()");
+			generateShiftsForMeal($meal, $season_id);
 			// A skipped meal should have no shifts
 			if ($meal['skip_indicator']) {
-				sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}");
+				sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}"); 
 			}
 		}
 	}	

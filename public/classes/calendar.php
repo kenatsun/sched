@@ -296,6 +296,7 @@ EOHTML;
 						$jobs_list = array_keys($sunday_jobs);
 						if (!empty($jobs_list)) {
 							$meals_and_shifts[$meal_id] = $jobs_list;
+							if (0) deb("calendar.renderMealsInCalendar(): meals_and_shifts[meal_id] = ", meals_and_shifts[$meal_id]);
 							// $meals_and_shifts[$date_string] = $jobs_list;
 						}
 					}

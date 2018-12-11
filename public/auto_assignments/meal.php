@@ -11,7 +11,7 @@ class Meal {
 	protected $prefer_threshold = 1.5; // ratio threshold below which 'ok' should trump 'prefer'
 	protected $possible_workers = array(); // array of username => pref
 	protected $assigned = array(); // username string
-	protected $id; // unique meal ID
+	public $id; // unique meal ID
 	protected $date; // date of the meal
 
 	/**
@@ -20,9 +20,10 @@ class Meal {
 	 * @param[in] date string a date string which looks like '5/6/2013'
 	 * @param[in] meal_num int a unique number for this meal
 	 */
-	public function __construct($schedule, $id) {
+	public function __construct($schedule, $id, $num_meals) {
 		$this->schedule = $schedule;
 		if (0) deb("meal.__construct: date = ", $date);
+		if (0) deb("meal.__construct: id = $id");
 		$this->id = $id;
 		$this->date = sqlSelect("date", MEALS_TABLE, "id = {$this->id}", "", (0), "meal.__construct")[0]['date'];
 		$this->day_of_week = date('N', strtotime($this->date));

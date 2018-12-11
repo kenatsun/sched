@@ -149,7 +149,7 @@ EOSQL;
 		// need to assign a placeholder for manual fixing later
 		if (empty($this->least_available)) {
 			$name = get_job_name($j);
-			echo PLACEHOLDER . " no more workers left for J:{$j} ({$name})\n";
+			// echo PLACEHOLDER . " no more workers left for J:{$j} ({$name})<br>";
 		}
 
 		asort($this->least_available);

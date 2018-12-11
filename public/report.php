@@ -242,7 +242,7 @@ EOHTML;
 EOHTML;
 }
 
-$headline = renderHeadline("Our Responses So Far");
+$headline = renderHeadline("Our Responses So Far", HOME_LINK);
 $months_overlay = $calendar->renderMonthsOverlay();
 $signups = renderJobSignups("Jobs we've signed up for", TRUE);
 $non_responders = (!surveyIsClosed() ? renderNonResponders() : "");
@@ -251,11 +251,11 @@ $non_responders = (!surveyIsClosed() ? renderNonResponders() : "");
 // ----------------------------------- toString section
 print <<<EOHTML
 {$headline}
+{$signups}
+<br>
 {$months_overlay}
 <br>
 {$cal_string}
-<br>
-{$signups}
 <br>
 {$non_responders}
 <br>

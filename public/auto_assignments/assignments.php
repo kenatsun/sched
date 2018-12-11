@@ -144,6 +144,7 @@ class Assignments {
 		$auth_user_table = AUTH_USER_TABLE;
 		$meals_table = MEALS_TABLE;
 		$select = "m.date as date, 
+			m.id as meal_id,
 			s.job_id, 
 			a.username, 
 			p.pref";
@@ -164,15 +165,19 @@ class Assignments {
 		foreach($rows as $row) {
 			$u = $row['username'];
 			$d = $row['date'];
+			$mi = $row['meal_id'];
 			$ji = $row['job_id'];
 			$p = $row['pref'];
-
-			if (0) deb("assignments.loadPrefs(): job_id = $ji, date = $d, pref = $p");
+			if (0) deb("assignments.loadPrefs(): job_id = $ji, date = $d, pref = $p, meal_id = $mi");
 
 			// only add jobs which appear in the schedule
-			if ($this->schedule->addPrefs($u, $ji, $d, $p)) {
-				$this->roster->addPrefs($u, $ji, $d, $p);
+			if ($this->schedule->addPrefs($u, $ji, $mi, $p)) {
+				if (0) deb("assignments.loadPrefs(): jobs in schedule include job_id = $ji, date = $d, pref = $p, meal_id = $mi");
+				$this->roster->addPrefs($u, $ji, $mi, $p);
 			}
+			// if ($this->schedule->addPrefs($u, $ji, $d, $p)) {
+				// $this->roster->addPrefs($u, $ji, $d, $p);
+			// }
 
 			$count++;
 		}

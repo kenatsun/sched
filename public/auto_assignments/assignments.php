@@ -5,7 +5,7 @@ function runScheduler($options) {
 	$relative_dir = '';
 	// $relative_dir = '../';
 	// $relative_dir = '../public/';
-	if (0) debt ("assignments.runScheduler(): options  =", $options);
+	if (0) deb ("assignments.runScheduler(): options  =", $options);
 
 	require_once $relative_dir . 'globals.php';
 	require_once $relative_dir . 'config.php';
@@ -19,7 +19,7 @@ function runScheduler($options) {
 	global $job_key_clause;
 	global $scheduler_run_id;
 	$scheduler_timestamp = date("Y/m/d H:i:s");
-	if (0) debt("assignments: scheduler_timestamp = $scheduler_timestamp");
+	if (0) deb("assignments: scheduler_timestamp = $scheduler_timestamp");
 
 	// remove special case...
 	unset($all_jobs['all']);
@@ -65,14 +65,14 @@ function runScheduler($options) {
 				if ($scheduler_run_ids) $scheduler_run_ids .= ', '; 
 				$scheduler_run_ids .= $scheduler_run['id'];
 			}
-			if (0) debt("assignments.php: scheduler_run_ids = {$scheduler_run_ids}");
+			if (0) deb("assignments.php: scheduler_run_ids = {$scheduler_run_ids}");
 			$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id in ({$scheduler_run_ids})", "", (0), "change_sets");
-			if (0) debt("assignments.php: change_sets = ", $change_sets);
+			if (0) deb("assignments.php: change_sets = ", $change_sets);
 			foreach($change_sets as $s=>$change_set) {
 				if ($change_set_ids) $change_set_ids .= ', '; 
 				$change_set_ids .= $change_set['id'];
 			}
-			if (0) debt("assignments.php: change_set_ids = {$change_set_ids}");
+			if (0) deb("assignments.php: change_set_ids = {$change_set_ids}");
 			sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (0));
 			sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (0));
 			sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (0));
@@ -80,14 +80,14 @@ function runScheduler($options) {
 		}
 		sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));
 		$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = '{$scheduler_timestamp}'", (0))[0]['id'];
-		if (0) debt("assignments: scheduler_run_id = ", $scheduler_run_id);
+		if (0) deb("assignments: scheduler_run_id = ", $scheduler_run_id);
 		$assignments->outputToDatabase(); 
 	}
 
 	$end = microtime(TRUE);
 	if (array_key_exists('h', $options)) {
 		// $return .= "<p>elapsed time: " . date("m", strtotime($end - $start)) . " microseconds</p>"; 
-		if (0) debt("assignments.runScheduler: return = ", $return); 
+		if (0) deb("assignments.runScheduler: return = ", $return); 
 	}
 	else {
 		echo "elapsed time: " . ($end - $start) . "\n"; 
@@ -152,19 +152,22 @@ class Assignments {
 			{$shifts_table} as s, 
 			{$meals_table} as m";
 		$where = "p.pref > 0
-			AND a.id=p.worker_id
+			AND a.id = p.worker_id
 			AND s.id = p.shift_id
-			AND m.id = p.meal_id";
+			AND m.id = s.meal_id
+			AND m.season_id = " . SEASON_ID;
 		$order_by = "date ASC,
 			p.pref DESC,
 			a.username ASC";
-		$rows = sqlSelect($select, $from, $where, $order_by, (0), "assignments.loadPrefs():");
+		$rows = sqlSelect($select, $from, $where, $order_by, (0), "assignments.loadPrefs():"); 
 		$count = 0;
 		foreach($rows as $row) {
 			$u = $row['username'];
 			$d = $row['date'];
 			$ji = $row['job_id'];
 			$p = $row['pref'];
+
+			if (0) deb("assignments.loadPrefs(): job_id = $ji, date = $d, pref = $p");
 
 			// only add jobs which appear in the schedule
 			if ($this->schedule->addPrefs($u, $ji, $d, $p)) {
@@ -174,14 +177,14 @@ class Assignments {
 			$count++;
 		}
 
-		$this->initNonResponerPrefs();
+		$this->initNonResponderPrefs();
 	}
 
 	/**
 	 * This examines the overrides for those who have not taken the survey -
-	 * not just those folks who were in the database tobegin with.
+	 * not just those folks who were in the database to begin with.
 	 */
-	public function initNonResponerPrefs() {
+	public function initNonResponderPrefs() {
 		$slackers = $this->roster->getNonResponderNames();
 		sort($slackers);
 
@@ -195,7 +198,7 @@ class Assignments {
 	 */
 	public function makeAssignments() {
 		global $all_jobs;
-		if (0) debt("assignments.makeAssignments(): all_jobs:", $all_jobs);
+		if (0) deb("assignments.makeAssignments(): all_jobs:", $all_jobs);
 		// For each job
 		foreach(array_keys($all_jobs) as $job_id) {
 			$this->schedule->setJobId($job_id);
@@ -206,7 +209,7 @@ class Assignments {
 			$success = TRUE;
 			while (!$this->schedule->isFinished() && $success) {
 				$worker_freedom = $this->roster->sortAvailable();  // get the workers available for this job
-				if (0) debt("assignments.makeAssignments: worker_freedom =", $worker_freedom);
+				if (0) deb("assignments.makeAssignments: worker_freedom =", $worker_freedom);
 				$success = $this->schedule->fillMeal($worker_freedom);
 			}
 		}

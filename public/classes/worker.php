@@ -180,7 +180,7 @@ class Worker {
 		if (!isset($this->avail_shifts[$job_id])) {
 			$this->avail_shifts[$job_id] = array();
 		}
-
+		if (0) deb("worker.addAvailability(): job_id = $job_id, date = $date, pref = $pref");
 		$this->avail_shifts[$job_id][$date] = $pref;
 	}
 
@@ -256,11 +256,11 @@ class Worker {
 	 */
 	public function getDatesAssigned() {
 		$dates = array();
-		if (0) debt("worker.getDatesAssigned(): this->assigned =", $this->assigned);
+		if (0) deb("worker.getDatesAssigned(): this->assigned =", $this->assigned);
 		foreach($this->assigned as $i=>$d) {
 			$dates = array_merge($dates, $d);
 		}
-		if (0) debt("worker.getDatesAssigned(): dates =", $dates);
+		if (0) deb("worker.getDatesAssigned(): dates =", $dates);
 		return array_unique($dates);
 	}
 
@@ -283,10 +283,10 @@ class Worker {
 			return 0;
 		}
 
-		if (0) debt("worker.getAdjacencyScore(): assigned =", $assigned);
+		if (0) deb("worker.getAdjacencyScore(): assigned =", $assigned);
 
 		$current_meal_date = sqlSelect("date", MEALS_TABLE, "id = {$current_meal_id}", "", (0), "worker.getAdjacencyScore()")[0]['date'];
-		if (0) debt("worker.getAdjacencyScore(): current_meal_date =", $current_meal_date);
+		if (0) deb("worker.getAdjacencyScore(): current_meal_date =", $current_meal_date);
 		date_default_timezone_set('America/Detroit');
 		$current_meal_doy = date('z', strtotime($current_meal_date));
 
@@ -304,10 +304,10 @@ class Worker {
 			if ($min > $diff) {
 				$min = $diff;
 			}
-			if (0) debt("worker.getAdjacencyScore(): current_meal_doy = {$current_meal_doy}");
-			if (0) debt("worker.getAdjacencyScore(): assigned_meal_doy = {$assigned_meal_doy}");
-			if (0) debt("worker.getAdjacencyScore(): diff = {$diff}, min = {$min}");
-			if (0) debt("worker.getAdjacencyScore(): this->adjacency_limit = {$this->adjacency_limit}");
+			if (0) deb("worker.getAdjacencyScore(): current_meal_doy = {$current_meal_doy}");
+			if (0) deb("worker.getAdjacencyScore(): assigned_meal_doy = {$assigned_meal_doy}");
+			if (0) deb("worker.getAdjacencyScore(): diff = {$diff}, min = {$min}");
+			if (0) deb("worker.getAdjacencyScore(): this->adjacency_limit = {$this->adjacency_limit}");
 		}
 
 		if (is_null($min) || ($min == 0)) {
@@ -317,7 +317,7 @@ class Worker {
 		// if far away, then return with 0, otherwise the ratio
 		$score = ($min > $this->adjacency_limit) ? 0 :
 			($this->adjacency_limit / $min);
-		if (0) debt("worker.getAdjacencyScore(): score = {$score}");
+		if (0) deb("worker.getAdjacencyScore(): score = {$score}");
 		return $score;
 	}
 
@@ -459,6 +459,7 @@ class Worker {
 	 * @return boolean, If TRUE then the worker has some available shifts.
 	 */
 	public function hasResponded() {
+		if (0) deb("worker.hasResponded(): this worker =", $this);
 		return !empty($this->avail_shifts);
 	}
 

@@ -22,7 +22,7 @@ class Meal {
 	 */
 	public function __construct($schedule, $id) {
 		$this->schedule = $schedule;
-		if (0) debt("meal.__construct: date = ", $date);
+		if (0) deb("meal.__construct: date = ", $date);
 		$this->id = $id;
 		$this->date = sqlSelect("date", MEALS_TABLE, "id = {$this->id}", "", (0), "meal.__construct")[0]['date'];
 		$this->day_of_week = date('N', strtotime($this->date));
@@ -34,7 +34,7 @@ class Meal {
 	 */
 	public function addShifts($job_id_list) {
 		$job_instances = get_job_instances();
-		if (0) debt("meal.addShifts(): job_instances = ", $job_instances);
+		if (0) deb("meal.addShifts(): job_instances = ", $job_instances);
 
 		foreach(array_values($job_id_list) as $job_id) {
 			if (empty($job_instances[$job_id])) {
@@ -46,7 +46,7 @@ class Meal {
 			for($i=0; $i<$num; $i++) {
 				$this->assigned[$job_id][] = NULL;
 			}
-		if (0) debt("meal.addShifts(): this->assigned = ", $this->assigned);
+		if (0) deb("meal.addShifts(): this->assigned = ", $this->assigned);
 		}
 	}
 
@@ -59,7 +59,8 @@ class Meal {
 		// only add prefs for shifts which are defined on this date.
 		if (!isset($this->assigned[$job_id])) {
 			global $all_jobs;
-			if (0) debt("meal.addWorkerPref(): this->assigned = ", $this->assigned);
+			if (0) deb("meal.addWorkerPref(): this->assigned = ", $this->assigned . "<br>");
+			if (0) deb("meal.addWorkerPref(): this meal -> id = ", $this->id . "<br>");
 			if (!isset($all_jobs[$job_id])) {
 				echo "Could not find JOB ID: {$job_id}\n";
 				exit;
@@ -67,13 +68,12 @@ class Meal {
 
 			$all_jobs_out = print_r($all_jobs, TRUE);
 			$assn_out = print_r($this->assigned, TRUE);
-			echo <<<EOTXT
+			echo <<<EOHTML
 The job "{$all_jobs[$job_id]}" isn't scheduled for the meal with id {$this->id}
 U:{$username} P:{$pref}
 all jobs: {$all_jobs_out}
 assigned: {$assn_out}
-
-EOTXT;
+EOHTML;
 			exit;
 		}
 
@@ -498,16 +498,16 @@ EOTXT;
 		if ($format == 'html') {
 			$td_style = 'style="font-size:11pt; border: 1px solid lightgray;"'; 
 			$meal_date = date("m-d-Y", strtotime($this->date));
-			if (0) debt("meal.printMealTeam(): job_id = $job_id, meal_date = ", $meal_date);
+			if (0) deb("meal.printMealTeam(): job_id = $job_id, meal_date = ", $meal_date);
 			$html_row = '<tr><td ' . $td_style . '>' . $meal_date . "</td>";
 			// $previous_job_id = 0;			
 		}
 		
 		// check to make sure that all of the required instances are filled
 		// $all_jobs_from_db = getJobsFromDB(SEASON_ID);
-		if (0) debt("meal.printMealTeam(): this->assigned = ", $this->assigned);
+		if (0) deb("meal.printMealTeam(): this->assigned = ", $this->assigned);
 		foreach($this->assigned as $job_id=>$assignments) {
-			if (0) debt("meal.printMealTeam(): job_id = $job_id, assignments = ", $assignments);
+			if (0) deb("meal.printMealTeam(): job_id = $job_id, assignments = ", $assignments);
 			// check for un-assigned names
 			foreach($assignments as $shift_num=>$name) {
 				if (is_null($name)) {
@@ -552,7 +552,7 @@ EOTXT;
 				continue;
 			}
 
-			if (0) debt("meal.printMealTeam(): assignments = ", $assignments);
+			if (0) deb("meal.printMealTeam(): assignments = ", $assignments);
 			switch($format) {
 			case 'txt':
 				$line = implode("\t", $assignments);
@@ -560,9 +560,9 @@ EOTXT;
 				break;
 			case 'sql':
 			case 'csv':
-				if (0) debt("meal.printMealTeam(): out_jobs before = ", $out_jobs);
+				if (0) deb("meal.printMealTeam(): out_jobs before = ", $out_jobs);
 				$out_jobs = array_merge($out_jobs, $assignments);
-				if (0) debt("meal.printMealTeam(): out_jobs after = ", $out_jobs);
+				if (0) deb("meal.printMealTeam(): out_jobs after = ", $out_jobs);
 				break;			
 			case 'html':
 				foreach($assignments as $job_id=>$assigned_worker) {
@@ -575,7 +575,7 @@ EOTXT;
 		}
 		ksort($out_jobs);
 		
-		if (0) debt("meal.printMealTeam(): out_jobs = ", $out_jobs);
+		if (0) deb("meal.printMealTeam(): out_jobs = ", $out_jobs);
 
 		switch($format) {
 		case 'txt':
@@ -688,7 +688,7 @@ EOTXT;
 			if (0) deb("meal.insertMealAssignmentsIntoDB(): assignments =", $assignments);
 			// Get id of job from database based on description
 			$db_job_id = sqlSelect("id", SURVEY_JOB_TABLE, "description = '{$job_description}' and season_id = {$season_id}", "")[0]['id'];
-			if (!$db_job_id) debt("meal.insertMealAssignmentsIntoDB(): ERROR no job id found for job named '{$job_description}'.");
+			if (!$db_job_id) deb("meal.insertMealAssignmentsIntoDB(): ERROR no job id found for job named '{$job_description}'.");
 			// Get id of the shift 
 			$select = "id";
 			$from = SCHEDULE_SHIFTS_TABLE;
@@ -700,7 +700,7 @@ EOTXT;
 			foreach($assignments as $assignment_key=>$person) {
 				// Get id of worker from database based on username
 				$db_worker_id = sqlSelect("id", AUTH_USER_TABLE, "username = '{$person}'", "")[0]['id'];	
-				if (!$db_worker_id) debt("meal.insertMealAssignmentsIntoDB(): ERROR no worker id found for worker user named '{$person}'.");
+				if (!$db_worker_id) deb("meal.insertMealAssignmentsIntoDB(): ERROR no worker id found for worker user named '{$person}'.");
 				$table = ASSIGNMENT_STATES_TABLE;
 				$columns = "id, 
 					when_last_changed, 
@@ -719,18 +719,18 @@ EOTXT;
 					1, 
 					1";
 				$rows_affected = sqlInsert($table, $columns, $values, (0), "meal.insertMealAssignmentsIntoDB()"); 
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): this->id = {$this->id}");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): assignment_key = $assignment_key");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): job_id = $job_id");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): person = $person");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): db_job_id = $db_job_id");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): season_id = $season_id");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): db_shift_id = $db_shift_id");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): db_worker_id = $db_worker_id");
-				if (0) debt("meal.insertMealAssignmentsIntoDB(): rows_affected = $rows_affected");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): this->id = {$this->id}");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): assignment_key = $assignment_key");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): job_id = $job_id");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): person = $person");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): db_job_id = $db_job_id");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): season_id = $season_id");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): db_shift_id = $db_shift_id");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): db_worker_id = $db_worker_id");
+				if (0) deb("meal.insertMealAssignmentsIntoDB(): rows_affected = $rows_affected");
 			}
 		}
-		if (0) debt("meal.insertMealAssignmentsIntoDB(): rows in table =", sqlSelect("count(*)", "assignments", "", "")[0]['count(*)']);
+		if (0) deb("meal.insertMealAssignmentsIntoDB(): rows in table =", sqlSelect("count(*)", "assignments", "", "")[0]['count(*)']);
 	}
 }
 

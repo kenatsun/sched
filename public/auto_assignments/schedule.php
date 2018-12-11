@@ -36,7 +36,7 @@ class Schedule {
 	public function __construct() {
 		$this->calendar = new Calendar();
 		$this->jobs_from_db = getJobsFromDB(SEASON_ID);
-		if (0) debt("schedule.__construct(): this->jobs_from_db =", $this->jobs_from_db);
+		if (0) deb("schedule.__construct(): this->jobs_from_db =", $this->jobs_from_db);
 	}
 
 	/**
@@ -107,14 +107,14 @@ class Schedule {
 	public function initializeShifts() {
 		$this->calendar->disableWebDisplay();
 		$this->dates_and_shifts = $this->calendar->renderMealsInCalendar();
-		if (0) debt("schedule.initializeShifts(): this->dates_and_shifts =", $this->dates_and_shifts);
+		if (0) deb("schedule.initializeShifts(): this->dates_and_shifts =", $this->dates_and_shifts);
 		foreach($this->dates_and_shifts as $meal_id=>$shifts) {
 			$num_meals = count($this->meals);
 			$this->meals[$meal_id] = new Meal($this, $meal_id, $num_meals);
 			$this->meals[$meal_id]->addShifts($shifts);
-			if (0) debt("schedule.initializeShifts(): this->meals[date] =", $this->meals[$meal_id]);
+			if (0) deb("schedule.initializeShifts(): this->meals[date] =", $this->meals[$meal_id]);
 		}
-		if (0) debt("schedule.initializeShifts(): this->meals =", $this->meals);
+		if (0) deb("schedule.initializeShifts(): this->meals =", $this->meals);
 		}
 
 
@@ -147,7 +147,10 @@ class Schedule {
 	 * @param[in] pref num the numeric value preference score.
 	 */
 	public function addPrefs($username, $job_id, $meal_id, $pref) {
-		if (0) debt("schedule.initializeShifts(): this->meals[date] =", $this->meals[$meal_id]);
+		if (0) deb("schedule.addPrefs(): meal_id =", $meal_id);
+		if (0) deb("schedule.addPrefs(): this->meals[id] =", $this->meals[$meal_id]);
+		if (0) deb("schedule.addPrefs(): this->meals =", $this->meals);
+		if (0) deb("schedule.addPrefs(): job_id = $job_id, meal_id = $meal_id, pref = $pref");
 		
 		// only add preferences for scheduled approved meals
 		if (!isset($this->meals[$meal_id])) {
@@ -169,7 +172,7 @@ class Schedule {
 	 */
 	public function addNonResponderPrefs($slackers) {
 		$meals_by_shift = $this->getDatesByShift();
-		if (0) debt("schedule.addNonResponderPrefs(): this->meals[date] = ", $this->meals[$meal_id]);
+		if (0) deb("schedule.addNonResponderPrefs(): this->meals[meal_id] = ", $this->meals[$meal_id]);
 
 		foreach($slackers as $username) {
 			$w = $this->getWorker($username);

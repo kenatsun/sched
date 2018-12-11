@@ -100,6 +100,8 @@ EOSQL;
 		}
 
 		$w = $this->getWorker($username);
+		if (0) deb("roster.addPrefs(): job_id = $job_id, date = $date, pref = $pref");
+
 		$w->addAvailability($job_id, $date, $pref);
 	}
 

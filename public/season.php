@@ -184,21 +184,26 @@ function generateMealsForSeason($season_id, $jobs) {
 	$season = sqlSelect("*", SEASONS_TABLE, "id = $season_id", "", (0), "generateMealsForSeason()")[0];
 	$start_date = new DateTime($season['start_date']);
 	$end_date = new DateTime($season['end_date']);
+	$end_date->modify("+1 day"); // so the last date gets included in the season
 	$interval = DateInterval::createFromDateString('1 day');
-	$period = new DatePeriod($start_date, $interval, $end_date); 
+	$dates = new DatePeriod($start_date, $interval, $end_date); 
+	if (0) deb("season.generateMealsForSeason(): dates =", $dates);
 	$meal_dows = get_weekday_meal_days();
-	foreach ($period as $date) {
+	foreach ($dates as $date) {
 		if (in_array(date_format($date, "w"), $meal_dows)) {
 			// Insert the meal if not already in database
 			$meal_date = $date->format("Y-m-d");
+			if (0) deb("season.generateMealsForSeason(): meal_date = $meal_date");
 			if (!sqlSelect("*", MEALS_TABLE, "date in ('" . $meal_date . "')", "", (0))[0]) {
 				sqlInsert(MEALS_TABLE, "season_id, date", $season_id . ", '" . $meal_date . "'", (0), "generateMealsForSeason()");
 			}
 			$meal = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (0))[0];
 			
 			// Generate the shifts for this meal
-			generateShiftsForMeal($season_id, $jobs, $meal);
-
+			if (!$meal['skip_indicator']) {
+				generateShiftsForMeal($season_id, $jobs, $meal);
+			}
+			
 			// A skipped meal should have no shifts
 			if ($meal['skip_indicator']) {
 				sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}");

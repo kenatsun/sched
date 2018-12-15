@@ -19,11 +19,6 @@ if ($_POST) {
 	$change_set_id = saveChangeSet($_POST);
 }
 
-// // Link back to dashboard
-// $dashboard_link = '
-	// <p class="summary_report"><strong><a href="dashboard.php">View Dashboard</a></strong></p>
-// ';
-
 $headline = renderHeadline("Pending Changes", HOME_LINK . ASSIGNMENTS_LINK); 
 $changes_table = renderChangeSet($change_set_id, TRUE);
 $ok_change_value = OK_CHANGE_VALUE;
@@ -36,11 +31,6 @@ $changes_form = <<<EOHTML
 </form>
 EOHTML;
 
-// $page = <<<EOHTML
-	// {$headline}
-	// {$changes_form}
-	// {$dashboard_link}
-// EOHTML;
 $page = <<<EOHTML
 	{$headline}
 	{$changes_form}

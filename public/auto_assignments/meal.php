@@ -47,8 +47,8 @@ class Meal {
 			for($i=0; $i<$num; $i++) {
 				$this->assigned[$job_id][] = NULL;
 			}
-		if (0) deb("meal.addShifts(): this->assigned = ", $this->assigned);
 		}
+		if (0) deb("meal.addShifts(): this->assigned = ", $this->assigned);
 	}
 
 
@@ -57,6 +57,9 @@ class Meal {
 	 * preference number.
 	 */
 	public function addWorkerPref($username, $job_id, $pref) {
+		if (0) deb("meal.addWorkerPref(): username = $username, job_id = $job_id, pref = $pref ");
+		if (0) deb("meal.addWorkerPref(): this->assigned =", $this->assigned);
+		if (0) deb("meal.addWorkerPref(): this->assigned[job_id] =", $this->assigned[$job_id]);
 		// only add prefs for shifts which are defined on this date.
 		if (!isset($this->assigned[$job_id])) {
 			global $all_jobs;
@@ -87,7 +90,7 @@ EOHTML;
 	 */
 	public function getNumOpenSpacesForShift($job_id) {
 		if (empty($this->assigned[$job_id])) {
-			echo "no jobs assigned for this meal / job: D:{$this->id}, J:{$job_id}\n";
+			echo "no jobs assigned for this meal / job: M:{$this->id}, J:{$job_id}\n";
 			exit;
 		}
 
@@ -245,6 +248,8 @@ EOTXT;
 	 */
 	protected function pickWorker($job_id, $worker_freedom) {
 		$worker_points = [];
+		if (0) deb("meal.pickWorker(): this->date = {$this->date}, job_id = $job_id, worker_freedom (value aka avail_pref) =", $worker_freedom); 
+		if (0) deb("meal.pickWorker(): this->date = {$this->date}, job_id = $job_id, this->possible_workers[job_id] =", $this->possible_workers[$job_id]); 
 
 		$assigned_worker_names = $this->getAssignedWorkerNamesByJobId($job_id);
 		$list = $this->getAvoidAndPreferWorkerList($job_id,
@@ -281,12 +286,12 @@ EOTXT;
 				continue;
 			}
 
-			$today = $worker->getDateScore($this->id, $job_id);
+			$date_score = $worker->getDateScore($this->id, $job_id);
 			// skip if there's a date conflict
-			if ($today == HAS_CONFLICT) {
+			if ($date_score == HAS_CONFLICT) {
 				continue;
 			}
-			$promotes += $today;
+			$promotes += $date_score;
 
 			// #!# unfortunately, bundling doesn't seem to work because we're
 			// only examining each worker once...
@@ -342,7 +347,9 @@ EOTXT;
 
 		// a higher score is better
 		arsort($worker_points);
+		if (0) deb("meal.pickWorker(): this->date = {$this->date}, job_id = $job_id, worker_points =", $worker_points); 
 		$username = get_first_associative_key($worker_points);
+		if (0) deb("meal.pickWorker(): assigned worker = $username"); 
 
 		// may need to insert a placeholder for later manual correction
 		return is_null($username) ? PLACEHOLDER : $username;
@@ -498,14 +505,12 @@ EOTXT;
 		// get the meal date and format for html display
 		if ($format == 'html') {
 			$td_style = 'style="font-size:11pt; border: 1px solid lightgray;"'; 
-			$meal_date = date("m-d-Y", strtotime($this->date));
+			$meal_date = date("D m-d-Y", strtotime($this->date));
 			if (0) deb("meal.printMealTeam(): job_id = $job_id, meal_date = ", $meal_date);
 			$html_row = '<tr><td ' . $td_style . '>' . $meal_date . "</td>";
-			// $previous_job_id = 0;			
 		}
 		
 		// check to make sure that all of the required instances are filled
-		// $all_jobs_from_db = getJobsFromDB(SEASON_ID);
 		if (0) deb("meal.printMealTeam(): this->assigned = ", $this->assigned);
 		foreach($this->assigned as $job_id=>$assignments) {
 			if (0) deb("meal.printMealTeam(): job_id = $job_id, assignments = ", $assignments);
@@ -701,7 +706,8 @@ EOTXT;
 			foreach($assignments as $assignment_key=>$person) {
 				// Get id of worker from database based on username
 				$db_worker_id = sqlSelect("id", AUTH_USER_TABLE, "username = '{$person}'", "")[0]['id'];	
-				if (!$db_worker_id) deb("meal.insertMealAssignmentsIntoDB(): ERROR no worker id found for worker user named '{$person}'.");
+				if (!$db_worker_id) continue;
+				// if (!$db_worker_id) deb("meal.insertMealAssignmentsIntoDB(): ERROR no worker id found for worker user named '{$person}'.");
 				$table = ASSIGNMENT_STATES_TABLE;
 				$columns = "id, 
 					when_last_changed, 

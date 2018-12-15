@@ -221,8 +221,7 @@ class Worker {
 			return 0;
 		}
 
-		$num_assigned = isset($this->assigned[$job_id]) ?
-			count($this->assigned[$job_id]) : 0;
+		$num_assigned = isset($this->assigned[$job_id]) ? count($this->assigned[$job_id]) : 0;
 		return $this->num_shifts_to_fill[$job_id] - $num_assigned;
 	}
 
@@ -246,7 +245,10 @@ class Worker {
 		}
 
 		// number of shifts available to work / number of shifts they need filled
-		return count($this->avail_shifts[$job_id]) / $open;
+		$count = count($this->avail_shifts[$job_id]);
+		if (0) deb("worker.getNumAvailableShiftsRatio(): job_id = $job_id, worker = {$this->username}, avail shifts = ", $this->avail_shifts[$job_id]);
+		if (0) deb("worker.getNumAvailableShiftsRatio(): job_id = $job_id, worker = {$this->username}, avail shifts count = $count");
+		return $count / $open; 
 	}
 
 

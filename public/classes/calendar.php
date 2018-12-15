@@ -711,7 +711,7 @@ EOHTML;
 	}
 
 	/*
-	 * reporting feature - list the workers available for this day
+	 * reporting feature - list the workers available for this meal
 	 */
 	private function list_available_workers($meal_id, $cur_date_prefs, $is_sunday=FALSE) {
 		$cell = '';

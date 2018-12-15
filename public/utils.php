@@ -206,10 +206,11 @@ function validateDate($date, $format = 'Y-m-d H:i:s')
 // DATE-RELATED FUNCTIONS - end ----------------------------------------------------
 
 function renderBullpen() {
-	$td_style = ' style="font-size:11pt; border: 1px solid lightgray;"'; 
+	// $td_style = ' style="font-size:11pt; border:1px solid darkgray;"'; 
+	$td_style = ' style="border:1px shadow;"'; 
 	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc");
 	$num_jobs = count($jobs);
-	$title_row = '<tr><td style="text-align:center; font-weight:bold; font-size:12pt; border:1px solid lightgray;" colspan="' . $num_jobs . '">The Bullpen</td></tr>';
+	$title_row = '<tr><td style="text-align:center; font-weight:bold; font-size:12pt; border:1px shadow; background-color:' . HEADER_COLOR . ';" colspan="' . $num_jobs . '">The Bullpen</td></tr>';
 	$header_row = '<tr>';
 	$bullpen_row = '<tr>';
 	foreach ($jobs as $job) {
@@ -226,12 +227,16 @@ function renderBullpen() {
 			$bullpen_for_job .= $worker['worker_name'] . " (" . $worker['open_offers_count'] . ")";
 			$num_available += $worker['open_offers_count'];
 		}
+		if (!$num_available) $num_available = "0"; 
+		if (0) deb("utils.renderBullpen(): job = ", $job);
 		$header_row .= '<th ' . $td_style . '>' . $job['description'] . ' (' . $num_available . ')</th>'; 
+		if (0) deb("utils.renderBullpen(): header_row = ", $header_row);
 		$bullpen_row .= '<td ' . $td_style . '>' . $bullpen_for_job . '</td>'; 
 	}
 	$bullpen_row .= '</tr>';
 	$header_row .= '</tr>';
-	return '<table style="width:50%; font-size:11pt; border-collapse: collapse;">' . $title_row . $header_row . $bullpen_row . '</table>';
+	// return '<table style="width:75%; border-collapse:collapse;" >' . $title_row . $header_row . $bullpen_row . '</table>';
+	return '<table style="width:75%;" border="1">' . $title_row . $header_row . $bullpen_row . '</table>';
 }
 
 
@@ -558,7 +563,7 @@ function debt($label, $data=NULL) {
 /*
 Print a headline for a page
 */
-function renderHeadline($text, $breadcrumbs_str="") {
+function renderHeadline($text, $breadcrumbs_str="", $subhead="") {
 	if (0) deb ("utils.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
 	
 	$td_style = 'background-color:white;';
@@ -576,6 +581,16 @@ function renderHeadline($text, $breadcrumbs_str="") {
 		$breadcrumbs = '<tr style="font-size:10pt; font-style:italic"><td colspan="2" style="text-align:right; ' . $td_style . '">' . $breadcrumbs . '</td></tr>';
 	}
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
+
+	if ($subhead) {
+		$headline = '<td style="$td_style" class="headline">' . $text;
+		$headline .= '<br><span style="font-size:18px">' . $subhead . '</span>';
+	} 
+	else {
+		$headline = '<td style="$td_style" class="headline">{$text}</td>';
+	}
+	
+
 	$instance = INSTANCE;
 	$database = DATABASE;
 	$color = '"color:red"';
@@ -593,19 +608,17 @@ function renderHeadline($text, $breadcrumbs_str="") {
 		</p></div><br>'
 		: "";
 
-	// "<div style={$color}><p><strong>You're signed into this session as an admin.</strong>" . $sign_in_as_guest_button . "</p></div>"
-		// : "");
-	// if (!$at_home) $home_link = '<a style="font-size:10pt; font-weight:bold" href="index.php">Back to Home</a>';
-
+		
 	return <<<EOHTML
 	{$instance_notice}
 	{$admin_notice}
 	<table>
 		{$breadcrumbs}
 		<tr>
-		<td style="$td_style"><img src={$community_logo}></td>
-		<td style="$td_style" class="headline">{$text}</td>
-	</tr></table>
+			<td style="$td_style"><img src={$community_logo}></td>
+			{$headline}	
+		</tr>
+	</table>
 EOHTML;
 }
 

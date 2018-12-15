@@ -46,11 +46,13 @@ purgeUnsavedChangeSets();
 $headline = renderHeadline("Assignments", HOME_LINK); 
 $assignments_form = renderAssignmentsForm();
 if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
+$bullpen = '<br>' . renderBullpen();
 
 $page = <<<EOHTML
 	{$headline}
 	{$change_sets_link}
 	{$assignments_form}
+	{$bullpen}
 EOHTML;
 print $page;
 

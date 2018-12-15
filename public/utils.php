@@ -205,6 +205,35 @@ function validateDate($date, $format = 'Y-m-d H:i:s')
 }
 // DATE-RELATED FUNCTIONS - end ----------------------------------------------------
 
+function renderBullpen() {
+	$td_style = ' style="font-size:11pt; border: 1px solid lightgray;"'; 
+	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc");
+	$num_jobs = count($jobs);
+	$title_row = '<tr><td style="text-align:center; font-weight:bold; font-size:12pt; border:1px solid lightgray;" colspan="' . $num_jobs . '">The Bullpen</td></tr>';
+	$header_row = '<tr>';
+	$bullpen_row = '<tr>';
+	foreach ($jobs as $job) {
+		$num_available = 0;
+		$select = "*";
+		$from = "open_offers_count";
+		$where = "job_id = {$job['id']}
+			and open_offers_count > 0";
+		$order_by = "open_offers_count desc, worker_name asc";
+		$workers = sqlSelect($select, $from, $where, $order_by, (0), "utils:renderBullpen()"); 
+		$bullpen_for_job = "";
+		foreach ($workers as $worker) {
+			if ($bullpen_for_job) $bullpen_for_job .= "<br>";
+			$bullpen_for_job .= $worker['worker_name'] . " (" . $worker['open_offers_count'] . ")";
+			$num_available += $worker['open_offers_count'];
+		}
+		$header_row .= '<th ' . $td_style . '>' . $job['description'] . ' (' . $num_available . ')</th>'; 
+		$bullpen_row .= '<td ' . $td_style . '>' . $bullpen_for_job . '</td>'; 
+	}
+	$bullpen_row .= '</tr>';
+	$header_row .= '</tr>';
+	return '<table style="width:50%; font-size:11pt; border-collapse: collapse;">' . $title_row . $header_row . $bullpen_row . '</table>';
+}
+
 
 function autoIncrementId($table) { 
 	// Returns the highest id in the specified table + 1

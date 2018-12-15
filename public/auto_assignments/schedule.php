@@ -142,8 +142,8 @@ class Schedule {
 	 * value on a per-job-date basis.
 	 *
 	 * @param[in] username string the username.
-	 * @param[in] job_id int the ID of the shift.
-	 * @param[in] date string the date of the job.
+	 * @param[in] job_id int the ID of the job.
+	 * @param[in] meal_id string the id of the meal.
 	 * @param[in] pref num the numeric value preference score.
 	 */
 	public function addPrefs($username, $job_id, $meal_id, $pref) {
@@ -346,19 +346,23 @@ EOTXT;
 
 	/**
 	 * Display the schedule
-	 * @param[in] format string the chosen output format (txt, or sql). How the
+	 * @param[in] format string the chosen output format: How the
 	 *     output should be displayed.
 	 */
-	public function printMealTeamSchedule($format='txt' ) {
+	public function printMealTeamSchedule($format='txt') {	
 		if ($format === 'txt') {
 			$this->printTabbedHeaders();
+			$count = $this->getNumMeals();
+			echo "MISSED HOBARTERS: {$missed_hobarters} of {$count} " . 
+				round($missed_hobarters / $count, 2) . "\n";
 		}
-
-		if ($format === 'html') {
+		elseif ($format === 'html') {
 			$schedule_table = $this->renderHTMLHeaders();
 			foreach($this->meals as $meal_id=>$meal) {
 				$schedule_table .= $meal->printMealTeam($format);
 			}
+			$schedule_table .= $this->renderHTMLFooter();
+			return $schedule_table;
 		}
 		else {
 			$missed_hobarters = 0;
@@ -368,17 +372,6 @@ EOTXT;
 				}
 			}
 		}
-		
-		if ($format == 'txt') {
-			$count = $this->getNumMeals();
-			echo "MISSED HOBARTERS: {$missed_hobarters} of {$count} " . 
-				round($missed_hobarters / $count, 2) . "\n";
-		}
-
-		if ($format === 'html') {
-			$schedule_table .= $this->renderHTMLFooter();
-			return $schedule_table;
-		}		
 	}
 
 	/**
@@ -391,7 +384,7 @@ EOTXT;
 
 	public function renderHTMLHeaders() {
 		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc", (0), "schedule.renderHTMLHeaders()");
-		$column_heads = "<th>Date</th>";
+		$column_heads = "<th>date</th>";
 		foreach($jobs as $job) {
 			$column_heads .= "<th>" . $job['description'] . "</th>";
 		}

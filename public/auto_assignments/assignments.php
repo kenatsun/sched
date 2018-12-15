@@ -138,7 +138,7 @@ class Assignments {
 	public function loadPrefs() {
 		global $dbh;
 
-		// load worker preferences per shift / date
+		// load worker preferences for shifts
 		$prefs_table = SCHEDULE_PREFS_TABLE;
 		$shifts_table = SCHEDULE_SHIFTS_TABLE;
 		$auth_user_table = AUTH_USER_TABLE;
@@ -161,25 +161,20 @@ class Assignments {
 			p.pref DESC,
 			a.username ASC";
 		$rows = sqlSelect($select, $from, $where, $order_by, (0), "assignments.loadPrefs():"); 
-		$count = 0;
+
 		foreach($rows as $row) {
 			$u = $row['username'];
-			$d = $row['date'];
+			// $d = $row['date'];
 			$mi = $row['meal_id'];
 			$ji = $row['job_id'];
 			$p = $row['pref'];
-			if (0) deb("assignments.loadPrefs(): job_id = $ji, date = $d, pref = $p, meal_id = $mi");
+			if (0) deb("assignments.loadPrefs(): job_id = $ji, meal_id = $mi, pref = $p, meal_id = $mi");
 
 			// only add jobs which appear in the schedule
 			if ($this->schedule->addPrefs($u, $ji, $mi, $p)) {
-				if (0) deb("assignments.loadPrefs(): jobs in schedule include job_id = $ji, date = $d, pref = $p, meal_id = $mi");
+				if (0) deb("assignments.loadPrefs(): jobs in schedule include job_id = $ji, pref = $p, meal_id = $mi");
 				$this->roster->addPrefs($u, $ji, $mi, $p);
 			}
-			// if ($this->schedule->addPrefs($u, $ji, $d, $p)) {
-				// $this->roster->addPrefs($u, $ji, $d, $p);
-			// }
-
-			$count++;
 		}
 
 		$this->initNonResponderPrefs();
@@ -282,7 +277,9 @@ class Assignments {
 	 * Output the schedule as HTML
 	 */
 	public function outputHTML() {
-		return $this->schedule->printMealTeamSchedule('html');
+		$return = $this->schedule->printMealTeamSchedule('html');
+		$return .= '<br>' . renderBullpen();
+		return $return;
 	}
 }
 ?>

@@ -7,10 +7,10 @@ if (!strlen($relative_dir)) {
 }
 require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/config.php";
+require_once "{$relative_dir}/constants.inc";
 require_once "{$relative_dir}/change_sets_utils.php";
 require_once "{$relative_dir}/display/includes/header.php";
 
-define('HEADER_COLOR', '#e6e6e6');
 
 if ($_POST) {
 	if (0) deb("dashboard.php: _POST = ", $_POST);
@@ -43,7 +43,11 @@ if ($_POST) {
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();  
 
-$headline = renderHeadline("Assignments", HOME_LINK); 
+$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
+$now = date_format(date_create(), "g:i a M jS");
+$breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
+
+$headline = renderHeadline("The {$season_name} Schedule", $breadcrumbs, "as of {$now}"); 
 $assignments_form = renderAssignmentsForm();
 if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 $bullpen = '<br>' . renderBullpen();
@@ -106,7 +110,7 @@ function renderAssignmentsForm() {
 	if (userIsAdmin()) $buttons = '
 		&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"></span>&nbsp;&nbsp;';
 	if (sqlSelect("*", CHANGE_SETS_TABLE, "", "", (0))[0]) $legend = 
-		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="background-color:' . ADDED_COLOR . '">&nbsp;&nbsp;worker added to job&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="background-color:' . REMOVED_COLOR . '">&nbsp;&nbsp;worker removed from job&nbsp;&nbsp;</span></span>';
+		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;worker added to job&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;worker removed from job&nbsp;&nbsp;</span></span>';
 	if (0) deb("dashboard.php.renderAssignmentsForm(): legend =", $legend);
 	if ($legend || $buttons) $actions_row = '<td style="background-color:' . HEADER_COLOR . '; padding:0; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
 	
@@ -117,9 +121,10 @@ function renderAssignmentsForm() {
 		
 	$previous_meal_month = 0;
 	
+	$meal_rows .= $actions_row . $header_row;
 		
 	// Make the table row for each meal
-	$nrows = 3;
+	$nrows = 0;
 	$save_button_interval = 3;
 	foreach($meals as $i=>$meal) {
 		if (0) deb("dashboard.renderAssignmentsForm() meal['meal_date'] = {$meal['meal_date']}");
@@ -130,7 +135,7 @@ function renderAssignmentsForm() {
 		if (0) deb("dashboard.renderAssignmentsForm() meal_month = {$meal_month}");
 		if (0) deb("dashboard.php.renderAssignmentsForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
 
-		if ($nrows == $save_button_interval) {
+		if ($nrows == $save_button_interval && userIsAdmin()) {
 			$meal_rows .= $actions_row . $header_row;
 			$nrows = 1;
 		} else {
@@ -217,7 +222,7 @@ function renderAssignmentsForm() {
 				// Render the assignment if it exists and/or has been removed since generation
 				// Don't show an assignment that was not generated and doesn't currently exist
 				if ($exists_now || $has_changed) {
-					$shift_cell .= '<tr><td style="background:' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>' . $wkr_id . $change_marker; 
+					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>' . $wkr_id . $change_marker; 
 				}
 				
 				if (userIsAdmin()) {

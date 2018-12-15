@@ -59,7 +59,8 @@ else {
 	$formatted_date = date('r', DEADLINE);
 	display_headline();
 	display_countdown();
-	display_report_link("View the schedule");		
+	// display_report_link("View the schedule");		
+	display_dashboard_link("View the Assignments");	
 }
 if (userIsAdmin()) {
 	echo "<br><p><h3><em>Admin Tools</em></h3></p>";

@@ -108,7 +108,7 @@ function renderAssignmentsForm() {
 
 	// Make the actions row
 	if (userIsAdmin()) $buttons = '
-		&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"></span>&nbsp;&nbsp;';
+		&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"> <input type="submit" value="Publish This Schedule"></span>&nbsp;&nbsp;';
 	if (sqlSelect("*", CHANGE_SETS_TABLE, "", "", (0))[0]) $legend = 
 		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;worker added to job&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;worker removed from job&nbsp;&nbsp;</span></span>';
 	if (0) deb("dashboard.php.renderAssignmentsForm(): legend =", $legend);
@@ -296,7 +296,7 @@ function renderAssignmentsForm() {
 	}
 	$meal_rows .= $actions_row;
 		
-	$meals_table = <<<EOHTML
+	$assignments_table = <<<EOHTML
 	<table style="table-layout:auto; width:100%" style="background:Yellow">
 		<table style="table-layout:auto; width:100%" border="1" cellspacing="3">
 		{$meal_rows} 
@@ -307,7 +307,7 @@ EOHTML;
 	$assignments_form = <<<EOHTML
 	{$assignments_form_headline}  
 	<form action="change_set.php" method="post">
-	{$meals_table}
+	{$assignments_table}
 	<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 	</form>
 EOHTML;

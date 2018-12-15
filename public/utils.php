@@ -564,6 +564,7 @@ function debt($label, $data=NULL) {
 Print a headline for a page
 */
 function renderHeadline($text, $breadcrumbs_str="", $subhead="") {
+	if (0) deb ("utils.renderHeadline(): text =", $text);
 	if (0) deb ("utils.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
 	
 	$td_style = 'background-color:white;';
@@ -587,7 +588,7 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="") {
 		$headline .= '<br><span style="font-size:18px">' . $subhead . '</span>';
 	} 
 	else {
-		$headline = '<td style="$td_style" class="headline">{$text}</td>';
+		$headline = '<td style="$td_style" class="headline">' . $text . '</td>';
 	}
 	
 

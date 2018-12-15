@@ -213,7 +213,7 @@ function renderBullpen() {
 	$header_row = '<tr>';
 	$bullpen_row = '<tr>';
 	foreach ($jobs as $job) {
-		$header_row .= '<th ' . $td_style . '>' . $job['description'] . '</th>'; 
+		$num_available = 0;
 		$select = "*";
 		$from = "open_offers_count";
 		$where = "job_id = {$job['id']}
@@ -224,7 +224,9 @@ function renderBullpen() {
 		foreach ($workers as $worker) {
 			if ($bullpen_for_job) $bullpen_for_job .= "<br>";
 			$bullpen_for_job .= $worker['worker_name'] . " (" . $worker['open_offers_count'] . ")";
+			$num_available += $worker['open_offers_count'];
 		}
+		$header_row .= '<th ' . $td_style . '>' . $job['description'] . ' (' . $num_available . ')</th>'; 
 		$bullpen_row .= '<td ' . $td_style . '>' . $bullpen_for_job . '</td>'; 
 	}
 	$bullpen_row .= '</tr>';

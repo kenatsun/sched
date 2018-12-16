@@ -626,7 +626,7 @@ EOHTML;
 function getJobs() {
 	$jobs_table = SURVEY_JOB_TABLE;
 	$season_id = SEASON_ID;
-	$select = "j.description, j.id as job_id, j.instances, 0 as signups";
+	$select = "j.description, j.id as job_id, j.instances, j.workers_per_shift, 0 as signups";
 	$from = "{$jobs_table} as j";
 	$where = "j.season_id = {$season_id}";
 	$order_by = "j.display_order";

@@ -202,6 +202,8 @@ function renderAssignmentsForm() {
 			// Make the embedded table listing the workers & controls for this shift cell
 			$shift_cell = '<td><table>';
 			if (SHOW_IDS) $shift_cell .= '<tr><td>shift #' . $shift_id . '</td></tr>';
+			$slots_to_fill = $job['workers_per_shift'];
+			if (0) deb("dashboard.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 
 			foreach($assignments as $w_index=>$assignment) {
 				if (SHOW_IDS) $wkr_id = ' (#' . $assignment['worker_id'] . '), assmt #' . $assignment['assignment_id']; 
 
@@ -248,6 +250,7 @@ function renderAssignmentsForm() {
 				// Don't show an assignment that was not generated and doesn't currently exist
 				if ($exists_now || $has_changed) {
 					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong><span style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</span></strong>' . $wkr_id . $change_marker; 
+					if ($exists_now) --$slots_to_fill;
 				}
 				
 				if (userIsAdmin()) {
@@ -307,8 +310,14 @@ function renderAssignmentsForm() {
 					$shift_cell .= '</select></td></tr>';
 				}
 			}
+
+			if (0) deb("dashboard.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 
+			if ($slots_to_fill > 0) {
+				$job_name = ($slots_to_fill > 1) ? $job['description'] . "s" : $job['description'];
+				$shift_cell .= '<tr><td style="font-weight:bold; text-transform:uppercase; background:red;">' . $slots_to_fill . ' ' . $job_name . ' needed!</td></tr>';
+			}
 			$shift_cell .= "</table></td>"; 
-			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_cell = ", $shift_cell); 
+			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_cell = ", $shift_cell);
 			$shift_cells .= $shift_cell;
 		}
 

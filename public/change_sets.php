@@ -18,8 +18,8 @@ if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();
 
-$headline = renderHeadline("Saved Change Sets", HOME_LINK . ASSIGNMENTS_LINK); 
-$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id}", "when_saved desc", (0));
+$headline = renderHeadline("Saved Change Sets", HOME_LINK . ASSIGNMENTS_LINK, "Latest change set shown first; undoing a set undoes all later sets too."); 
+$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id} and published = 0", "when_saved desc", (0));
 
 // $change_sets_table = '<table style="table-layout:auto; width:1px; white-space: nowrap;">';
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 
@@ -51,15 +51,12 @@ $change_sets_form = <<<EOHTML
 	</form>	
 EOHTML;
 
+if (!$change_sets) $change_sets_form = "<br>There are no change sets at this time.";
+
 $page = <<<EOHTML
 	{$headline}
 	{$change_sets_form}
 EOHTML;
-// $page = <<<EOHTML
-	// {$headline}
-	// {$change_sets_form}
-	// {$dashboard_link}
-// EOHTML;
 print $page;
 
 

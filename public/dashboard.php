@@ -9,8 +9,8 @@ require_once "{$relative_dir}/utils.php";
 require_once "{$relative_dir}/config.php";
 require_once "{$relative_dir}/constants.inc";
 require_once "{$relative_dir}/change_sets_utils.php";
+require_once "{$relative_dir}/change_set.php";
 require_once "{$relative_dir}/display/includes/header.php";
-
 
 if ($_POST) {
 	if (0) deb("dashboard.php: _POST = ", $_POST);
@@ -22,13 +22,13 @@ if ($_POST) {
 		if (isset($_POST['confirm'])) {
 			if (0) deb("dashboard.php: gonna confirm change_set_id = {$change_set_id}");
 			saveAssignmentBasedOnChangeSet($change_set_id, $_POST);
-		};
+		}
 
 		// Delete change set that user wants to discard
 		if (isset($_POST['discard'])) {
 			if (0) deb("dashboard.php: gonna discard change_set_id = {$change_set_id}");
 			sqlDelete(CHANGE_SETS_TABLE, "id = {$change_set_id}", (0)); 
-		};
+		}
 	
 	// Processing changes from change_sets.php
 	
@@ -37,31 +37,52 @@ if ($_POST) {
 			$undo_back_to_change_set_id = $_POST['undo_back_to_change_set_id'];
 			if (0) deb("dashboard.php: undo_back_to_change_set_id = {$undo_back_to_change_set_id}");
 			undoChangeSets($undo_back_to_change_set_id, $_POST);
-		};		
+		}	
+
+	// Processing request to publish the schedule
+		if (isset($_POST['publish'])) {
+			publishSchedule();
+		}
+	
+	// Processing request to review the change set
+		if (isset($_POST['review'])) {
+			$change_set_id = saveChangeSet($_POST);
+			displayChangeSet($change_set_id);
+			exit;
+		}
+
+	// // Processing request to save the assignments changes in the change set
+		// if (isset($_POST['confirm'])) {
+			// $change_set_id = saveAssignmentBasedOnChangeSet($_POST['change_set_id'], $_POST); 
+			// // displayChangeSet($change_set_id);
+		// }
 }
 
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();  
 
-$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
-$now = date_format(date_create(), "g:i a M jS");
-$breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
-
-$headline = renderHeadline("The {$season_name} Schedule", $breadcrumbs, "as of {$now}"); 
-$assignments_form = renderAssignmentsForm();
-if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
-$bullpen = '<br>' . renderBullpen();
-
-$page = <<<EOHTML
-	{$headline}
-	{$change_sets_link}
-	{$assignments_form}
-	{$bullpen}
-EOHTML;
-print $page;
-
+displaySchedule();
 
 //////////////////////////////////////////////////////////////// FUNCTIONS
+
+function displaySchedule() {
+	$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
+	$now = date_format(date_create(), "g:i a M jS");
+	$breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
+
+	$headline = renderHeadline("The {$season_name} Schedule", $breadcrumbs, "as of {$now}"); 
+	$assignments_form = renderAssignmentsForm();
+	if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
+	$bullpen = '<br>' . renderBullpen();
+
+	$page = <<<EOHTML
+		{$headline}
+		{$change_sets_link}
+		{$assignments_form}
+		{$bullpen}
+EOHTML;
+	print $page;
+}
 
 function renderAssignmentsForm() {	
 	$jobs_table = SURVEY_JOB_TABLE;
@@ -76,15 +97,15 @@ function renderAssignmentsForm() {
 	$jobs = getJobs();
 	if (0) deb("dashboard.php.renderAssignmentsForm(): jobs = ", $jobs);
 
-	if (!scheduler_run()) {
+	// Get id of the most recent scheduler run
+	$scheduler_run_id = scheduler_run()['id'];
+	if (0) deb("dashboard.php.renderAssignmentsForm(): scheduler_run_id = ", $scheduler_run_id); 
+	if (!$scheduler_run_id) {
 		return "
 			<p>The Scheduler hasn't been run for this season yet,<br>
 			so there are no assignments to show at this time.</p>";
 	}
 	
-	// Get id of the most recent scheduler run
-	$scheduler_run_id = scheduler_run()['id'];
-	if (0) deb("dashboard.php.renderAssignmentsForm(): scheduler_run_id = ", $scheduler_run_id); 
 
 	$select = " DISTINCT m.date as meal_date, m.id";
 	$from = "{$jobs_table} j, {$shifts_table} s, {$meals_table} m";
@@ -108,9 +129,10 @@ function renderAssignmentsForm() {
 
 	// Make the actions row
 	if (userIsAdmin()) $buttons = '
-		&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" value="Review All Changes"> <input type="reset" value="Cancel All Changes"> <input type="submit" value="Publish This Schedule"></span>&nbsp;&nbsp;';
-	if (sqlSelect("*", CHANGE_SETS_TABLE, "", "", (0))[0]) $legend = 
-		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;worker added to job&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;worker removed from job&nbsp;&nbsp;</span></span>';
+		&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" name="review" value="Review These Changes"> <input type="reset" value="Cancel These Changes"> <input type="submit" name="publish" value="Publish This Schedule"></span>&nbsp;&nbsp;';
+		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $scheduler_run_id . " and published = 0", "", (0))[0];
+		if ($change_sets) $legend = 
+		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;<span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;<span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
 	if (0) deb("dashboard.php.renderAssignmentsForm(): legend =", $legend);
 	if ($legend || $buttons) $actions_row = '<td style="background-color:' . HEADER_COLOR . '; padding:0; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
 	
@@ -205,24 +227,27 @@ function renderAssignmentsForm() {
 					// If assignment exists now, make an "added" marker	 
 					if ($exists_now) {
 						$assignment_color = ADDED_COLOR;
+						$assignment_decoration = ADDED_DECORATION;
 						$change_marker = ' - added ' . $change_marker; 
 					} 
 					// Else assignment doesn't exist now, so make a "removed" marker
 					else { 
 						$assignment_color = REMOVED_COLOR;
+						$assignment_decoration = REMOVED_DECORATION;
 						$change_marker = ' - removed ' . $change_marker; 						
 					}
 				}
 				// Else assignment's status is the same as at generation, so don't make a change marker
 				else {
 					$assignment_color = "White"; 
+					$assignment_decoration = ""; 
 					$change_marker = "";					
 				}
 				
 				// Render the assignment if it exists and/or has been removed since generation
 				// Don't show an assignment that was not generated and doesn't currently exist
 				if ($exists_now || $has_changed) {
-					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong>' . $assignment['worker_name'] . '</strong>' . $wkr_id . $change_marker; 
+					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong><div style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</div></strong>' . $wkr_id . $change_marker; 
 				}
 				
 				if (userIsAdmin()) {
@@ -306,7 +331,7 @@ EOHTML;
 
 	$assignments_form = <<<EOHTML
 	{$assignments_form_headline}  
-	<form action="change_set.php" method="post">
+	<form action="dashboard.php" method="post">
 	{$assignments_table}
 	<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 	</form>
@@ -381,6 +406,25 @@ function getPossibleTradesForWorkerOnShift($worker_id, $shift_id, $job_id) {
 	if (0) deb("dashboard.php:getPossibleTradesForWorkerOnShift() possible_trades = ", $possible_trades);
 	
 	return $possible_trades;  
+}
+
+function publishSchedule() {
+	$scheduler_run_id = scheduler_run()['id'];	
+	$assignments = sqlSelect("*", ASSIGNMENTS_TABLE, "scheduler_run_id = " . $scheduler_run_id, "", (0), "change_sets_utils.publishSchedule()");
+	foreach($assignments as $assignment) {
+		// Mark assignments that currently exist as having been generated
+		if ($assignment['exists_now']) {
+			sqlUpdate(ASSIGNMENT_STATES_TABLE, "generated = 1", "id = " . $assignment['id'], (0));
+			if (0) deb("change_sets_utils.publishSchedule(): make this assignment permanent:", $assignment);			
+		}
+		else {
+			if (0) deb("change_sets_utils.publishSchedule(): delete this assignment:", $assignment);
+			sqlDelete(ASSIGNMENT_STATES_TABLE, "id = " . $assignment['id'], (0));
+		}
+	}
+
+	sqlUpdate(CHANGE_SETS_TABLE, "published = 1", "scheduler_run_id = " . $scheduler_run_id . " and published = 0", (0));
+	displaySchedule();
 }
 
 ?>

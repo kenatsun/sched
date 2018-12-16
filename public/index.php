@@ -49,8 +49,8 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		display_person_menu();
 		display_footer();
 		display_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
-		display_report_link("<strong>View details of the sign-ups</strong>");	
-		display_assignments_link("<strong>View the job assignments</strong>");			
+		display_report_link("<strong>View the Sign-Ups</strong>");	
+		display_schedule_link("<strong>View the Schedule</strong>");			
 	} else {
 		build_survey($respondent_id);
 	}
@@ -60,13 +60,13 @@ else {
 	display_headline();
 	display_countdown();
 	// display_report_link("View the schedule");		
-	display_dashboard_link("View the Assignments");	
+	display_schedule_link("View the Assignments");	
 }
 if (userIsAdmin()) {
 	echo "<br><p><h3><em>Admin Tools</em></h3></p>";
 	display_seasons_link("Manage Seasons");
 	display_scheduler_link("Run the Scheduler");
-	display_dashboard_link("Edit Assignments");	
+	display_schedule_link("Edit the Schedule");	
 	echo "<br><br>";
 }
 
@@ -155,23 +155,23 @@ function display_report_link($text) {
 	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/report.php">' . $text . '</a></p>';
 }
 
-function display_assignments_link($text) {
-	$dir = PUBLIC_DIR;
-	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></p>';
-}
+// function display_schedule_link($text) {
+	// $dir = PUBLIC_DIR;
+	// echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></p>';
+// }
 
 function display_seasons_link($text) {
 	$dir = BASE_DIR;
-	echo '<p class="summary_report"><strong><a href="'. PUBLIC_DIR . '/seasons.php">' . $text . '</a></strong></p>';
+	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/seasons.php">' . $text . '</a></p>';
 }
 
 function display_scheduler_link($text) {
-	echo '<p class="summary_report"><strong><a href="'. PUBLIC_DIR . '/run_scheduler_from_web.php">' . $text . '</a></strong></p>';
+	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/run_scheduler_from_web.php">' . $text . '</a></p>';
 }
 
-function display_dashboard_link($text) {
+function display_schedule_link($text) {
 	$dir = BASE_DIR;
-	echo '<p class="summary_report"><strong><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></strong></p>';
+	echo '<p class="summary_report"><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></p>';
 }
 
 /**

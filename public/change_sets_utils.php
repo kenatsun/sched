@@ -14,8 +14,10 @@ if (0) deb("change_sets.php: _POST = ", $_POST);
 define('OK_CHANGE_VALUE', 'ok_change');
 if (0) deb("change_sets.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
 
-define('ADDED_COLOR', ' background:#ffff66; text-decoration:underline; ');		// Format for worker added to shift
-define('REMOVED_COLOR', ' background:LightBlue; text-decoration:line-through; ');	// Format for worker removed from shift
+define('ADDED_COLOR', ' background:#ffff66; ');		// Format for worker added to shift
+define('ADDED_DECORATION', ' text-decoration:underline; ');		// Format for worker added to shift
+define('REMOVED_COLOR', ' background:LightBlue; ');	// Format for worker removed from shift
+define('REMOVED_DECORATION', ' text-decoration:line-through; ');	// Format for worker removed from shift
 
 // Show change set from form data, get user confirmation
 // Render one change set
@@ -65,9 +67,11 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 		switch ($change['action']) {
 			case "add":
 				$background_color = ADDED_COLOR;
+				$background_decoration = REMOVED_DECORATION;
 				break;
 			case "remove":
 				$background_color = REMOVED_COLOR;
+				$background_decoration = REMOVED_DECORATION;
 				break;
 			default:
 				$background_color = "White";
@@ -80,12 +84,6 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['job_name'] . '</td>
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . '">' . $change['action'] . '</td>
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . ';">' . $change['worker_name'] . '</td>'; 
-		// $change_rows .= '
-			// <tr style="width:1px; white-space:nowrap;">
-				// <td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $meal_date . '</td>
-				// <td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['job_name'] . '</td>
-				// <td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';">' . $change['action'] . '</td>
-				// <td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';">' . $change['worker_name'] . '</td>';
 		if ($show_ok_checkbox) { 		
 			$change_rows .= '
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';"><input type="checkbox" name="' . $change['id'] . '" value="' . $ok_change_value . '"checked></td>';
@@ -93,13 +91,19 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 		$change_rows .= '
 			</tr>';
 	} 
-	
+
 	// Render the changes table
 	$changes_table = <<<EOHTML
 		<table style="table-layout:auto; width:1px; vertical-align:middle;" border="1" > 
 		{$change_rows} 
 		</table>
 EOHTML;
+
+	if (!$changes) {
+		$changes_table = "<br>There are no pending (unsaved) changes right now.";
+		if (0) deb("change_sets_utils.renderChangeSet(): no changes");
+	}
+
 	return $changes_table;
 }
 

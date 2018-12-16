@@ -177,7 +177,7 @@ function renderAssignmentsForm() {
 				{$meals_table} as m";
 			$where = "s.job_id = {$job['job_id']}
 				and s.meal_id = m.id
-				and m.id = {$meal['id']}";
+				and m.id = {$meal['id']}"; 
 			$order_by = "";
 			$shifts = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm()"); 
 			$shift_id = $shifts[0]['id'];
@@ -247,7 +247,7 @@ function renderAssignmentsForm() {
 				// Render the assignment if it exists and/or has been removed since generation
 				// Don't show an assignment that was not generated and doesn't currently exist
 				if ($exists_now || $has_changed) {
-					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong><div style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</div></strong>' . $wkr_id . $change_marker; 
+					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong><span style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</span></strong>' . $wkr_id . $change_marker; 
 				}
 				
 				if (userIsAdmin()) {

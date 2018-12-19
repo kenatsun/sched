@@ -67,11 +67,11 @@ displaySchedule();
 
 function displaySchedule() {
 	$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
-	$now = date_format(date_create(), "g:i a M jS");
 	$breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
-
-	$headline = renderHeadline("The {$season_name} Schedule", $breadcrumbs, "as of {$now}"); 
-	$change_line = '<p style="color:red;" ><strong>Got change requests?  RSVP ASAP to moremeals@sunward.org</strong></p>';
+	$now = date_format(date_create(), "g:i a M jS");
+	$subhead = "as of {$now}";
+	$headline = renderHeadline("Sunward Dinner Teams for {$season_name}", $breadcrumbs, $subhead); 
+	$change_line = '<p><strong>Got a scheduling problem you can\'t solve yourself?  Email <a href=moremeals@sunward.org>moremeals@sunward.org</a></strong></p>';
 	$assignments_form = renderAssignmentsForm();
 	if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 	$bullpen = '<br>' . renderBullpen();

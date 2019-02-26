@@ -444,8 +444,16 @@ function saveChangesToWorkers($post) {
 		if ($current != $worker['current']) {
 			sqlUpdate($workers_table, "current = " . $current, "id = " . $worker['id'], (1), "saveChangesToWorkers(): updating current", TRUE);
 		}
-		$email = $post[$worker['id'] . "_email"];
-		if ($email != $worker['email']) {
+		$first_name = $post[$worker['id'] . "_first_name"]; 
+		if ($first_name && $first_name != $worker['first_name']) {
+			sqlUpdate($workers_table, "first_name = '" . $first_name . "'", "id = " . $worker['id'], (1), "saveChangesToWorkers(): updating first_name", TRUE);
+		}
+		$last_name = $post[$worker['id'] . "_last_name"];
+		if ($last_name && $last_name != $worker['last_name']) {
+			sqlUpdate($workers_table, "last_name = '" . $last_name . "'", "id = " . $worker['id'], (1), "saveChangesToWorkers(): updating last_name", TRUE);
+		}
+		$email = $post[$worker['id'] . "_email"]; 
+		if ($email && $email != $worker['email']) {
 			sqlUpdate($workers_table, "email = '" . $email . "'", "id = " . $worker['id'], (1), "saveChangesToWorkers(): updating email", TRUE);
 		}
 		$delete = (array_key_exists($worker['id'] . '_delete', $post)) ? 1 : 0;

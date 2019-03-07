@@ -126,7 +126,7 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 	if (0) deb("utils.renderUpcomingMonthsSelectList: start_year = $start_year, start_month_num = $start_month_num");
 	if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, selected_year = $selected_year, selected_date = $selected_date");
 	if ($selected_date && strtotime($selected_date) < strtotime("now")) {
-		if (0) deb("utils.renderUpcomingMonthsSelectList: selected_date = $selected_date");
+		if (0) deb("utils.renderUpcomingMonthsSelectList: selected_date = " . $selected_date);
 		$select_field = date("F Y", strtotime($selected_date));
 		$select_field .= '<input type="hidden" name="' . $field_name . '" value="' . $selected_year. '-' .$selected_month_num . '">';
 	}
@@ -262,7 +262,13 @@ function surveyIsClosed() {
 	return DEADLINE < time();
 }
 
-// ADMIN LOGIN FUNCTIONS ---------------------------------------------------------------
+// ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
+
+// function renderAdminLink() {
+	// if (userIsAdmin()) $link = '<br><a href="/admin.php">Open Admin Dashboard</a></p>';
+	// return $link;
+// }
+
 
 function determineUserStatus() {
 	// if (isset($_GET['admin']) || isset($_GET['a'])) { 
@@ -332,6 +338,27 @@ function array_get($array, $key, $default=NULL) {
 	}
 
 	return $default;
+}
+
+// Get the id of the current season from the database
+function getSeason($attribute="") {
+	if ($attribute) {
+		return sqlSelect("{$attribute}", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0][$attribute];
+	} else {
+		return sqlSelect("*", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0];
+	}
+}
+
+// Set the id of the current season in the database
+function setSeason($id) {
+	if (!$id) return;
+	$season_exists = sqlSelect("*", "seasons", "id = {$id}", "", (0), "utils.setSeason()")[0];
+	if ($season_exists) {
+		sqlUpdate(SEASONS_TABLE, "current_season = null", "", (0), "utils.setSeason()");
+		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$id}", (0), "utils.setSeason()");
+	} else {
+		echo "Error: Season with id " . $id . " doesn't exist.";
+	}
 }
 
 /**
@@ -563,7 +590,7 @@ function debt($label, $data=NULL) {
 /*
 Print a headline for a page
 */
-function renderHeadline($text, $breadcrumbs_str="", $subhead="") {
+function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_link=1) {
 	if (0) deb ("utils.renderHeadline(): text =", $text);
 	if (0) deb ("utils.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
 	
@@ -598,17 +625,19 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="") {
 	$instance_notice = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
 	$end_session_label = "End this session and start a new one.";
 	$sign_in_as_guest_label = "Sign in as a guest";
-	$admin_notice = (userIsAdmin())
-		? '
+	if (userIsAdmin()) $admin_notice =
+		'
 		<div style=' . $color . '><p>
 		<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
 			<input type="hidden" name="sign_in_as_guest" value="1">
 			<p><strong>You are signed into this session as an admin. </strong>
 			<input type="submit" value="Sign in as a plain old ordinary user.">
 		</form>
-		</p></div><br>'
-		: "";
-
+		</p></div>';
+	if (userIsAdmin() && $show_admin_link) $admin_link =  
+		'<br><div style=' . $color . '>
+			<a style=' . $color . ' href="/admin.php"><strong>Open the Admin Dashboard</strong></a>
+		</div>';
 		
 	return <<<EOHTML
 	{$instance_notice}
@@ -620,6 +649,7 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="") {
 			{$headline}	
 		</tr>
 	</table>
+	{$admin_link}
 EOHTML;
 }
 
@@ -635,6 +665,7 @@ function getJobs() {
 	return $jobs;
 }
 
+
 function getJobSignups() {
 	$person_table = AUTH_USER_TABLE;
 	$offers_table = OFFERS_TABLE;
@@ -648,6 +679,7 @@ function getJobSignups() {
 	if (0) deb ("utils.getJobSignups(): signups =", $signups);
 	return $signups;
 }
+
 
 function getJobAssignments($meal_id=NULL, $job_id=NULL, $worker_id=NULL) {
 	// list the assignments for the current season, optionally scoped by meal, job, and/or worker

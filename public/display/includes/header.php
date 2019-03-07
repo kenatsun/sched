@@ -39,15 +39,33 @@ $head = <<<EOHTML
                 return "You have unsaved changes on this page."; 
             }
         }
-		window.onbeforeunload = unloadPage;
+		window.onbeforeunload = unloadPage; 
     </script>
+	<script>
+	function confirmDeleteSeason(id, name) {
+	  var txt;
+	  var r = confirm("Permanently delete the " + name + " season?");
+	  if (r == true) {
+		let form = document.createElement('form');
+		form.action = "seasons.php";
+		form.method = 'POST';
+		form.innerHTML = '<input name="delete_season" value="' + id + '">';
+		document.body.append(form);
+		form.submit();
+		txt = "Season " + name + " has been deleted!";
+	  } else {
+		txt = "Season " + name + " won't be deleted";
+	  }
+	  document.getElementById("result").innerHTML = txt;
+	}
+	</script>
 EOHTML;
+
 print $head;
 
-if (0) deb("header.php :start"); //_COOKIE =", $_COOKIE);
+if (0) deb("header.php :start"); 
 
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
-// if (isset($_REQUEST['worker'])) {
 	echo <<<EOHTML
 	<script src="js/utils.js"></script>
 	<script src="js/survey_library.js"></script>

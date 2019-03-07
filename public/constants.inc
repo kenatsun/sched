@@ -20,6 +20,8 @@ if (($this_month == 11) || ($this_month == 12)) {
 	$this_year++;
 }
 
+define('REQUIRED_MARKER', '<span style="color:red;"><strong>!</strong></span>');
+
 // -------- page links for breadcrumbs --------
 define('HOME_LINK', 'Home,index.php'); 
 define('SIGNUPS_LINK', ';Signups,index.php?person='); 
@@ -56,5 +58,20 @@ define('MEALS_TABLE', 'meals');
 // config tables
 define('SHIFT_PREF_NAMES_TABLE', 'shift_pref_names');
 define('WORKERS_TABLE_COLUMNS', 'workers_table_columns');
+define('ADMIN_PROCESS_TYPES_TABLE', 'admin_process_types'); 
+define('ADMIN_PROCESS_STATUSES_TABLE', 'admin_process_statuses');
+define('ADMIN_PROCESSES_TABLE', 'admin_processes');
+define('JOB_TYPES_TABLE', 'job_types');
+
+// -------- admin process ids ---------
+define('SET_UP_SEASON_ID', 1);
+define('CONDUCT_SURVEY_ID', 2);
+define('ASSIGN_ID', 3);
+define('EDIT_SEASON_ID', 4);
+define('EDIT_MEALS_CALENDAR_ID', 5);
+define('IMPORT_WORKERS_ID', 6);
+define('EDIT_WORKERS_ID', 7);
+define('SET_SURVEY_DATES_ID', 8);
+define('GENERATE_ANNOUNCEMENT_ID', 9);
 
 ?>

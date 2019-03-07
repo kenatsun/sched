@@ -9,7 +9,7 @@ if (0) deb("seasons.php: _COOKIE =", $_COOKIE);
 if (0) deb("season.php: _POST =", $_POST);
 if (0) deb("season.php: _GET =", $_GET);
 
-$seasons = sqlSelect("*", SEASONS_TABLE, "", "date(start_date)", (0), "Seasons");
+$seasons = sqlSelect("*", SEASONS_TABLE, "", "start_date", (0), "Seasons"); 
 
 $page = "";
 $page .= renderHeadline("Manage Seasons", HOME_LINK); 

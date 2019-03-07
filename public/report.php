@@ -253,8 +253,6 @@ print <<<EOHTML
 {$headline}
 {$signups}
 <br>
-{$months_overlay}
-<br>
 {$cal_string}
 <br>
 {$non_responders}
@@ -288,6 +286,47 @@ Sundays: {$meals_summary['sunday']}
 </body>
 </html>
 EOHTML;
+
+// NOTE: Below is like above except it includes "renderMonthsOverlay"
+// print <<<EOHTML
+// {$headline}
+// {$signups}
+// <br>
+// {$months_overlay}
+// <br>
+// {$cal_string}
+// <br>
+// {$non_responders}
+// <br>
+// {$comments}
+
+// <!--
+// <h2>Number of meals scheduled per-day type:</h2>
+
+// <p>
+// Sundays: {$meals_summary['sunday']}
+// <br>Weekdays: {$meals_summary['weekday']}
+// <br> Meetings: {$meals_summary['meeting']}
+// </p>
+
+// <h2>Number of assignments needed:</h2>
+// <table cellpadding="3" cellspacing="0" border="0" class="striped" width="100%">
+// <thead>
+	// <tr>
+		// <th>Job Name</th>
+		// <th>Num Assignments Needed</th>
+	// </tr>
+// </thead>
+// <tbody>
+	// {$shift_summary_rows}
+// </tbody>
+// </table>
+// -->
+
+
+// </body>
+// </html>
+// EOHTML;
 
 // ------------------------------- functions
 

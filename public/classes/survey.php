@@ -238,7 +238,6 @@ class Survey {
 		
 		return <<<EOHTML
 		{$headline}
-		{$this->calendar->renderMonthsOverlay()}
 		<form method="POST" class="kform" action="process.php">
 			<input type="hidden" name="username" value="{$this->worker->getUsername()}">
 			<input type="hidden" name="posted" value="1">
@@ -256,6 +255,27 @@ class Survey {
 			<button class="pill" type="submit" value="Save" id="end">Finish</button>
 		</form>
 EOHTML;
+		// NOTE: Below is like above except it includes "renderMonthsOverlay"
+		// return <<<EOHTML
+		// {$headline}
+		// {$this->calendar->renderMonthsOverlay()}
+		// <form method="POST" class="kform" action="process.php">
+			// <input type="hidden" name="username" value="{$this->worker->getUsername()}">
+			// <input type="hidden" name="posted" value="1">
+			// <br>
+			// <p>Thanks, {$first_name}!  You've signed up to do these jobs during {$season_name}:</p>
+			// {$this->shifts_summary}
+			// <p>Here's your chance to tell the "Scheduler" program about when you can do these jobs and who you prefer to do them with.  As it generates a schedule of dinners for the {$season_name} season, the Scheduler will do its best to honor everybody's expressed preferences.</p>
+			// <p style="color:red"><strong>If you enter any changes on this page, be sure to scroll down to the bottom and hit the "Finish" button before you leave the page, so your changes will be saved.</strong></p>
+			// <br>
+			// {$this->renderCalendar()}
+			// {$this->renderCleanAfterSelfPreferences($this->requests)}
+			// <br>
+			// {$this->renderCoworkerPreferences()}
+			// {$this->renderComments()}
+			// <button class="pill" type="submit" value="Save" id="end">Finish</button>
+		// </form>
+// EOHTML;
 	}
 
 	private function renderCalendar() {

@@ -55,5 +55,6 @@ define('MEALS_TABLE', 'meals');
 
 // config tables
 define('SHIFT_PREF_NAMES_TABLE', 'shift_pref_names');
+define('WORKERS_TABLE_COLUMNS', 'workers_table_columns');
 
 ?>

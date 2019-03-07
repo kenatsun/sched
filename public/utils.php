@@ -948,11 +948,11 @@ EOSQL;
 function sqlDelete($from, $where, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
 	$sql = <<<EOSQL
-		DELETE FROM {$from} 
+DELETE FROM {$from} 
 EOSQL;
 	if ($where) {
 	$sql .= <<<EOSQL
-		WHERE {$where}
+WHERE {$where}
 EOSQL;
 	}
 	if ($debs) deb("utils.sqlDelete: sql:", $sql);

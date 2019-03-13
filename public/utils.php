@@ -2,8 +2,6 @@
 require_once 'constants.inc';
 require_once 'git_ignored.php';
 
-if (0) deb("utils.php: start"); //_COOKIE =", $_COOKIE);
-
 
 //////////////////////////////////////////////////////// FUNCTIONS
 
@@ -651,6 +649,12 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_lin
 	</table>
 	{$admin_link}
 EOHTML;
+}
+
+// Render a link to another MO page
+function renderLink($text, $href) {
+	$dir = PUBLIC_DIR;
+	return '<p class="summary_report"><a href="'. $href . '">' . $text . '</a></p>';
 }
 
 function getJobs() {

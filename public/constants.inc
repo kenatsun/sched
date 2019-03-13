@@ -29,6 +29,7 @@ define('PREFS_LINK', ';Preferences,process.php?person=');
 define('SEASONS_LINK', ';Manage Seasons,seasons.php'); 
 define('ASSIGNMENTS_LINK', ';Edit Assignments,dashboard.php'); 
 define('CHANGE_SETS_LINK', ';Change Sets,change_sets.php');
+define('ADMIN_LINK', ';Admin Dashboard,admin.php');
 
 // -------- sqlite tables --------- 
 
@@ -72,6 +73,8 @@ define('EDIT_MEALS_CALENDAR_ID', 5);
 define('IMPORT_WORKERS_ID', 6);
 define('EDIT_WORKERS_ID', 7);
 define('SET_SURVEY_DATES_ID', 8);
-define('GENERATE_ANNOUNCEMENT_ID', 9);
+define('VIEW_SURVEY_RESULTS_ID', 9);
+define('TAKE_SURVEY_ID', 10);
+define('RUN_SCHEDULER_PREVIEW_ID', 11);
 
 ?>

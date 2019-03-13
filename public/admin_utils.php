@@ -16,7 +16,7 @@ require_once 'seasons_utils.php';
 
 function renderProcessLink($process, $n="") {
 	// if ($n) $n = $n . ': ';
-	$link = '<p class="summary_report">Stage ' . $n . ': <a href="'. $process['href'] . '?parent_process_id=' . $process['process_id'] . '">' . $process['name'] . '</a></p>';
+	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. $process['href'] . '?parent_process_id=' . $process['process_id'] . '">' . $process['name'] . '</a></p>';
 	if (0) deb("index.renderProcessLink(): link = ", $link);
 	return $link;
 }

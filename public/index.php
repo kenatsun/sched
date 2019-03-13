@@ -50,8 +50,10 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= render_person_menu();
 		$page .= render_footer();
 		$page .= render_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
-		$page .= render_report_link("<strong>View the Sign-Ups</strong>");	
-		$page .= render_schedule_link("<strong>View the Schedule</strong>");			
+		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . '/report.php');	
+		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php');			
+		// $page .= render_report_link("<strong>View the Sign-Ups</strong>");	
+		// $page .= render_schedule_link("<strong>View the Schedule</strong>");			
 	} else {
 		$page = build_survey($worker_id);
 	}
@@ -59,8 +61,10 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 else {
 	$formatted_date = date('r', DEADLINE);
 	$page .= render_countdown();
-	$page .= render_report_link("View the schedule");		
-	$page .= render_schedule_link("View the Assignments");	
+	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . '/report.php');		
+	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php');	
+	// $page .= render_report_link("View the schedule");		
+	// $page .= render_schedule_link("View the Assignments");	
 }
 
 print $page;
@@ -126,19 +130,19 @@ EOHTML;
 	return $html;
 }
 
-function render_report_link($text) {
-	$dir = PUBLIC_DIR;
-	return '<p class="summary_report"><a href="'. PUBLIC_DIR . '/report.php">' . $text . '</a></p>';
-}
+// function renderLink($text, $href) {
+	// $dir = PUBLIC_DIR;
+	// return '<p class="summary_report"><a href="'. $href . '">' . $text . '</a></p>';
+// }
+
+// function render_report_link($text) {
+	// $dir = PUBLIC_DIR;
+	// return '<p class="summary_report"><a href="'. PUBLIC_DIR . '/report.php">' . $text . '</a></p>';
+// }
 
 // function render_scheduler_link($text) {
 	// return '<p class="summary_report"><a href="'. PUBLIC_DIR . '/run_scheduler_from_web.php">' . $text . '</a></p>';
 // }
-
-function render_schedule_link($text) {
-	$dir = BASE_DIR;
-	return '<p class="summary_report"><a href="'. PUBLIC_DIR . '/dashboard.php">' . $text . '</a></p>';
-}
 
 
 /**

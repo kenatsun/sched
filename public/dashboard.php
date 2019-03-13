@@ -67,7 +67,8 @@ displaySchedule();
 
 function displaySchedule() {
 	$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
-	$breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
+	$breadcrumbs = HOME_LINK;
+	// $breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
 	$now = date_format(date_create(), "g:i a M jS");
 	$subhead = "as of {$now}";
 	$headline = renderHeadline("Sunward Dinner Teams for {$season_name}", $breadcrumbs, $subhead); 

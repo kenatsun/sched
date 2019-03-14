@@ -7,6 +7,7 @@ require_once "git_ignored.php";
 
 function finishSurvey($survey, $person_id) {
 	if (0) deb("finish.finishSurvey(): survey:", $survey);
+	if (0) deb("finish.finishSurvey(): _POST =", $_POST);
 	$dir = BASE_DIR;
 	$person = new Person($person_id);	
 	$person_email = $person->email;
@@ -27,13 +28,12 @@ function finishSurvey($survey, $person_id) {
 		if (0) deb("finish.displayResultsPage(): summary_text:", $summary_text);
 	} else {
 		$insufficient_prefs_msg = '';
-		// $summary_text .= "Rats.";	
 	}
 	$headline = renderHeadline("Thank you, {$person_name}!", HOME_LINK . SIGNUPS_LINK . $person_id); // . PREFS_LINK . $person_id);
 	$out = <<<EOHTML
 	{$headline}
 <p>Dear {$person_first_name} ~
-<p>Thanks for completing your {$community} meals scheduling questionnaire!
+<p>Thanks for completing your {$community} meals scheduling survey!
 <p>The preferences you have expressed (as of {$timestamp}) are shown below.
 <p>We're also sending you an email containing this info (to {$person_email}), for your reference.
 <p>~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)</p>
@@ -222,7 +222,8 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)
 	{$instance_label}";
 	if (0) deb("finish.sendEmail: SKIP_EMAIL = ", SKIP_EMAIL);
-	if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
+	if (($_POST['send_email'] == 'yes' && !SKIP_EMAIL) || $person_email == 'ken@sunward.org') {
+	// if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
 		$sent = mail($person_email,
 			'Meal Scheduling Survey preferences saved on ' . $timestamp,
 			$email_body,

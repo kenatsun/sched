@@ -235,6 +235,14 @@ class Survey {
 		$headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();
+		if(userIsAdmin()) {
+			$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes" checked>Email summary to ' . $this->worker->getName() . '?</div><br>';
+			// $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
+			// $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
+		} else {
+			$send_email = '<div align="right"><input type="hidden" name="send_email" value="yes">';
+			// $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
+		}
 		
 		return <<<EOHTML
 		{$headline}
@@ -252,10 +260,14 @@ class Survey {
 			<br>
 			{$this->renderCoworkerPreferences()}
 			{$this->renderComments()}
+			{$send_email}
 			<button class="pill" type="submit" value="Save" id="end">Finish</button>
 		</form>
 EOHTML;
-		// NOTE: Below is like above except it includes "renderMonthsOverlay"
+
+			// 
+
+			// NOTE: Below is like above except it includes "renderMonthsOverlay"
 		// return <<<EOHTML
 		// {$headline}
 		// {$this->calendar->renderMonthsOverlay()}

@@ -17,6 +17,10 @@ function finishSurvey($survey, $person_id) {
 	$timestamp = date("F j, Y, g:i a");
 	$summary_text = "";
 	$deadline = date('g:ia l, F j', DEADLINE);
+	$sending_email = (($_POST['send_email'] == 'yes' && !SKIP_EMAIL) || $person_email == 'ken@sunward.org') ? 1 : 0; 
+	$email_coming = ($sending_email) ? "<p>We're also sending you an email containing this info (to {$person_email}), for your reference." : "";
+	if (0) deb("finish.finishSurvey(): email_coming =", $email_coming);
+		
 	if (!$survey == NULL) {
 		$insufficient_prefs_msg = $survey->insufficient_prefs_msg;
 		$summary_text .= renderJobOffers($survey, $person);
@@ -35,7 +39,7 @@ function finishSurvey($survey, $person_id) {
 <p>Dear {$person_first_name} ~
 <p>Thanks for completing your {$community} meals scheduling survey!
 <p>The preferences you have expressed (as of {$timestamp}) are shown below.
-<p>We're also sending you an email containing this info (to {$person_email}), for your reference.
+{$email_coming}
 <p>~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)</p>
 
 {$summary_text}
@@ -47,7 +51,7 @@ EOHTML;
 	if (0) deb("finish.displayResultsPage(): worker = ", $worker);
 	if (0) deb("finish.displayResultsPage(): summary = ", $summary);
 	if (0) deb("finish.php: SKIP_EMAIL = ", SKIP_EMAIL);
-	sendEmail($person_id, $summary_text, $insufficient_prefs_msg);
+	if ($sending_email) sendEmail($person_id, $summary_text, $insufficient_prefs_msg);
 	print $out; 
 }
 
@@ -222,7 +226,8 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)
 	{$instance_label}";
 	if (0) deb("finish.sendEmail: SKIP_EMAIL = ", SKIP_EMAIL);
-	if (($_POST['send_email'] == 'yes' && !SKIP_EMAIL) || $person_email == 'ken@sunward.org') {
+	// if (SENDING_EMAIL) {
+	// if (($_POST['send_email'] == 'yes' && !SKIP_EMAIL) || $person_email == 'ken@sunward.org') {
 	// if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
 		$sent = mail($person_email,
 			'Meal Scheduling Survey preferences saved on ' . $timestamp,
@@ -241,8 +246,8 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 					$insufficient_prefs_msg),
 				'From: moremeals@sunward.org');
 		}
-	}
-	return $sent;
+	// }
+	// return $sent;
 }
 
 ?>

@@ -17,8 +17,12 @@ function finishSurvey($survey, $person_id) {
 	$timestamp = date("F j, Y, g:i a");
 	$summary_text = "";
 	$deadline = date('g:ia l, F j', DEADLINE);
-	$sending_email = (($_POST['send_email'] == 'yes' && !SKIP_EMAIL) || $person_email == 'ken@sunward.org') ? 1 : 0; 
+	if ($_POST['send_email'] == 'default') $sending_email = SEND_EMAIL;
+	elseif ($_POST['send_email'] == 'yes') $sending_email = TRUE;
+	else $sending_email = FALSE;
+	
 	$email_coming = ($sending_email) ? "<p>We're also sending you an email containing this info (to {$person_email}), for your reference." : "";
+	if (0) deb("finish.finishSurvey(): sending_email =", $sending_email);
 	if (0) deb("finish.finishSurvey(): email_coming =", $email_coming);
 		
 	if (!$survey == NULL) {

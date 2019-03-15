@@ -236,11 +236,11 @@ class Survey {
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();
 		if(userIsAdmin()) {
-			$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes" checked>Email summary to ' . $this->worker->getName() . '?</div><br>';
+			$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $this->worker->getName() . '?</div><br>';
 			// $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
 			// $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
 		} else {
-			$send_email = '<div align="right"><input type="hidden" name="send_email" value="yes">';
+			$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
 			// $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
 		}
 		

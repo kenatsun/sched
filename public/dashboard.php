@@ -75,10 +75,10 @@ function displaySchedule() {
 	$headline = renderHeadline("Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
 	$deadline = date_create($season['change_request_end_date']);
 	if (date_modify($now, "+1 day") <= $deadline) 
-		$change_line = "Email change requests by " . date_format($deadline, "M jS") . " to ";
+		$change_line = "Please send change requests by " . date_format($deadline, "M jS") . " to ";
 	else 
 		$change_line = "Got a scheduling problem you can't solve yourself?  Email ";
-	$change_line = '<br><p style="color:blue; font-size:large"><strong>' . $change_line . '<a href=moremeals@sunward.org>moremeals@sunward.org</a></strong></p><br>';
+	$change_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_line . '<a href=moremeals@sunward.org>moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm();
 	if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 	$bullpen = '<br>' . renderBullpen();

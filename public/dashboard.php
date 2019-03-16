@@ -114,7 +114,8 @@ function renderAssignmentsForm() {
 	$from = "{$jobs_table} j, {$shifts_table} s, {$meals_table} m";
 	$where = "s.job_id = j.id
 		and m.id = s.meal_id
-		and j.season_id = {$season_id}";
+		and j.season_id = {$season_id}
+		and (m.skip_indicator = 0 or m.skip_indicator is null)";
 	$order_by = "m.date asc";
 	$meals = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm(): get assignments for season");
 	if (0) deb("dashboard.php.renderAssignmentsForm(): meals = ", $meals); 

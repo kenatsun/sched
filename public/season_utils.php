@@ -277,6 +277,10 @@ function renderSurveySetupForm($season, $parent_process_id) {
 	$scheduling_start_date = renderDateInputFields($season['scheduling_start_date'], "scheduling_start");
 	$form .= '<tr><td style="text-align:right">first day of scheduling (mm/dd/yyyy):</td><td>' . $scheduling_start_date . '</td></tr>';
 
+	// Change request end date
+	$change_request_end_date = renderDateInputFields($season['change_request_end_date'], "change_request_end");
+	$form .= '<tr><td style="text-align:right">last day to submit change requests (mm/dd/yyyy):</td><td>' . $change_request_end_date . '</td></tr>';
+
 	// Scheduling end date
 	$scheduling_end_date = renderDateInputFields($season['scheduling_end_date'], "scheduling_end");
 	$form .= '<tr><td style="text-align:right">last day of scheduling (mm/dd/yyyy):</td><td>' . $scheduling_end_date . '</td></tr>';
@@ -327,6 +331,8 @@ function saveChangesToSeason($post) {
 		$postcol = date_postcol($post['survey_closing_year'], $post['survey_closing_month'], $post['survey_closing_day'], "survey_closing_date");
 		if ($postcol) $postcols[] = $postcol;
 		$postcol = date_postcol($post['scheduling_start_year'], $post['scheduling_start_month'], $post['scheduling_start_day'], "scheduling_start_date");
+		if ($postcol) $postcols[] = $postcol;
+		$postcol = date_postcol($post['change_request_end_year'], $post['change_request_end_month'], $post['change_request_end_day'], "change_request_end_date");
 		if ($postcol) $postcols[] = $postcol;
 		$postcol = date_postcol($post['scheduling_end_year'], $post['scheduling_end_month'], $post['scheduling_end_day'], "scheduling_end_date");
 		if ($postcol) $postcols[] = $postcol;
@@ -674,6 +680,7 @@ function exportAnnouncementFile($season, $filename) {
 	$columns[] = array("sql"=>"s.survey_opening_date", "colname"=>"survey_opening_date");
 	$columns[] = array("sql"=>"s.survey_closing_date", "colname"=>"survey_closing_date");
 	$columns[] = array("sql"=>"s.scheduling_start_date", "colname"=>"scheduling_start_date");
+	$columns[] = array("sql"=>"s.change_request_end_date", "colname"=>"change_request_end_date");
 	$columns[] = array("sql"=>"s.scheduling_end_date", "colname"=>"scheduling_end_date");
 	$columns[] = array("sql"=>"", "colname"=>"start_month");
 	$columns[] = array("sql"=>"", "colname"=>"end_month");
@@ -683,6 +690,7 @@ function exportAnnouncementFile($season, $filename) {
 	$columns[] = array("sql"=>"", "colname"=>"survey_opening");
 	$columns[] = array("sql"=>"", "colname"=>"survey_closing");
 	$columns[] = array("sql"=>"", "colname"=>"scheduling_start");
+	$columns[] = array("sql"=>"", "colname"=>"change_request_end");
 	$columns[] = array("sql"=>"", "colname"=>"scheduling_end");
 
 	if (0) deb("season_utils.exportAnnouncementFile(): columns =", $columns);
@@ -711,6 +719,7 @@ function exportAnnouncementFile($season, $filename) {
 		$workers[$i]['survey_opening'] = date_format(date_create($worker['survey_opening_date']), "M j");
 		$workers[$i]['survey_closing'] = date_format(date_create($worker['survey_closing_date']), "M j");
 		$workers[$i]['scheduling_start'] = date_format(date_create($worker['scheduling_start_date']), "M j");
+		$workers[$i]['change_request_end'] = date_format(date_create($worker['change_request_end_date']), "M j");
 		$workers[$i]['scheduling_end'] = date_format(date_create($worker['scheduling_end_date']), "M j");
 		fputcsv($file, $workers[$i], "\t");
 		$out_rows .= implode("\t", $worker) . "\n";

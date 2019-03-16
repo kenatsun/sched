@@ -66,13 +66,19 @@ displaySchedule();
 //////////////////////////////////////////////////////////////// FUNCTIONS
 
 function displaySchedule() {
-	$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
+	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0];
 	$breadcrumbs = HOME_LINK;
 	// $breadcrumbs = (userIsAdmin()) ? HOME_LINK : "";
-	$now = date_format(date_create(), "g:i a M jS");
-	$subhead = "as of {$now}";
-	$headline = renderHeadline("Sunward Dinner Teams for {$season_name}", $breadcrumbs, $subhead); 
-	$change_line = '<p><strong>Got a scheduling problem you can\'t solve yourself?  Email <a href=moremeals@sunward.org>moremeals@sunward.org</a></strong></p>';
+	// $now = date_format($now, "g:i a M jS");
+	$now = date_create();
+	$subhead = "as of " . date_format($now, "g:i a M jS");
+	$headline = renderHeadline("Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
+	$deadline = date_create($season['change_request_end_date']);
+	if (date_modify($now, "+1 day") <= $deadline) 
+		$change_line = "Email change requests by " . date_format($deadline, "M jS") . " to ";
+	else 
+		$change_line = "Got a scheduling problem you can\'t solve yourself?  Email ";
+	$change_line = '<br><p style="color:blue; font-size:large"><strong>' . $change_line . '<a href=moremeals@sunward.org>moremeals@sunward.org</a></strong></p><br>';
 	$assignments_form = renderAssignmentsForm();
 	if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 	$bullpen = '<br>' . renderBullpen();

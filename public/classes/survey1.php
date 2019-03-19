@@ -55,7 +55,7 @@ class Survey1 {
 
 	public function renderOffersList() {
 		if (0) deb("survey1.renderOffersList(): _GET", $_GET);
-		if (0) deb("survey1.renderOffersList(): id:", $this->person->id);
+		if (0) deb("survey1.renderOffersList(): id:", $this->person->name);
 		if (0) deb("survey1.renderOffersList(): offers:", $this->offers);
 		if (0) deb("survey1.renderOffersList(): this->person->username:", $this->person->username);
 		if (0) deb("survey1.renderOffersList(): _GET['person']:", $_GET['person']);
@@ -67,6 +67,7 @@ class Survey1 {
 EOHTML;
 		}
 		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", HOME_LINK); 
+		$send_email = renderSendEmailControl($this->person->name);
 		return <<<EOHTML
 		{$headline}
 		<p>Welcome, {$this->person->name}!</p>
@@ -77,6 +78,7 @@ EOHTML;
 			{$this->renderInstructions()}
 			{$this->renderHints()}
 			{$this->offers_list->renderOffersList($this->offers)}
+			{$send_email}
 			<button class="pill" type="submit" value="Save" id="end">Next</button>
 		</form>
 EOHTML;

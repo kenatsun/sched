@@ -17,10 +17,14 @@ function finishSurvey($survey, $person_id) {
 	$timestamp = date("F j, Y, g:i a");
 	$summary_text = "";
 	$deadline = date('g:ia l, F j', DEADLINE);
+	
+	$prefs_line = ($survey) ? 
+		'<p>The preferences you have expressed (as of ' . $timestamp . ') are shown below.' :
+		'<p>You\'ve said (as of ' . $timestamp . ') that you won\'t be joining any meals teams this season.  Thanks for letting us know.';
+
 	if ($_POST['send_email'] == 'default') $sending_email = SEND_EMAIL;
 	elseif ($_POST['send_email'] == 'yes') $sending_email = TRUE;
-	else $sending_email = FALSE;
-	
+	else $sending_email = FALSE;	
 	$email_coming = ($sending_email) ? "<p>We're also sending you an email containing this info (to {$person_email}), for your reference." : "";
 	if (0) deb("finish.finishSurvey(): sending_email =", $sending_email);
 	if (0) deb("finish.finishSurvey(): email_coming =", $email_coming);
@@ -43,6 +47,7 @@ function finishSurvey($survey, $person_id) {
 <p>Dear {$person_first_name} ~
 <p>Thanks for completing your {$community} meals scheduling survey!
 <p>The preferences you have expressed (as of {$timestamp}) are shown below.
+{$prefs_line}
 {$email_coming}
 <p>~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)</p>
 

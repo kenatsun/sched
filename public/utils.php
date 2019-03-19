@@ -156,6 +156,18 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 	return $select_field;
 }
 
+function renderSendEmailControl($name) {
+	if(userIsAdmin()) {
+		$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $name . '?</div><br>';
+		// $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
+		// $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
+	} else {
+		$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
+		// $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
+	}
+	return $send_email;
+}
+
 function renderYearsSelectList($num_years=3, $field_name="years") {
 	$first_year = date("Y");
 	$select = '<select name=' . $field_name . '>';

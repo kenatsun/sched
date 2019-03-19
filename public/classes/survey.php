@@ -235,14 +235,15 @@ class Survey {
 		$headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();
-		if(userIsAdmin()) {
-			$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $this->worker->getName() . '?</div><br>';
-			// $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
-			// $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
-		} else {
-			$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
-			// $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
-		}
+		$send_email = renderSendEmailControl($this->worker->getName());
+		// if(userIsAdmin()) {
+			// $send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $this->worker->getName() . '?</div><br>';
+			// // $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
+			// // $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
+		// } else {
+			// $send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
+			// // $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
+		// }
 		
 		return <<<EOHTML
 		{$headline}
@@ -431,36 +432,8 @@ EOHTML;
 			}
 		}
 		return <<<EOHTML
-<!--
-#!# This doesn't seem to work, so don't support it for now.
-			<p>
-				<label>
-					<input type="checkbox" name="bundle_shifts"{$bundle_checked}>
-					Please bundle my shifts together
-					<span>(i.e. I want to do all of 3 of my cooking / cleaning
-					shifts the same evening</span>
-				</label>
-			</p>
--->
 			{$this->renderCleanAfter($requests)}
 EOHTML;
-
-/*
-				<li>
-					Please group my shifts in the season:<br>
-					<input type="radio" name="bunch_shifts" value="yes"
-						id="bunch_shifts_early"{$requests['bunch_shifts_yes']}>
-						<label for="bunch_shifts_early">Early</label>
-
-					<input type="radio" name="bunch_shifts" value="dc"
-						id="bunch_shifts_dc"{$requests['bunch_shifts_dc']}>
-						<label for="bunch_shifts_dc">Don't Care</label>
-
-					<input type="radio" name="bunch_shifts" value="no"
-						id="bunch_shifts_late"{$requests['bunch_shifts_no']}>
-						<label for="bunch_shifts_late">Late</label>
-				</li>
-*/
 	}
 
 	private function renderComments() {

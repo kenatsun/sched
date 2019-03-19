@@ -82,7 +82,7 @@ function displaySchedule() {
 		$change_line = "Please send change requests by " . $change_request_end_date_f . " to ";
 	} elseif ($now_f <= $scheduling_end_date) {
 		if (0) deb("before scheduling end date");
-		$change_line = "Proposed changes since the last version are highlighted in color below.<br>Any problems with these? <br>Please email them by " . $scheduling_end_date_f . " to ";
+		$change_line = "Proposed changes since the last version are highlighted in color below.<br>Any problems with these changes? <br>Please email them by " . $scheduling_end_date_f . " to ";
 	} else {
 		if (0) deb("after end dates");
 		$change_line = "Got a scheduling problem you can't solve yourself?  Email ";

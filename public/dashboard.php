@@ -73,16 +73,16 @@ function displaySchedule() {
 	$headline = renderHeadline("Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
 	$now_f = date_format($now, "Y-m-d");
 	$change_request_end_date = $season['change_request_end_date'];
-	$change_request_end_date_f = date_format(date_create($change_request_end_date), "l (F jS)");
+	$change_request_end_date_f = date_format(date_create($change_request_end_date), "l, F jS");
 	$scheduling_end_date = $season['scheduling_end_date'];
-	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l (F jS)");
+	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS");
 	if (0) deb("dashboard.displaySchedule(): change_request_end_date = " . $change_request_end_date . "; scheduling_end_date = " . $scheduling_end_date . "; now = " . $now_f . "");
 	if ($now_f <= $change_request_end_date) {
 		if (0) deb("before change req end date");
 		$change_line = "Please send change requests by " . $change_request_end_date_f . " to ";
 	} elseif ($now_f <= $scheduling_end_date) {
 		if (0) deb("before scheduling end date");
-		$change_line = "Proposed changes since the last version are highlighted in color below.<br>Any problems with these changes? <br>Please email them by " . $scheduling_end_date_f . " to ";
+		$change_line = "Proposed changes since the last version are highlighted in color below.<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
 	} else {
 		if (0) deb("after end dates");
 		$change_line = "Got a scheduling problem you can't solve yourself?  Email ";

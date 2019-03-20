@@ -82,7 +82,7 @@ function displaySchedule() {
 		$change_line = "Please send change requests by " . $change_request_end_date_f . " to ";
 	} elseif ($now_f <= $scheduling_end_date) {
 		if (0) deb("before scheduling end date");
-		$change_line = "Proposed changes since the last version are highlighted in color below.<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
+		$change_line = "Proposed changes since the last version are marked with " . ADDED_ICON . " and " . REMOVED_ICON . ".<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
 	} else {
 		if (0) deb("after end dates");
 		$change_line = "Got a scheduling problem you can't solve yourself?  Email ";
@@ -151,9 +151,10 @@ function renderAssignmentsForm() {
 		&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" name="review" value="Review These Changes"> <input type="reset" value="Cancel These Changes"> <input type="submit" name="publish" value="Publish This Schedule"></span>&nbsp;&nbsp;';
 		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $scheduler_run_id . " and published = 0", "", (0))[0];
 		if ($change_sets) $legend = 
-		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;<span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;<span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
+		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;' . ADDED_ICON . ' <span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;' . REMOVED_ICON . ' <span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
 	if (0) deb("dashboard.php.renderAssignmentsForm(): legend =", $legend);
-	if ($legend || $buttons) $actions_row = '<td style="background-color:' . HEADER_COLOR . '; padding:0; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
+	if ($legend || $buttons) $actions_row = '<td style="background-color:White; padding:2px 0px 2px 0px; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
+	// if ($legend || $buttons) $actions_row = '<td style="background-color:' . HEADER_COLOR . '; padding:0; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
 	
 	// Sort the meals by date (ascending)
 	// usort($meals, "meal_date_sort");
@@ -249,12 +250,14 @@ function renderAssignmentsForm() {
 					if ($exists_now) {
 						$assignment_color = ADDED_COLOR;
 						$assignment_decoration = ADDED_DECORATION;
+						$assignment_icon = ADDED_ICON;
 						$change_marker = ' - added ' . $change_marker; 
 					} 
 					// Else assignment doesn't exist now, so make a "removed" marker
 					else { 
 						$assignment_color = REMOVED_COLOR;
 						$assignment_decoration = REMOVED_DECORATION;
+						$assignment_icon = REMOVED_ICON;
 						$change_marker = ' - removed ' . $change_marker; 						
 					}
 				}
@@ -262,13 +265,15 @@ function renderAssignmentsForm() {
 				else {
 					$assignment_color = "White"; 
 					$assignment_decoration = ""; 
+					$assignment_icon = "";
 					$change_marker = "";					
 				}
 				
 				// Render the assignment if it exists and/or has been removed since generation
 				// Don't show an assignment that was not generated and doesn't currently exist
 				if ($exists_now || $has_changed) {
-					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong><span style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</span></strong>' . $wkr_id . $change_marker; 
+					// $shift_cell .= '<tr><td width="0.1%">' . $assignment_icon . '</td><td style="' . $assignment_color . '"><strong><span style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</span></strong>' . $wkr_id . $change_marker; 
+					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong>' . $assignment_icon . '&nbsp;<span style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</span></strong>' . $wkr_id . $change_marker; 
 					if ($exists_now) --$slots_to_fill;
 				}
 				

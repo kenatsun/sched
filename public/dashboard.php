@@ -154,7 +154,6 @@ function renderAssignmentsForm() {
 		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;' . ADDED_ICON . ' <span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;' . REMOVED_ICON . ' <span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
 	if (0) deb("dashboard.php.renderAssignmentsForm(): legend =", $legend);
 	if ($legend || $buttons) $actions_row = '<td style="background-color:White; padding:2px 0px 2px 0px; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
-	// if ($legend || $buttons) $actions_row = '<td style="background-color:' . HEADER_COLOR . '; padding:0; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
 	
 	// Sort the meals by date (ascending)
 	// usort($meals, "meal_date_sort");

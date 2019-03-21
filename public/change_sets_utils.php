@@ -75,14 +75,17 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 		switch ($change['action']) {
 			case "add":
 				$background_color = ADDED_COLOR;
-				$background_decoration = REMOVED_DECORATION;
+				$background_decoration = ADDED_DECORATION;
+				$change_icon = ADDED_ICON;
 				break;
 			case "remove":
 				$background_color = REMOVED_COLOR;
 				$background_decoration = REMOVED_DECORATION;
+				$change_icon = REMOVED_ICON;
 				break;
 			default:
 				$background_color = "White";
+				$change_icon = "";
 		}
 		if (0) deb("change_sets_utils.renderChangeSet(): background_color = ", $background_color); 
 
@@ -90,7 +93,7 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 			<tr style="width:1px; white-space:nowrap;">
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $meal_date . '</td>
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px;">' . $change['job_name'] . '</td>
-				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . '">' . $change['action'] . '</td>
+				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . '">' . $change_icon . ' ' . $change['action'] . '</td>
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . ';">' . $change['worker_name'] . '</td>'; 
 		if ($show_ok_checkbox) { 		
 			$change_rows .= '

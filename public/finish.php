@@ -46,7 +46,6 @@ function finishSurvey($survey, $person_id) {
 	{$headline}
 <p>Dear {$person_first_name} ~
 <p>Thanks for completing your {$community} meals scheduling survey!
-<p>The preferences you have expressed (as of {$timestamp}) are shown below.
 {$prefs_line}
 {$email_coming}
 <p>~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)</p>
@@ -199,10 +198,8 @@ function renderComments($survey) {
 	}
 }
 
-
 /**
  * Send an email message with the results.
- * @param[in] content string the summary results.
  */
 function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	$person = new Person($worker_id);	
@@ -235,28 +232,23 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)
 	{$instance_label}";
 	if (0) deb("finish.sendEmail: SKIP_EMAIL = ", SKIP_EMAIL);
-	// if (SENDING_EMAIL) {
-	// if (($_POST['send_email'] == 'yes' && !SKIP_EMAIL) || $person_email == 'ken@sunward.org') {
-	// if (!SKIP_EMAIL || $person_email == 'ken@sunward.org') {
-		$sent = mail($person_email,
-			'Meal Scheduling Survey preferences saved on ' . $timestamp,
-			$email_body,
+	$sent = mail($person_email,
+		'Meal Scheduling Survey preferences saved on ' . $timestamp,
+		$email_body,
+		'From: moremeals@sunward.org');
+
+	if (!$sent) {
+		error_log("Unable to send email to: $to");
+	}
+
+	// if user is under pref level, then send warning email
+	if (!is_null($insufficient_prefs_msg)) {
+		$sent = mail('ken@sunward.org',
+			'Meal Scheduling Survey preferences saved under limit at ' . $timestamp,
+			$person_name . "\n" . strip_tags($content . "\n" .
+				$insufficient_prefs_msg),
 			'From: moremeals@sunward.org');
-
-		if (!$sent) {
-			error_log("Unable to send email to: $to");
-		}
-
-		// if user is under pref level, then send warning email
-		if (!is_null($insufficient_prefs_msg)) {
-			$sent = mail('ken@sunward.org',
-				'Meal Scheduling Survey preferences saved under limit at ' . $timestamp,
-				$person_name . "\n" . strip_tags($content . "\n" .
-					$insufficient_prefs_msg),
-				'From: moremeals@sunward.org');
-		}
-	// }
-	// return $sent;
+	}
 }
 
 ?>

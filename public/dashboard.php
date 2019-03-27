@@ -69,25 +69,32 @@ function displaySchedule() {
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0];
 	$breadcrumbs = HOME_LINK;
 	$now = date_create();
-	$subhead = "as of " . date_format($now, "g a F jS");
-	$headline = renderHeadline("Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
+	// $subhead = "as of " . date_format($now, "g a F jS");
+	// $headline = renderHeadline("Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
 	$now_f = date_format($now, "Y-m-d");
 	$change_request_end_date = $season['change_request_end_date'];
 	$change_request_end_date_f = date_format(date_create($change_request_end_date), "l, F jS");
 	$scheduling_end_date = $season['scheduling_end_date'];
 	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS");
 	if (0) deb("dashboard.displaySchedule(): change_request_end_date = " . $change_request_end_date . "; scheduling_end_date = " . $scheduling_end_date . "; now = " . $now_f . "");
-	if ($now_f <= $change_request_end_date) {
+	if ($now_f <= $change_request_end_date) {		// If now is before the change request deadline
 		if (0) deb("before change req end date");
+		$final = "Tentative ";
+		$subhead = "as of " . date_format($now, "g a F jS");
 		$change_line = "Please send change requests by " . $change_request_end_date_f . " to ";
-	} elseif ($now_f <= $scheduling_end_date) {
+	} elseif ($now_f <= $scheduling_end_date) {		// If now is before the end of the scheduling period
 		if (0) deb("before scheduling end date");
+		$final = "Revised ";
+		$subhead = "as of " . date_format($now, "g a F jS");
 		$change_line = "Proposed changes since the last version are marked with " . ADDED_ICON . " and " . REMOVED_ICON . ".<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
-	} else {
+	} else {										// Now is after the end of the scheduling period
 		if (0) deb("after end dates");
+		$final = "Final ";
+		$subhead = date_format($now, "F j, Y");
 		$change_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
-	$change_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_line . '<a href=moremeals@sunward.org>moremeals@sunward.org</a></strong></p><br>'; 
+	$headline = renderHeadline($final . "Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
+	$change_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm();
 	if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 	$bullpen = '<br>' . renderBullpen();
@@ -155,13 +162,7 @@ function renderAssignmentsForm() {
 	if (0) deb("dashboard.php.renderAssignmentsForm(): legend =", $legend);
 	if ($legend || $buttons) $actions_row = '<td style="background-color:White; padding:2px 0px 2px 0px; text-align:center" colspan=' . $ncols . '>' . $buttons . $legend . '</td>';
 	
-	// Sort the meals by date (ascending)
-	// usort($meals, "meal_date_sort");
-	if (0) deb("dashboard.php.renderAssignmentsForm(): meals after sort = ", $meals);
-	if (0) deb("dashboard.php.renderAssignmentsForm(): time_order = ", $time_order);  
-		
-	$previous_meal_month = 0;
-	
+	$previous_meal_month = 0;	
 	$meal_rows .= $actions_row . $header_row;
 		
 	// Make the table row for each meal

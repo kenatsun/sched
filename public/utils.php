@@ -320,19 +320,20 @@ function promptForAdminPassword() {
 EOHTML;
 }
 
-function signInAsGuest() {
-	$_SESSION['access_type'] = 'admin';
-	print <<<EOHTML
-		<form method="post" action="{$_SERVER['PHP_SELF']}">
-			<input type="hidden" name="sign_in_as_guest" value="1">
-			<input type="submit" value="sign in as guest">
-		</form>
-EOHTML;
-}
+// function signInAsGuest() {
+	// $_SESSION['access_type'] = 'admin';
+	// print <<<EOHTML
+		// <form method="post" action="{$_SERVER['PHP_SELF']}">
+			// <input type="hidden" name="sign_in_as_guest" value="1">
+			// <input type="submit" value="sign in as guest">
+		// </form>
+// EOHTML;
+// }
 
 
 function userIsAdmin() {
 	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
+	if (0) deb("utils.userIsAdmin: SESSION['access_type']", $_SESSION['access_type']);
 	return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
 }
 
@@ -628,13 +629,13 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_lin
 		$headline = '<td style="$td_style" class="headline">' . $text . '</td>';
 	}
 	
-
 	$instance = INSTANCE;
 	$database = DATABASE;
 	$color = '"color:red"';
 	$instance_notice = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
-	$end_session_label = "End this session and start a new one.";
-	$sign_in_as_guest_label = "Sign in as a guest";
+	if ($instance_notice && !userIsAdmin()) $instance_notice .= "<br>";
+	// $end_session_label = "End this session and start a new one.";
+	// $sign_in_as_guest_label = "Sign in as a guest";
 	if (userIsAdmin()) $admin_notice =
 		'
 		<div style=' . $color . '><p>
@@ -643,15 +644,20 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_lin
 			<p><strong>You are signed into this session as an admin. </strong>
 			<input type="submit" value="Sign in as a plain old ordinary user.">
 		</form>
-		</p></div>';
+		</p><br></div>';
 	if (userIsAdmin() && $show_admin_link) $admin_link =  
-		'<br><div style=' . $color . '>
+		'<div style=' . $color . '>
 			<a style=' . $color . ' href="/admin.php"><strong>Open the Admin Dashboard</strong></a>
-		</div>';
+		</div>
+		<br>';
+
+	if (0) deb ("utils.renderHeadline(): userIsAdmin() =", userIsAdmin()); 
+	if (0) deb ("utils.renderHeadline(): admin_notice =", $admin_notice);
 		
 	return <<<EOHTML
 	{$instance_notice}
 	{$admin_notice}
+	{$admin_link}
 	<table>
 		{$breadcrumbs}
 		<tr>
@@ -659,7 +665,6 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_lin
 			{$headline}	
 		</tr>
 	</table>
-	{$admin_link}
 EOHTML;
 }
 
@@ -667,6 +672,87 @@ EOHTML;
 function renderLink($text, $href) {
 	$dir = PUBLIC_DIR;
 	return '<p class="summary_report"><a href="'. $href . '">' . $text . '</a></p>';
+}
+
+function renderToolsList($tools, $subhead=null) {
+	// Render the page components for each tool in a step
+	$body = $subhead;
+	foreach ($tools as $tool) {
+		$body .= '<p style="margin-left:2em;"><a href="'. $tool['href'] . '">' . $tool['name'] . '</a></p>';
+		// $body .= '<br><br><h3>Tool ' . ++$n . ': ' . $tool['name'] . '</h3>';
+		// switch ($tool['process_id']) {
+			// case VIEW_SURVEY_RESULTS_ID:
+				// $body .= renderLink("Click here to see the responses to date", $tool['href']); 
+				// break;
+			// case TAKE_SURVEY_ID:
+				// $body .= renderLink("Click here to take the survey for someone else", $tool['href']);
+				// break;
+			// case RUN_SCHEDULER_PREVIEW_ID:
+				// $body .= renderLink("Click here to see what the Scheduler would generate from the responses received so far", $tool['href']); 
+				// break;
+		// }
+	}
+	return $body;
+} 
+
+function exportSurveyAnnouncementCSV($season, $filename) { 
+
+	$columns = array();
+	$columns[] = array("sql"=>"w.first_name || ' ' || w.last_name", "colname"=>"worker_name");
+	$columns[] = array("sql"=>"w.unit", "colname"=>"unit");
+	$columns[] = array("sql"=>"s.name", "colname"=>"season_name");
+	$columns[] = array("sql"=>"s.start_date", "colname"=>"season_start_date");
+	$columns[] = array("sql"=>"s.end_date", "colname"=>"season_end_date");
+	$columns[] = array("sql"=>"s.survey_opening_date", "colname"=>"survey_opening_date");
+	$columns[] = array("sql"=>"s.survey_closing_date", "colname"=>"survey_closing_date");
+	$columns[] = array("sql"=>"s.scheduling_start_date", "colname"=>"scheduling_start_date");
+	$columns[] = array("sql"=>"s.change_request_end_date", "colname"=>"change_request_end_date");
+	$columns[] = array("sql"=>"s.scheduling_end_date", "colname"=>"scheduling_end_date");
+	$columns[] = array("sql"=>"", "colname"=>"start_month");
+	$columns[] = array("sql"=>"", "colname"=>"end_month");
+	$columns[] = array("sql"=>"", "colname"=>"start_date");
+	$columns[] = array("sql"=>"", "colname"=>"end_date");
+	$columns[] = array("sql"=>"", "colname"=>"survey_closing_long");
+	$columns[] = array("sql"=>"", "colname"=>"survey_opening");
+	$columns[] = array("sql"=>"", "colname"=>"survey_closing");
+	$columns[] = array("sql"=>"", "colname"=>"scheduling_start");
+	$columns[] = array("sql"=>"", "colname"=>"change_request_end");
+	$columns[] = array("sql"=>"", "colname"=>"scheduling_end");
+
+	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): columns =", $columns);
+	$fputcsv_header = array();
+	foreach($columns as $column) {
+		if ($column['sql']) {
+			if ($select) $select .= ", 
+			";
+			$select .= $column['sql'] . " as " . $column['colname'];
+		}
+		$fputcsv_header[] = $column['colname'];
+	} 	
+	$from = AUTH_USER_TABLE . " as w, " . SEASONS_TABLE . " as s, " . SEASON_WORKER_TABLE . " as sw";
+	$where = "w.id = sw.worker_id and sw.season_id = s.id and s.id = " . $season['id'];
+	$order_by = "cast(unit as integer), first_name, last_name";
+	$workers = sqlSelect($select, $from, $where, $order_by, (0), "season_utils.exportSurveyAnnouncementCSV()");
+	
+	$file = fopen($filename,"w");
+	fputcsv($file, $fputcsv_header, "\t");
+	foreach ($workers as $i=>$worker) { 
+		$workers[$i]['start_month'] = date_format(date_create($worker['season_start_date']), "F");
+		$workers[$i]['end_month'] = date_format(date_create($worker['season_end_date']), "F");
+		$workers[$i]['start_date'] = date_format(date_create($worker['season_start_date']), "M j");
+		$workers[$i]['end_date'] = date_format(date_create($worker['season_end_date']), "M j");
+		$workers[$i]['survey_closing_long'] = date_format(date_create($worker['survey_closing_date']), "l, F j");
+		$workers[$i]['survey_opening'] = date_format(date_create($worker['survey_opening_date']), "M j");
+		$workers[$i]['survey_closing'] = date_format(date_create($worker['survey_closing_date']), "M j");
+		$workers[$i]['scheduling_start'] = date_format(date_create($worker['scheduling_start_date']), "M j");
+		$workers[$i]['change_request_end'] = date_format(date_create($worker['change_request_end_date']), "M j");
+		$workers[$i]['scheduling_end'] = date_format(date_create($worker['scheduling_end_date']), "M j");
+		fputcsv($file, $workers[$i], "\t");
+		$out_rows .= implode("\t", $worker) . "\n";
+	}
+	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): out =", $out);
+	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): workers =", $workers);
+	fclose($file); 	
 }
 
 function getJobs() {

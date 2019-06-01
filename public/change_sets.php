@@ -18,7 +18,7 @@ if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();
 
-$headline = renderHeadline("Saved Change Sets", HOME_LINK . ASSIGNMENTS_LINK, "Latest change set shown first; undoing a set undoes all later sets too."); 
+$headline = renderHeadline("Saved Change Sets", HOME_LINK . ASSIGNMENTS_LINK . ADMIN_LINK, "Latest change set shown first; undoing a set undoes all later sets too.", 0); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id} and published = 0", "when_saved desc", (0));
 
 // $change_sets_table = '<table style="table-layout:auto; width:1px; white-space: nowrap;">';

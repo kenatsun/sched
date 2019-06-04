@@ -4,8 +4,8 @@ require_once 'display/includes/header.php';
 require_once 'globals.php';
 require_once 'auto_assignments/assignments.php';
 
-if (1) deb("run_scheduler_from_web.php: _POST = ", $_POST);
-if (1) deb("run_scheduler_from_web.php: _GET = ", $_GET);
+if (0) deb("run_scheduler_from_web.php: _POST = ", $_POST);
+if (0) deb("run_scheduler_from_web.php: _GET = ", $_GET);
 
 if (array_key_exists('previewonly', $_GET) || array_key_exists('previewonly', $_POST)) $preview_only = "?previewonly=";
 
@@ -35,7 +35,7 @@ $options = array("h"=>"");
 function renderSchedule($post) {
 	$options = array("h"=>"");
 	if ($post['option'] != "h") $options[$post['option']] = "";
-	if (1) deb("run_scheduler_from_web.renderSchedule(): options = ", $options);
+	if (0) deb("run_scheduler_from_web.renderSchedule(): options = ", $options);
 	return runScheduler($options);
 }
 ?>

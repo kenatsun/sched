@@ -21,7 +21,6 @@ purgeUnsavedChangeSets();
 $headline = renderHeadline("Saved Change Sets", HOME_LINK . ASSIGNMENTS_LINK . ADMIN_LINK, "Latest change set shown first; undoing a set undoes all later sets too.", 0); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id} and published = 0", "when_saved desc", (0));
 
-// $change_sets_table = '<table style="table-layout:auto; width:1px; white-space: nowrap;">';
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 
 // Render change sets table header
 $change_sets_table .= '
@@ -30,6 +29,8 @@ $change_sets_table .= '
 		<th style="border-style: solid; border-width: 1px; text-align:center; border-color:LightGray; padding:8px; white-space: nowrap; font-weight: bold; font-size: 150%;">saved at</th>
 		<th style="border-style: solid; border-width: 1px; text-align:center; border-color:LightGray; padding:8px; white-space: nowrap; font-weight: bold; font-size: 150%;">undo?</th>
 	</tr>';
+
+// Render change sets
 foreach($change_sets as $i=>$change_set) {
 	$dt = new DateTime($change_set['when_saved']);
 	$saved_date = $dt->format('F j');
@@ -44,12 +45,11 @@ foreach($change_sets as $i=>$change_set) {
 
 $change_sets_table .= '</table>';
 
-$change_sets_form = <<<EOHTML
-	<form action="dashboard.php" method="post">
-		{$change_sets_table}
-		<input type="submit" name="undo" value="Undo Changes"> <input type="submit" name="no_undo" value="Don't Undo Changes">
-	</form>	
-EOHTML;
+$change_sets_form = '
+	<form action="dashboard.php" method="post">' .
+		$change_sets_table .
+		'<input type="submit" name="undo" value="Undo Changes"> <input type="submit" name="no_undo" value="Don\'t Undo Changes">
+	</form>';
 
 if (!$change_sets) $change_sets_form = "<br>There are no change sets at this time.";
 

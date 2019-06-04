@@ -1,5 +1,3 @@
-// Turn the background of an unsaved select element to yellow 
-// if the selection is other than the first option (the option with index 0)
 
 function colorChangedControl(control) {
 	var changed;
@@ -7,22 +5,31 @@ function colorChangedControl(control) {
 	var unchanged_color = document.getElementById("unchanged_background_color").value;
 	var tr = document.getElementById("tr_" + control.id);
 	var change_count = document.getElementById("change_count");
-	// alert("colorChangedControl(): changed = " + control.changed);
-	// alert("colorChangedControl(): change_count before = " + change_count.value);
+	var i;
 
+	// Determine whether this control is set to do a change
+	
 	if (control.type == "select-one") {
+		// First option in a select control means "no change"
 		if (control.selectedIndex == "0") {
 			changed = false;
-		} else {
+		} 
+		// Any other option in a select control means "change"
+		else {
 			changed = true;
 		}
 	}	else if (control.type == "checkbox") { 
+		// An unchecked checkbox means "no change"
 		if (control.checked) {
 			changed = true;
-		} else {
+		} 
+		// An unchecked checkbox means "change"
+		else {
 			changed = false;
 		}
 	}
+	
+	// Turn the background of an unsaved change to the "changed color"
 	
 	if (changed) {
 		if (tr.style.backgroundColor == unchanged_color) {
@@ -40,7 +47,27 @@ function colorChangedControl(control) {
 		tr.style.backgroundColor = unchanged_color; 
 	}
 	
-	// alert("colorChangedControl(): change_count after = " + change_count.value); 
+	// Show save changes buttons only when there are unsaved changes
+	
+	var save_actions_rows = document.getElementsByName("save_actions_row");
+	for (i = 0;  i < save_actions_rows.length; i++) { 
+		if (change_count.value > 0) {
+			save_actions_rows[i].style.display = "table-row";
+		} else {
+			save_actions_rows[i].style.display = "none";
+		}
+	}
+	
+	// Show publish buttons only when there are no unsaved changes
+	
+	var publish_buttons = document.getElementsByName("publish_buttons");
+	for (i = 0;  i < publish_buttons.length; i++) { 
+		if (change_count.value > 0) {
+			publish_buttons[i].style.display = "none";
+		} else {
+			publish_buttons[i].style.display = "inline";	
+		}
+	}
 } 
 
 

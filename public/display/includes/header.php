@@ -64,7 +64,7 @@ EOHTML;
 
 print $head;
 
-if (0) deb("header.php :start"); 
+if (0) deb("header.php: start"); 
 
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 	echo <<<EOHTML

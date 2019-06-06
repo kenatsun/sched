@@ -161,10 +161,11 @@ function renderAssignmentsForm() {
 			// $publish_buttons = '&nbsp;&nbsp;<span id="publish_buttons" style="text-align:left;"><form action="change_sets.php?undo="><button type="submit">Undo changes (after review)</button></form>&nbsp;&nbsp;<input type="submit" name="publish" value="Accept changes (after review)"></span>&nbsp;&nbsp;'; 
 			// $publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><form><button onclick="window.location.href=&#39;/change_sets.php&#39;">Undo changes (after review)</button></form>&nbsp;&nbsp;<input type="submit" name="publish" value="Accept changes (after review)"></span>&nbsp;&nbsp;';
 			// $publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><input type="submit" name="review" value="Undo changes (after review)">&nbsp;&nbsp;<input type="submit" name="publish" value="Accept changes (after review)"></span>&nbsp;&nbsp;';  
-			$publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><button><a style="color:black; text-decoration:none;" href="/change_sets.php">Publish changes (after review)</a></button>&nbsp;&nbsp;<button><a style="color:black; text-decoration:none;" href="/change_sets.php">Undo changes (after review)</a></button>';  
+			$publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><button><a style="color:black; text-decoration:none;" href="/change_sets.php">Publish changes (after review)</a></button>&nbsp;&nbsp;<button><a style="color:black; text-decoration:none;" href="/change_sets.php">Undo changes (after review)</a></button></span>';  
 
 			$publish_legend = 
-			'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers: </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;' . ADDED_ICON . ' <span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;' . REMOVED_ICON . ' <span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
+			'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers for saved changes </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;' . ADDED_ICON . ' <span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;' . REMOVED_ICON . ' <span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
+			
 			if (0) deb("dashboard.php.renderAssignmentsForm(): publish_legend =", $publish_legend);
 			if ($publish_legend || $publish_buttons) $publish_actions_row = '<tr><td style="background-color:White; padding:2px 0px 2px 0px; text-align:center" colspan=' . $ncols . '>' . $publish_buttons . $publish_legend . '</td></tr>';
 		}
@@ -315,8 +316,8 @@ function renderAssignmentsForm() {
 								$dow = $meal_date_ob->format('D');
 								$shift_cell .= '<option style="font-size: 9pt" value="' . $assignment['assignment_id'] . '_to_' . $possible_shift['shift_id'] . '">' . "{$dow} {$possible_shift['meal_date']}</option>";
 							}
-							$shift_cell .= "</select></td></tr>";
-						}
+							$shift_cell .= "</select></td></tr>"; 
+						} 
 						
 						// Get possible trades into this shift for this worker
 						$possible_trades = getPossibleTradesForWorkerOnShift($assignment['worker_id'], $shift_id, $job['job_id']);

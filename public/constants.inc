@@ -28,7 +28,7 @@ define('SIGNUPS_LINK', ';Signups,index.php?person=');
 define('PREFS_LINK', ';Preferences,process.php?person='); 
 define('SEASONS_LINK', ';Manage Seasons,seasons.php'); 
 define('SURVEY_LINK', ';Manage Survey,survey_steps.php');  
-define('ASSIGNMENTS_LINK', ';Edit Assignments,dashboard.php'); 
+define('ASSIGNMENTS_LINK', ';Refine the Schedule,dashboard.php'); 
 define('CHANGE_SETS_LINK', ';Change Sets,change_sets.php');
 define('ADMIN_LINK', ';Admin Dashboard,admin.php');
 

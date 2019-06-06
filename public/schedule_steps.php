@@ -42,7 +42,7 @@ function renderPageBody($season) {
 		and parent_process_id = " . MONITOR_MANAGE_SURVEY_ID;
 	$tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
 	if (0) deb("schedule_steps.renderPageBody(): tools = ", $tools);
-	return $body;
+	return $body; 
 }
 
 

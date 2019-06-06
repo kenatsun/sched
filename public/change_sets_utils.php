@@ -52,10 +52,10 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 	// Make the table header row
 	$change_rows .= '
 		<tr style="width:1px; white-space:nowrap;">
-			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;"><strong>meal date</strong></th>
-			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;"><strong>job</strong></th>
-			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;"><strong>action</strong></th>
-			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;"><strong>worker</strong></th>';
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px; background-color:white;"><strong>meal date</strong></th>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px; background-color:white;"><strong>job</strong></th>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px; background-color:white;"><strong>action</strong></th>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px; background-color:white;"><strong>worker</strong></th>';
 	if ($show_ok_checkbox) { 		
 		$change_rows .= '
 			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;"><strong>ok?</strong></th>';

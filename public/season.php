@@ -31,9 +31,6 @@ else $season_id = getSeason('id');
 if ($_GET['parent_process_id']) $parent_process_id = $_GET['parent_process_id'];
 elseif ($_POST['parent_process_id']) $parent_process_id = $_POST['parent_process_id'];
 
-// // Get the season (if any) to display
-// $season = sqlSelect("*", SEASONS_TABLE, "id = {$season_id}", "", (0), "season.php: season")[0];
-
 // If request is to store season data, do that
 if (array_key_exists('season_status', $_POST) || array_key_exists('survey_setup', $_POST)) $season_id = saveChangesToSeason($_POST);
 if (array_key_exists('edit_meals', $_POST)) saveChangesToMealsCalendar($_POST, $season_id);
@@ -45,7 +42,7 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.p
 
 // Display the page
 $page = "";
-$page .= renderHeadline((($season) ? $season['name'] : "New") . " Season", HOME_LINK . SEASONS_LINK); 
+$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", HOME_LINK . ADMIN_LINK, "", 0); 
 $page .= renderPageBody($season, $parent_process_id); 
 print $page;
 

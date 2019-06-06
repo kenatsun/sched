@@ -34,7 +34,7 @@ function renderPageBody($season, $parent_process_id) {
 				$body .= renderWorkerEditForm($season, $parent_process_id);
 				break;
 			case SET_SURVEY_DATES_ID:
-				$body .= renderSurveySetupForm($season, $parent_process_id);
+				$body .= renderSurveySetupForm($season, "season.php", $parent_process_id);
 				break; 
 		}
 	}
@@ -251,12 +251,12 @@ function renderWorkerTable($season) {
 }
 
 
-function renderSurveySetupForm($season, $parent_process_id) {
+function renderSurveySetupForm($season, $next, $parent_process_id=null) {
 	if (!$season) return;
 
 	if (0) deb("season.renderSurveySetupForm(): season_id =", $season['id']);
 	$form = "";
-	$form .= '<form action="season.php" method="post" name="survey_setup_form">';
+	$form .= '<form action="' . $next . '" method="post" name="survey_setup_form">';
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="survey_setup">';
 	$form .= '<table style="font-size:11pt;">';
@@ -269,9 +269,9 @@ function renderSurveySetupForm($season, $parent_process_id) {
 	$survey_closing_date = renderDateInputFields($season['survey_closing_date'], "survey_closing");
 	$form .= '<tr><td style="text-align:right">last day of survey (mm/dd/yyyy):</td><td>' . $survey_closing_date . '</td></tr>';
 	
-	// Manually extend closed season, or re-close it
+	// Manually extend closed survey, or re-close it
 	$checked = (sqlSelect("*", SEASONS_TABLE, "id = " . $season['id'], "", (0))[0]['survey_extended']) ? "checked" : ""; 
-	$form .= '<tr><td style="text-align:right">extend survey?:</td><td><input type="checkbox" name="survey_extended" ' . $checked . '></td></tr>';
+	$form .= '<tr><td style="text-align:right">extend survey past last day?:</td><td><input type="checkbox" name="survey_extended" ' . $checked . '></td></tr>';
 
 	// Scheduling start date
 	$scheduling_start_date = renderDateInputFields($season['scheduling_start_date'], "scheduling_start");
@@ -290,9 +290,9 @@ function renderSurveySetupForm($season, $parent_process_id) {
 	$form .= '<input type="submit" value="Save Changes"> <input type="reset" value="Cancel Changes">';
 	$form .= '</form>'; 
 	
-	$filename = "announce.csv";
-	print exportAnnouncementFile($season, $filename); 
-	$form .= '<br><a href="' . $filename . '" download><strong>Download Announcement File</strong></a>';
+	// $filename = "announce.csv";
+	// print exportSurveyAnnouncementCSV($season, $filename); 
+	// $form .= '<br><a href="' . $filename . '" download><strong>Download Announcement File</strong></a>';
 	
 	return $form;
 }
@@ -665,68 +665,6 @@ function updateSeasonWorkers($season_id) {
 			sqlDelete($season_workers_table, $where, (0), "importWorkersFromGather(): deleting workers from season_workers", TRUE);
 		}
 	}
-}
-
-//////////////////////////////////////////////////////////////// EXPORT FUNCTIONS
-
-function exportAnnouncementFile($season, $filename) { 
-
-	$columns = array();
-	$columns[] = array("sql"=>"w.first_name || ' ' || w.last_name", "colname"=>"worker_name");
-	$columns[] = array("sql"=>"w.unit", "colname"=>"unit");
-	$columns[] = array("sql"=>"s.name", "colname"=>"season_name");
-	$columns[] = array("sql"=>"s.start_date", "colname"=>"season_start_date");
-	$columns[] = array("sql"=>"s.end_date", "colname"=>"season_end_date");
-	$columns[] = array("sql"=>"s.survey_opening_date", "colname"=>"survey_opening_date");
-	$columns[] = array("sql"=>"s.survey_closing_date", "colname"=>"survey_closing_date");
-	$columns[] = array("sql"=>"s.scheduling_start_date", "colname"=>"scheduling_start_date");
-	$columns[] = array("sql"=>"s.change_request_end_date", "colname"=>"change_request_end_date");
-	$columns[] = array("sql"=>"s.scheduling_end_date", "colname"=>"scheduling_end_date");
-	$columns[] = array("sql"=>"", "colname"=>"start_month");
-	$columns[] = array("sql"=>"", "colname"=>"end_month");
-	$columns[] = array("sql"=>"", "colname"=>"start_date");
-	$columns[] = array("sql"=>"", "colname"=>"end_date");
-	$columns[] = array("sql"=>"", "colname"=>"survey_closing_long");
-	$columns[] = array("sql"=>"", "colname"=>"survey_opening");
-	$columns[] = array("sql"=>"", "colname"=>"survey_closing");
-	$columns[] = array("sql"=>"", "colname"=>"scheduling_start");
-	$columns[] = array("sql"=>"", "colname"=>"change_request_end");
-	$columns[] = array("sql"=>"", "colname"=>"scheduling_end");
-
-	if (0) deb("season_utils.exportAnnouncementFile(): columns =", $columns);
-	$fputcsv_header = array();
-	foreach($columns as $column) {
-		if ($column['sql']) {
-			if ($select) $select .= ", 
-			";
-			$select .= $column['sql'] . " as " . $column['colname'];
-		}
-		$fputcsv_header[] = $column['colname'];
-	} 	
-	$from = AUTH_USER_TABLE . " as w, " . SEASONS_TABLE . " as s, " . SEASON_WORKER_TABLE . " as sw";
-	$where = "w.id = sw.worker_id and sw.season_id = s.id and s.id = " . $season['id'];
-	$order_by = "cast(unit as integer), first_name, last_name";
-	$workers = sqlSelect($select, $from, $where, $order_by, (0), "season_utils.exportAnnouncementFile()");
-	
-	$file = fopen($filename,"w");
-	fputcsv($file, $fputcsv_header, "\t");
-	foreach ($workers as $i=>$worker) { 
-		$workers[$i]['start_month'] = date_format(date_create($worker['season_start_date']), "F");
-		$workers[$i]['end_month'] = date_format(date_create($worker['season_end_date']), "F");
-		$workers[$i]['start_date'] = date_format(date_create($worker['season_start_date']), "M j");
-		$workers[$i]['end_date'] = date_format(date_create($worker['season_end_date']), "M j");
-		$workers[$i]['survey_closing_long'] = date_format(date_create($worker['survey_closing_date']), "l, F j");
-		$workers[$i]['survey_opening'] = date_format(date_create($worker['survey_opening_date']), "M j");
-		$workers[$i]['survey_closing'] = date_format(date_create($worker['survey_closing_date']), "M j");
-		$workers[$i]['scheduling_start'] = date_format(date_create($worker['scheduling_start_date']), "M j");
-		$workers[$i]['change_request_end'] = date_format(date_create($worker['change_request_end_date']), "M j");
-		$workers[$i]['scheduling_end'] = date_format(date_create($worker['scheduling_end_date']), "M j");
-		fputcsv($file, $workers[$i], "\t");
-		$out_rows .= implode("\t", $worker) . "\n";
-	}
-	if (0) deb("season_utils.exportAnnouncementFile(): out =", $out);
-	if (0) deb("season_utils.exportAnnouncementFile(): workers =", $workers);
-	fclose($file); 	
 }
 
 ?>

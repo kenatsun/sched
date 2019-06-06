@@ -27,7 +27,8 @@ define('HOME_LINK', 'Home,index.php');
 define('SIGNUPS_LINK', ';Signups,index.php?person='); 
 define('PREFS_LINK', ';Preferences,process.php?person='); 
 define('SEASONS_LINK', ';Manage Seasons,seasons.php'); 
-define('ASSIGNMENTS_LINK', ';Edit Assignments,dashboard.php'); 
+define('SURVEY_LINK', ';Manage Survey,survey_steps.php');  
+define('ASSIGNMENTS_LINK', ';Refine the Schedule,dashboard.php'); 
 define('CHANGE_SETS_LINK', ';Change Sets,change_sets.php');
 define('ADMIN_LINK', ';Admin Dashboard,admin.php');
 
@@ -76,5 +77,9 @@ define('SET_SURVEY_DATES_ID', 8);
 define('VIEW_SURVEY_RESULTS_ID', 9);
 define('TAKE_SURVEY_ID', 10);
 define('RUN_SCHEDULER_PREVIEW_ID', 11);
+define('ANNOUNCE_SURVEY_ID', 12);
+define('MONITOR_MANAGE_SURVEY_ID', 13);
+define('RUN_SCHEDULER_ID', 15);
+define('REFINE_ASSIGNMENTS_ID', 16);
 
 ?>

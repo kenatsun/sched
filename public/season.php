@@ -1,9 +1,5 @@
 <?php 
-session_start(); 
-
-require_once 'globals.php';
-require_once 'utils.php';
-require_once 'display/includes/header.php';
+require_once 'start.php';
 require_once 'season_utils.php';
 $dir = BASE_DIR;
 
@@ -42,8 +38,10 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.p
 
 // Display the page
 $page = "";
-$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", HOME_LINK . ADMIN_LINK, "", 0); 
-$page .= renderPageBody($season, $parent_process_id); 
+if (0) deb("season.php: NEXT_BREADCRUMBS =", NEXT_BREADCRUMBS); 
+$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", NEXT_BREADCRUMBS, "", 0); 
+// $page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", HOME_LINK . ADMIN_LINK, "", 0); 
+$page .= renderPageBody($season, $parent_process_id);
 print $page;
 
 

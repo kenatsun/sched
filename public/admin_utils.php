@@ -1,13 +1,11 @@
 <?php
 
-require_once 'utils.php';
-require_once 'globals.php';
+require_once 'start.php';
 require_once 'classes/calendar.php';
 require_once 'classes/PeopleList.php'; 
 require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
-require_once 'display/includes/header.php';
 require_once 'participation.php';
 require_once 'seasons_utils.php';
 
@@ -15,8 +13,7 @@ require_once 'seasons_utils.php';
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
 
 function renderProcessLink($process, $n="") {
-	// if ($n) $n = $n . ': ';
-	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. $process['href'] . '?parent_process_id=' . $process['process_id'] . '">' . $process['name'] . '</a></p>';
+	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. $process['href'] . '?parent_process_id=' . $process['process_id'] . '&backto="' . NEXT_BREADCRUMBS . '>' . $process['name'] . '</a></p>';
 	if (0) deb("index.renderProcessLink(): link = ", $link);
 	return $link;
 }

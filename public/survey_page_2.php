@@ -1,6 +1,6 @@
 <?php
-require_once 'globals.php';
-require_once 'display/includes/header.php';
+
+require_once 'start.php';
 require_once 'classes/person.php';
 require_once 'classes/survey.php';
 
@@ -11,25 +11,28 @@ global $dbh;
 resetPostedVariable(); // Not sure this is needed 
 if (0) deb("process_survey1: POST =", $_POST);
 if (0) deb("process_survey1: GET =", $_GET);
-$respondent = getSurveyRespondent();
+$person_id = $_REQUEST['person'];
+$respondent = getSurveyRespondent($person_id);
 if (0) deb("process_survey1: respondent =", $respondent);
 $shifts_offered_count = saveOffers($respondent, $offers);
 if (0) deb("process_survey1: shifts_offered_count =", $shifts_offered_count);
 displayNextPage($respondent, $shifts_offered_count);
 
 
-function getSurveyRespondent() {
-	if (0) deb("process_survey1.getSurveyRespondent(): POST =", $_POST);
-	if (0) deb("process_survey1.getSurveyRespondent(): POST[id] =", $_POST['person']);
-	if (0) deb("process_survey1.getSurveyRespondent(): POST[username] =", $_POST['username']);
-	if ($_GET) {
-		$person_id = $_GET['person'];
-	}
-	elseif ($_POST) {
-		$person_id = $_POST['person'];
-	}
+function getSurveyRespondent($person_id) {
+	if (0) deb("survey_page_2.getSurveyRespondent(): POST =", $_POST);
+	if (0) deb("survey_page_2.getSurveyRespondent(): POST[id] =", $_POST['person']);
+	if (0) deb("survey_page_2.getSurveyRespondent(): POST[username] =", $_POST['username']);
+	// $person_id = $_REQUEST['person'];
+	// if ($_GET) {
+		// $person_id = $_GET['person'];
+	// }
+	// elseif ($_POST) {
+		// $person_id = $_POST['person'];
+	// }
+	if (0) deb("survey_page_2.getSurveyRespondent(): person_id = " . $person_id);
 	$respondent = new Person($person_id);
-	if (0) deb("process_survey1.getSurveyRespondent(): respondent =", $respondent);
+	if (0) deb("survey_page_2.getSurveyRespondent(): respondent =", $respondent);
 	return $respondent;
 }
 
@@ -44,11 +47,11 @@ function getOffers() {
 	foreach($_POST as $job_id=>$offer) {
 		if ($job_id == 'username' || $job_id == 'person' || $job_id == 'posted') continue;
 		$offer = normalizeOffer($offer);
-		if (0) deb("process_survey1.getOffers(): job_id = offer: ", $job_id." = ".$offer);
-		if (0) deb("process_survey1.getOffers(): job_name = offer: ", get_job_name($job_id)." = ".$offer);
+		if (0) deb("survey_page_2.getOffers(): job_id = offer: ", $job_id." = ".$offer);
+		if (0) deb("survey_page_2.getOffers(): job_name = offer: ", get_job_name($job_id)." = ".$offer);
 		$offers[$job_id] = $offer;
 	}
-	if (0) deb("process_survey1.getOffers(): offers:", $offers);
+	if (0) deb("survey_page_2.getOffers(): offers:", $offers);
 	return offers;
 }
 
@@ -98,8 +101,8 @@ function displayNextPage($respondent, $shifts_offered_count) {
 
 function displayPreferencesSurvey($respondent) {
 	$_GET['person'] = $respondent->username;  // survey.php is looking for username in the 'person' hidden input field
-	if (0) deb("process_survey1.displayPreferencesSurvey(): GET =", $_GET);
-	if (0) deb("process_survey1.displayPreferencesSurvey(): respondent", $respondent);
+	if (0) deb("survey_page_2.displayPreferencesSurvey(): GET =", $_GET);
+	if (0) deb("survey_page_2.displayPreferencesSurvey(): respondent", $respondent);
 	$survey = new Survey();
 	$survey->setWorker($respondent->username, $respondent->id, $respondent->first_name, $respondent->last_name);
 	print $survey->renderSurvey();

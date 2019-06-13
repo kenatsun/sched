@@ -52,7 +52,7 @@ function finishSurvey($survey, $person_id) {
 
 {$summary_text}
 <br>
-<p>You may <a href="{$dir}/index.php?person={$person->id}">change your responses</a>
+<p>You may <a href="{$dir}/survey_page_1.php?person={$person->id}">change your responses</a>
 	or <a href="{$dir}/index.php">take the survey for another person</a> at any time until {$deadline}, 
 	when the survey closes.</p>
 EOHTML;

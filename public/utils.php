@@ -1,6 +1,6 @@
 <?php
-require_once 'constants.inc';
-require_once 'git_ignored.php';
+// require_once 'constants.inc';
+// require_once 'git_ignored.php';
 
 
 //////////////////////////////////////////////////////// FUNCTIONS
@@ -39,6 +39,45 @@ function create_sqlite_connection() {
 function scheduler_run() { 
 	return sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = " . SEASON_ID, "run_timestamp desc", (0))[0];
 }
+
+
+// ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
+
+function determineUserStatus() {
+	if (isset($_GET['admin']) || isset($_GET['a'])) { 
+		if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
+		$_SESSION['access_type'] = 'admin';
+	}
+	if (isset($_POST['sign_in_as_guest'])) {
+		$_SESSION['access_type'] = 'guest';
+	}
+	if (0) deb("utils.determineUserStatus: _GET = ", $_GET);
+	if (0) deb("utils.determineUserStatus: _POST = ", $_POST);
+	if (0) deb("utils.determineUserStatus: _COOKIE = ", $_COOKIE);
+	if (0) deb("utils.determineUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
+	if (0) deb("utils.determineUserStatus: _SESSION = ", $_SESSION);
+}
+
+function promptForAdminPassword() {
+	$_SESSION['access_type'] = 'guest';
+	print <<<EOHTML
+		<form method="post" action="{$_SERVER['PHP_SELF']}">
+			<p>For administrator access, enter password:</p>
+			<input type="password" name="password">
+			<input type="submit" value="go">
+		</form>
+EOHTML;
+}
+
+
+function userIsAdmin() {
+	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
+	if (0) deb("utils.userIsAdmin: SESSION['access_type']", $_SESSION['access_type']);
+	return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
+}
+
+// ADMIN LOGIN FUNCTIONS - end ----------------------------------------------------
+
 
 // DATE-RELATED FUNCTIONS - start ----------------------------------------------------
 
@@ -165,7 +204,7 @@ function renderSendEmailControl($name) {
 		$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
 		// $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
 	}
-	return $send_email;
+	return $send_email; 
 }
 
 function renderYearsSelectList($num_years=3, $field_name="years") {
@@ -213,197 +252,7 @@ function validateDate($date, $format = 'Y-m-d H:i:s')
     $d = DateTime::createFromFormat($format, $date);
     return $d && $d->format($format) === $date;
 }
-// DATE-RELATED FUNCTIONS - end ----------------------------------------------------
 
-function renderBullpen() {
-	// $td_style = ' style="font-size:11pt; border:1px solid darkgray;"'; 
-	$td_style = ' style="border:1px shadow;"'; 
-	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc");
-	$num_jobs = count($jobs);
-	$title_row = '<tr><td style="text-align:center; font-weight:bold; font-size:12pt; border:1px shadow; background-color:' . HEADER_COLOR . ';" colspan="' . $num_jobs . '">The Bullpen</td></tr>';
-	$header_row = '<tr>';
-	$bullpen_row = '<tr>';
-	foreach ($jobs as $job) {
-		$num_available = 0;
-		$select = "*";
-		$from = "open_offers_count";
-		$where = "job_id = {$job['id']}
-			and open_offers_count > 0";
-		$order_by = "open_offers_count desc, worker_name asc";
-		$workers = sqlSelect($select, $from, $where, $order_by, (0), "utils:renderBullpen()"); 
-		$bullpen_for_job = "";
-		foreach ($workers as $worker) {
-			if ($bullpen_for_job) $bullpen_for_job .= "<br>";
-			$bullpen_for_job .= $worker['worker_name'] . " (" . $worker['open_offers_count'] . ")";
-			$num_available += $worker['open_offers_count'];
-		}
-		if (!$num_available) $num_available = "0"; 
-		if (0) deb("utils.renderBullpen(): job = ", $job);
-		$header_row .= '<th ' . $td_style . '>' . $job['description'] . ' (' . $num_available . ')</th>'; 
-		if (0) deb("utils.renderBullpen(): header_row = ", $header_row);
-		$bullpen_row .= '<td ' . $td_style . '>' . $bullpen_for_job . '</td>'; 
-	}
-	$bullpen_row .= '</tr>';
-	$header_row .= '</tr>';
-	// return '<table style="width:75%; border-collapse:collapse;" >' . $title_row . $header_row . $bullpen_row . '</table>';
-	return '<table style="width:75%;" border="1">' . $title_row . $header_row . $bullpen_row . '</table>';
-}
-
-
-function autoIncrementId($table) { 
-	// Returns the highest id in the specified table + 1
-	return sqlSelect("max(id)+1 as id", $table, "", "", (0), "autoIncrementId($table)")[0]['id'];
-}
-
-
-function meal_date_sort($a, $b) {
-	if (0) deb("utils.meal_date_sort: arg a = ", $a);
-	if (0) deb("utils.meal_date_sort: arg b = ", $b);
-    $diff = strtotime($a['meal_date']) - strtotime($b['meal_date']); 
-	if (0) deb("utils.meal_date_sort: diff = ", $diff);
-	return $diff;
-}
-
-function surveyIsClosed() {
-	$is_closed = (DEADLINE < time() ? TRUE : FALSE); 
-	$deadline = DEADLINE;
-	$time = time();
-	if (0) deb("utils:surveyIsClosed(): is_closed = $is_closed, DEADLINE = $deadline, time() = $time");
-	return DEADLINE < time();
-}
-
-// ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
-
-// function renderAdminLink() {
-	// if (userIsAdmin()) $link = '<br><a href="/admin.php">Open Admin Dashboard</a></p>';
-	// return $link;
-// }
-
-
-function determineUserStatus() {
-	// if (isset($_GET['admin']) || isset($_GET['a'])) { 
-		// promptForAdminPassword();
-	// }
-	// if (isset($_POST['password'])) { 
-		// if ($_POST['password'] == 'a') {  
-			// if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
-			// $_SESSION['access_type'] = 'admin';
-			// // setcookie("admin", TRUE, time()+86400,"/");
-		// } else {
-			// $_SESSION['access_type'] = 'guest';
-			// // setcookie("admin", FALSE, time()+86400,"/");
-			// print "Wrong password for 'admin' access.  You're in this session as a 'guest'.";
-		// }
-	// }
-	if (isset($_GET['admin']) || isset($_GET['a'])) { 
-		if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
-		$_SESSION['access_type'] = 'admin';
-	}
-	if (isset($_POST['sign_in_as_guest'])) {
-		$_SESSION['access_type'] = 'guest';
-	}
-	if (0) deb("utils.determineUserStatus: _GET = ", $_GET);
-	if (0) deb("utils.determineUserStatus: _POST = ", $_POST);
-	if (0) deb("utils.determineUserStatus: _COOKIE = ", $_COOKIE);
-	if (0) deb("utils.determineUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
-	if (0) deb("utils.determineUserStatus: _SESSION = ", $_SESSION);
-}
-
-function promptForAdminPassword() {
-	$_SESSION['access_type'] = 'guest';
-	print <<<EOHTML
-		<form method="post" action="{$_SERVER['PHP_SELF']}">
-			<p>For administrator access, enter password:</p>
-			<input type="password" name="password">
-			<input type="submit" value="go">
-		</form>
-EOHTML;
-}
-
-// function signInAsGuest() {
-	// $_SESSION['access_type'] = 'admin';
-	// print <<<EOHTML
-		// <form method="post" action="{$_SERVER['PHP_SELF']}">
-			// <input type="hidden" name="sign_in_as_guest" value="1">
-			// <input type="submit" value="sign in as guest">
-		// </form>
-// EOHTML;
-// }
-
-
-function userIsAdmin() {
-	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
-	if (0) deb("utils.userIsAdmin: SESSION['access_type']", $_SESSION['access_type']);
-	return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
-}
-
-// ADMIN LOGIN FUNCTIONS - end ----------------------------------------------------
-
-
-/**
- * Get an element from an array, with a backup.
- */
-function array_get($array, $key, $default=NULL) {
-	if (is_array($array) && !empty($array) && isset($array[$key])) {
-		return $array[$key];
-	}
-
-	return $default;
-}
-
-// Get the id of the current season from the database
-function getSeason($attribute="") {
-	if ($attribute) {
-		return sqlSelect("{$attribute}", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0][$attribute];
-	} else {
-		return sqlSelect("*", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0];
-	}
-}
-
-// Set the id of the current season in the database
-function setSeason($id) {
-	if (!$id) return;
-	$season_exists = sqlSelect("*", "seasons", "id = {$id}", "", (0), "utils.setSeason()")[0];
-	if ($season_exists) {
-		sqlUpdate(SEASONS_TABLE, "current_season = null", "", (0), "utils.setSeason()");
-		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$id}", (0), "utils.setSeason()");
-	} else {
-		echo "Error: Season with id " . $id . " doesn't exist.";
-	}
-}
-
-/**
- * Get the upcoming season's ID.
- */
-function get_season_id() {
-	$start_date = 'March 1, 2018, 12pm';
-	$start = new DateTime($start_date);
-
-	$now = new DateTime();
-	$diff = date_diff($start, $now);
-
-	$out = ($diff->y * 3) + floor($diff->m / 3);
-	return $out;
-}
-
-/* 
- * Get the season's name from database based on SEASON_ID
- */
-function get_season_name_from_db() {
-	global $dbh;
-	$SEASONS_TABLE = SEASONS_TABLE;
-	$season_id = SEASON_ID;
-	$sql = <<<EOSQL
-		SELECT name FROM {$SEASONS_TABLE} WHERE id = {$season_id};
-EOSQL;
-	$season_name = array();
-	foreach($dbh->query($sql) as $row) {
-		$season_name[] = $row['name'];
-		break;
-	}
-	if (0) deb("utils.get_season_name_from_db(): Season name = $season_name");
-	return $season_name[0];
-}
 
 /**
  * Get the months contained in the current season.
@@ -421,44 +270,8 @@ function get_current_season_months() {
 	}
 	if (0) deb("utils.get_current_season_months: season_months = ", $season_months);
 	return $season_months; 
-	
-	// if (0) deb("utils.get_current_season_months: SEASON_TYPE = ", SEASON_TYPE);
-	// switch(SEASON_TYPE) {
-		// case "SPRING":
-			// return [
-				// 4=>'April',
-				// 5=>'May',
-				// 6=>'June',
-			// ];
-			// break;		
-		// case "SUMMER":
-			// return [	
-				// 7=>'July',
-				// 8=>'August',
-				// 9=>'September',
-			// ];
-			// break;
-		// case "FALL":
-			// return [
-				// 10=>'October',
-				// 11=>'November',
-				// 12=>'December',
-			// ];
-			// break;
-		// case "WINTER":
-			// return [
-				// 1=>'January',
-				// 2=>'February',
-				// 3=>'March',
-			// ];
-			// break;
-		// case 'test':
-			// return [
-				// 1=>'January',
-			// ];
-			// break;
-	// }
 }
+
 
 /**
  * #!# WTF... why is this off by 2 months?
@@ -557,6 +370,132 @@ function get_holidays() {
 	return $holidays;
 }
 
+// DATE-RELATED FUNCTIONS - end ----------------------------------------------------
+
+
+function renderBullpen() {
+	$td_style = ' style="border:1px shadow;"'; 
+	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc");
+	$num_jobs = count($jobs);
+	$title_row = '<tr><td style="text-align:center; font-weight:bold; font-size:12pt; border:1px shadow; background-color:' . HEADER_COLOR . ';" colspan="' . $num_jobs . '">The Bullpen</td></tr>';
+	$header_row = '<tr>';
+	$bullpen_row = '<tr>';
+	foreach ($jobs as $job) {
+		$num_available = 0;
+		$select = "*";
+		$from = "open_offers_count";
+		$where = "job_id = {$job['id']}
+			and open_offers_count > 0";
+		$order_by = "open_offers_count desc, worker_name asc";
+		$workers = sqlSelect($select, $from, $where, $order_by, (0), "utils:renderBullpen()"); 
+		$bullpen_for_job = "";
+		foreach ($workers as $worker) {
+			if ($bullpen_for_job) $bullpen_for_job .= "<br>";
+			$bullpen_for_job .= $worker['worker_name'] . " (" . $worker['open_offers_count'] . ")";
+			$num_available += $worker['open_offers_count'];
+		}
+		if (!$num_available) $num_available = "0"; 
+		if (0) deb("utils.renderBullpen(): job = ", $job);
+		$header_row .= '<th ' . $td_style . '>' . $job['description'] . ' (' . $num_available . ')</th>'; 
+		if (0) deb("utils.renderBullpen(): header_row = ", $header_row);
+		$bullpen_row .= '<td ' . $td_style . '>' . $bullpen_for_job . '</td>'; 
+	}
+	$bullpen_row .= '</tr>';
+	$header_row .= '</tr>';
+	// return '<table style="width:75%; border-collapse:collapse;" >' . $title_row . $header_row . $bullpen_row . '</table>';
+	return '<table style="width:75%;" border="1">' . $title_row . $header_row . $bullpen_row . '</table>';
+}
+
+
+function autoIncrementId($table) { 
+	// Returns the highest id in the specified table + 1
+	return sqlSelect("max(id)+1 as id", $table, "", "", (0), "autoIncrementId($table)")[0]['id'];
+}
+
+
+function meal_date_sort($a, $b) {
+	if (0) deb("utils.meal_date_sort: arg a = ", $a);
+	if (0) deb("utils.meal_date_sort: arg b = ", $b);
+    $diff = strtotime($a['meal_date']) - strtotime($b['meal_date']); 
+	if (0) deb("utils.meal_date_sort: diff = ", $diff);
+	return $diff;
+}
+
+function surveyIsClosed() {
+	$is_closed = (DEADLINE < time() ? TRUE : FALSE); 
+	$deadline = DEADLINE;
+	$time = time();
+	if (0) deb("utils:surveyIsClosed(): is_closed = $is_closed, DEADLINE = $deadline, time() = $time");
+	return DEADLINE < time();
+}
+
+
+/**
+ * Get an element from an array, with a backup.
+ */
+function array_get($array, $key, $default=NULL) {
+	if (is_array($array) && !empty($array) && isset($array[$key])) {
+		return $array[$key];
+	}
+
+	return $default;
+}
+
+// Get the id of the current season from the database
+function getSeason($attribute="") {
+	if ($attribute) {
+		return sqlSelect("{$attribute}", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0][$attribute];
+	} else {
+		return sqlSelect("*", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0];
+	}
+}
+
+// Set the id of the current season in the database
+function setSeason($id) {
+	if (!$id) return;
+	$season_exists = sqlSelect("*", "seasons", "id = {$id}", "", (0), "utils.setSeason()")[0];
+	if ($season_exists) {
+		sqlUpdate(SEASONS_TABLE, "current_season = null", "", (0), "utils.setSeason()");
+		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$id}", (0), "utils.setSeason()");
+	} else {
+		echo "Error: Season with id " . $id . " doesn't exist.";
+	}
+}
+
+/**
+ * Get the upcoming season's ID.
+ */
+function get_season_id() {
+	$start_date = 'March 1, 2018, 12pm';
+	$start = new DateTime($start_date);
+
+	$now = new DateTime();
+	$diff = date_diff($start, $now);
+
+	$out = ($diff->y * 3) + floor($diff->m / 3);
+	return $out;
+}
+
+/* 
+ * Get the season's name from database based on SEASON_ID
+ */
+function get_season_name_from_db() {
+	global $dbh;
+	$SEASONS_TABLE = SEASONS_TABLE;
+	$season_id = SEASON_ID;
+	$sql = <<<EOSQL
+		SELECT name FROM {$SEASONS_TABLE} WHERE id = {$season_id};
+EOSQL;
+	$season_name = array();
+	foreach($dbh->query($sql) as $row) {
+		$season_name[] = $row['name'];
+		break;
+	}
+	if (0) deb("utils.get_season_name_from_db(): Season name = $season_name");
+	return $season_name[0];
+}
+
+
 /**
  * Get the first key from the array
  */
@@ -598,75 +537,6 @@ function debt($label, $data=NULL) {
 	";
 }
 
-/*
-Print a headline for a page
-*/
-function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_link=1) {
-	if (0) deb ("utils.renderHeadline(): text =", $text);
-	if (0) deb ("utils.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
-	
-	$td_style = 'background-color:white;';
-	if ($breadcrumbs_str) {
-		$breadcrumbs = '<<<<< &nbsp;&nbsp;go back to:';
-		$breadcrumbs_arr = explode(';', $breadcrumbs_str);
-		foreach($breadcrumbs_arr as $i=>$breadcrumb) {
-			if (0) deb ("utils.renderHeadline(): breadcrumb =", $breadcrumb);
-			$name = explode(',', $breadcrumb)[0];
-			if (0) deb ("utils.renderHeadline(): name =", $name);
-			$url = explode(',', $breadcrumb)[1];
-			if (0) deb ("utils.renderHeadline(): url =", $url);
-			$breadcrumbs .= '&nbsp;&nbsp;<a  href="'. $url . '">' . $name . '</a>'; 
-		}
-		$breadcrumbs = '<tr style="font-size:10pt; font-style:italic"><td colspan="2" style="text-align:right; ' . $td_style . '">' . $breadcrumbs . '</td></tr>';
-	}
-	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
-
-	if ($subhead) {
-		$headline = '<td style="$td_style" class="headline">' . $text;
-		$headline .= '<br><span style="font-size:18px">' . $subhead . '</span>';
-	} 
-	else {
-		$headline = '<td style="$td_style" class="headline">' . $text . '</td>';
-	}
-	
-	$instance = INSTANCE;
-	$database = DATABASE;
-	$color = '"color:red"';
-	$instance_notice = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
-	if ($instance_notice && !userIsAdmin()) $instance_notice .= "<br>";
-	// $end_session_label = "End this session and start a new one.";
-	// $sign_in_as_guest_label = "Sign in as a guest";
-	if (userIsAdmin()) $admin_notice =
-		'
-		<div style=' . $color . '><p>
-		<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
-			<input type="hidden" name="sign_in_as_guest" value="1">
-			<p><strong>You are signed into this session as an admin. </strong>
-			<input type="submit" value="Sign in as a plain old ordinary user.">
-		</form>
-		</p><br></div>';
-	if (userIsAdmin() && $show_admin_link) $admin_link =  
-		'<div style=' . $color . '>
-			<a style=' . $color . ' href="/admin.php"><strong>Open the Admin Dashboard</strong></a>
-		</div>
-		<br>';
-
-	if (0) deb ("utils.renderHeadline(): userIsAdmin() =", userIsAdmin()); 
-	if (0) deb ("utils.renderHeadline(): admin_notice =", $admin_notice);
-		
-	return <<<EOHTML
-	{$instance_notice}
-	{$admin_notice}
-	{$admin_link}
-	<table>
-		{$breadcrumbs}
-		<tr>
-			<td style="$td_style"><img src={$community_logo}></td>
-			{$headline}	
-		</tr>
-	</table>
-EOHTML;
-}
 
 // Render a link to another MO page
 function renderLink($text, $href) {

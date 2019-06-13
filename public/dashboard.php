@@ -1,22 +1,15 @@
 <?php
-session_start();
+require_once 'start.php';
+require_once "change_sets_utils.php";
+// require_once "change_set.php";
 
-global $relative_dir;
-if (!strlen($relative_dir)) {
-    $relative_dir = '.';
-}
-require_once "{$relative_dir}/utils.php";
-require_once "{$relative_dir}/config.php";
-require_once "{$relative_dir}/constants.inc";
-require_once "{$relative_dir}/change_sets_utils.php";
-require_once "{$relative_dir}/change_set.php";
-require_once "{$relative_dir}/display/includes/header.php";
+if (0) deb("dashboard.php: start"); 
 
 if ($_POST) {
 	if (0) deb("dashboard.php: _POST = ", $_POST);
 	$change_set_id = $_POST['change_set_id'];
 
-	// Processing changes from change_set.php
+	// Processing changes from change_set.php 
 
 		// Update assignments table with the changes that user has confirmed 
 		if (isset($_POST['confirm'])) {
@@ -44,12 +37,12 @@ if ($_POST) {
 			publishSchedule();
 		}
 	
-	// Processing request to save the change set
-		if (isset($_POST['save'])) {
-			$change_set_id = saveChangeSet($_POST);
-			displayChangeSet($change_set_id);
-			exit;
-		}
+	// // Processing request to save the change set
+		// if (isset($_POST['save'])) {
+			// $change_set_id = saveChangeSet($_POST);
+			// displayChangeSet($change_set_id);	
+			// exit;
+		// }
 
 	}
 
@@ -60,13 +53,21 @@ displaySchedule();
 
 //////////////////////////////////////////////////////////////// FUNCTIONS
 
+// function pageScripts {
+	// return '
+	// <script>
+		// function setFormAction(action) { 
+			// document.getElementById("assignments_form").action = action;
+			// alert "action = " + action;
+		// };
+	// </script>'
+// }
+
 function displaySchedule() { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0];
-	$breadcrumbs = HOME_LINK;
-	if (userIsAdmin()) $breadcrumbs .= ADMIN_LINK;
+	if (0) deb("dashboard.displaySchedule(): BREADCRUMBS = " . BREADCRUMBS);
+	if (0) deb("dashboard.displaySchedule(): NEXT_BREADCRUMBS = {NEXT_BREADCRUMBS}");
 	$now = date_create();
-	// $subhead = "as of " . date_format($now, "g a F jS");
-	// $headline = renderHeadline("Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead);
 	$now_f = date_format($now, "Y-m-d");
 	$change_request_end_date = $season['change_request_end_date'];
 	$change_request_end_date_f = date_format(date_create($change_request_end_date), "l, F jS");
@@ -89,7 +90,7 @@ function displaySchedule() {
 		$subhead = date_format($now, "F j, Y");
 		$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
-	$headline = renderHeadline($final . "Sunward Dinner Teams for {$season['name']}", $breadcrumbs, $subhead, 0);
+	$headline = renderHeadline($final . "Sunward Dinner Teams for {$season['name']}", BREADCRUMBS, $subhead, 0);
 	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm();
 	// if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
@@ -152,33 +153,57 @@ function renderAssignmentsForm() {
 	// Make the actions rows
 	if (userIsAdmin()) {
 
-		// Make publish row, if there are any saved changes
+	// Make publish row, if there are any saved changes
 		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $scheduler_run_id . " and published = 0", "", (0))[0];
 		if ($change_sets) { 
-
-			// $publish_buttons = '&nbsp;&nbsp;<span style="text-align:left;"><form action="change_sets.php?next=undo"><button type="submit">Undo changes (after review)</button></form>&nbsp;&nbsp;<form action="change_sets.php?next=publish"><button type="submit">Publish changes (after review)</button></form></span>&nbsp;&nbsp;'; 
-			// $publish_buttons = '&nbsp;&nbsp;<span style="text-align:left;"><form action="change_sets.php?undo="><button type="submit">Undo changes (after review)</button></form>&nbsp;&nbsp;<form action="change_setsx.php?publish="><button type="submit">Publish changes (after review)</button></form></span>&nbsp;&nbsp;';
-			// $publish_buttons = '&nbsp;&nbsp;<span id="publish_buttons" style="text-align:left;"><form action="change_sets.php?undo="><button type="submit">Undo changes (after review)</button></form>&nbsp;&nbsp;<input type="submit" name="publish" value="Accept changes (after review)"></span>&nbsp;&nbsp;'; 
-			// $publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><form><button onclick="window.location.href=&#39;/change_sets.php&#39;">Undo changes (after review)</button></form>&nbsp;&nbsp;<input type="submit" name="publish" value="Accept changes (after review)"></span>&nbsp;&nbsp;';
-			// $publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><input type="submit" name="review" value="Undo changes (after review)">&nbsp;&nbsp;<input type="submit" name="publish" value="Accept changes (after review)"></span>&nbsp;&nbsp;';  
-			$publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><button><a style="color:black; text-decoration:none;" href="/change_sets.php">Publish changes (after review)</a></button>&nbsp;&nbsp;<button><a style="color:black; text-decoration:none;" href="/change_sets.php">Undo changes (after review)</a></button></span>';  
-
-			$publish_legend = 
-			'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black">change markers for saved changes </span><span style="' . ADDED_COLOR . '">&nbsp;&nbsp;' . ADDED_ICON . ' <span style="' . ADDED_DECORATION . '">worker added to job</span>&nbsp;&nbsp;</span>&nbsp;&nbsp;<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;' . REMOVED_ICON . ' <span style="' . REMOVED_DECORATION . '">worker removed from job</span>&nbsp;&nbsp;</span></span>';
-			
+			$publish_buttons = '
+				&nbsp;&nbsp;
+				<span name="publish_buttons" style="text-align:left;">
+					<input type="submit" name="publish" value="Publish changes (after review)">
+					&nbsp;&nbsp;
+					<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;change_sets.php?backto=' . NEXT_BREADCRUMBS . '&apos;)" value="Undo changes (after review)"> 
+				</span>
+			';  
+			// !!! Will revert the version above to the version below (with 'publish' as a link-button) 
+			// when there's a confirm dialog available for publish
+			// $publish_buttons = '&nbsp;&nbsp;<span name="publish_buttons" style="text-align:left;"><button><a style="color:black; text-decoration:none;" href="/change_sets.php">Publish changes (after review)</a></button>&nbsp;&nbsp;<button><a style="color:black; text-decoration:none;" href="/change_sets.php?backto=' . NEXT_BREADCRUMBS . '">Undo changes (after review)</a></button></span>';  
+			if (0) deb("dashboard.php: NEXT_BREADCRUMBS = ", NEXT_BREADCRUMBS); 
+			if (0) deb("dashboard.php: publish_buttons = ", $publish_buttons); 
+			$publish_legend = '
+				&nbsp;&nbsp;
+				<span style="font-size:11pt; text-align:right;">
+					<span style="color:black">change markers for saved changes </span>
+					<span style="' . ADDED_COLOR . '">&nbsp;&nbsp;' . ADDED_ICON . ' 
+						<span style="' . ADDED_DECORATION . '">worker added to job</span>
+						&nbsp;&nbsp;
+					</span>
+					&nbsp;&nbsp;
+					<span style="' . REMOVED_COLOR . '">&nbsp;&nbsp;' . REMOVED_ICON . ' 
+						<span style="' . REMOVED_DECORATION . '">worker removed from job</span>
+						&nbsp;&nbsp;
+					</span>
+				</span>';		
 			if (0) deb("dashboard.php.renderAssignmentsForm(): publish_legend =", $publish_legend);
+
 			if ($publish_legend || $publish_buttons) $publish_actions_row = '<tr><td style="background-color:White; padding:2px 0px 2px 0px; text-align:center" colspan=' . $ncols . '>' . $publish_buttons . $publish_legend . '</td></tr>';
-		}
+		} 
 		
 		// Make save row
-		$save_buttons = '&nbsp;&nbsp;<span style="text-align:left;"><input type="submit" name="save" value="Save these changes (after review)"> <input type="submit" name="cancel" value="Cancel these changes"></span>&nbsp;&nbsp;';
-		$save_legend = 
-		'&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;"><span style="color:black; background-color:' . CHANGED_BACKGROUND_COLOR . ';">unsaved changes have ' . CHANGED_BACKGROUND_COLOR . ' background</span>&nbsp;&nbsp;</span></span>';
+		$save_buttons = '
+			&nbsp;&nbsp;<span style="text-align:left;">
+				<input type="submit" id="save" name="save" onclick="setFormAction(&apos;assignments_form&apos;,&apos;change_set.php?backto=' . NEXT_BREADCRUMBS . '&apos;)" value="Save these changes (after review)"> 
+				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(&apos;assignments_form&apos;,&apos;dashboard.php?backto=' . BREADCRUMBS . '&apos;)" value="Cancel these changes"> 
+			</span>&nbsp;&nbsp;
+		';
+		$save_legend = '
+			&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;">
+				<span style="color:black; background-color:' . CHANGED_BACKGROUND_COLOR . ';">unsaved changes have ' . CHANGED_BACKGROUND_COLOR . ' background</span>
+			&nbsp;&nbsp;</span></span>';
 		if (0) deb("dashboard.php.renderAssignmentsForm(): save_legend =", $save_legend);
 
 		if ($save_legend || $save_buttons) $save_actions_row = '<tr name="save_actions_row" style="display:none"><td style="background-color:' . CHANGED_BACKGROUND_COLOR . '; padding:2px 0px 2px 0px; text-align:center;" colspan=' . $ncols . '>' . $save_buttons . $save_legend . '</td></tr>'; 
 
-	}		
+		}		
 	$previous_meal_month = 0;	
 	if (0) deb("dashboard.renderAssignmentsForm(): publish_actions_row (first time) = ", $publish_actions_row);
 	$meal_rows .= $publish_actions_row . $save_actions_row . $header_row;
@@ -387,8 +412,14 @@ function renderAssignmentsForm() {
 		';
 
 	$assignments_form = 
+		// '<script>
+			// function setFormAction(action) { 
+				// document.getElementById("assignments_form").action = action;
+				// alert ("action = " + action);
+			// };
+		// </script>' .
 		$assignments_form_headline . 
-		'<form action="dashboard.php" method="post">' . 
+		'<form id="assignments_form" action="dashboard.php?backto=' . NEXT_BREADCRUMBS . '" method="post">' . 
 		$assignments_table .
 		'<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 		<input type="hidden" name="change_count" id="change_count" value="0" />
@@ -399,7 +430,7 @@ function renderAssignmentsForm() {
 }
 
 
-// Supporting functions
+// Supporting functions 
 
 function getAvailableWorkersForShift($shift_id, $addable_only=FALSE, $omit_avoiders=TRUE) { 
 	$season_id = SEASON_ID;

@@ -1,20 +1,21 @@
 <?php
-session_start();
+// session_start();
+require_once 'start.php';
 
-require_once 'utils.php';
-require_once 'globals.php';
+// require_once 'utils.php';
+// require_once 'globals.php';
 require_once 'classes/calendar.php';
 require_once 'classes/PeopleList.php'; 
 require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
 
-require_once 'display/includes/header.php';
+// require_once 'display/includes/header.php';
 require_once 'participation.php';
 require_once 'seasons_utils.php';
 require_once 'admin_utils.php';
 
-if (0) deb("index.php: start");
+if (0) deb("index.php: start.");
 
 $season_id = getSeason('id');
 $season_name = get_season_name_from_db($season_id);
@@ -32,9 +33,7 @@ EOHTML;
 // Make the page
 global $extended;
 if (0) deb("index: userIsAdmin() = " . userIsAdmin());
-$page = '';
-$page .= renderHeadline("Sunward Meals Scheduling - {$season_name} Survey");
-// $page .= render_headline();
+$page .= renderHeadline("Sunward Meals Scheduling - {$season_name} Survey", BREADCRUMBS);
 $extended = (sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['survey_extended']) ? 1 : 0;
 $now = time();
 if ($now <= DEADLINE || $extended || userIsAdmin()) {
@@ -44,27 +43,26 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 	if (0) deb("index: person from array_GET:", $worker_id);
 	if (0) deb("index: array dollarsign_GET:", $_GET);
 	if (is_null($worker_id)) {
+		if (0) deb("index.php: gonna display home page");
 		$page .= render_countdown();
 		if ($extended) $page .= "...but briefly re-opened to admit a few last-minute responses!";
 		$page .= render_instructions();
 		$page .= render_person_menu();
 		$page .= render_footer();
 		$page .= render_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
-		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . '/report.php');	
-		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php');			
-		// $page .= render_report_link("<strong>View the Sign-Ups</strong>");	
-		// $page .= render_schedule_link("<strong>View the Schedule</strong>");			
+		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . '/report.php?backto=' . NEXT_BREADCRUMBS);	
+		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php?backto=' . NEXT_BREADCRUMBS);			
 	} else {
-		$page = build_survey($worker_id);
+		if (0) deb("index.php: gonna display first survey page");
+		// $page = build_survey($worker_id);
 	}
 }
 else {
+	if (0) deb("index.php: survey closed, so gonna display home page without user links");
 	$formatted_date = date('r', DEADLINE);
 	$page .= render_countdown();
-	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . '/report.php');		
-	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php');	
-	// $page .= render_report_link("View the schedule");		
-	// $page .= render_schedule_link("View the Assignments");	
+	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . '/report.php?backto=' . NEXT_BREADCRUMBS);		
+	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php?backto=' . NEXT_BREADCRUMBS);	
 }
 
 print $page;
@@ -130,31 +128,14 @@ EOHTML;
 	return $html;
 }
 
-// function renderLink($text, $href) {
-	// $dir = PUBLIC_DIR;
-	// return '<p class="summary_report"><a href="'. $href . '">' . $text . '</a></p>';
-// }
-
-// function render_report_link($text) {
-	// $dir = PUBLIC_DIR;
-	// return '<p class="summary_report"><a href="'. PUBLIC_DIR . '/report.php">' . $text . '</a></p>';
-// }
-
-// function render_scheduler_link($text) {
-	// return '<p class="summary_report"><a href="'. PUBLIC_DIR . '/run_scheduler_from_web.php">' . $text . '</a></p>';
-// }
-
 
 /**
  * Render the list of people as links in order to select their survey.
  */
 function renderPeopleListAsLinks() {
-	// $dir = BASE_DIR;
 	$workers_table = AUTH_USER_TABLE;
 	$season_workers_table = SEASON_WORKER_TABLE;
 	$season_id = SEASON_ID;
-	// $list = new PeopleList();
-	// $workers = $list->getPeople();
 	$from = "{$workers_table} as w, {$season_workers_table} as sw";
 	$where = "sw.worker_id = w.id and sw.season_id = {$season_id}";
 	$order_by = "w.first_name, w.last_name";
@@ -172,9 +153,8 @@ function renderPeopleListAsLinks() {
 		if ($worker['first_name'] && $worker['last_name']) $space = " ";
 		$worker['name'] = $worker['first_name'] . $space . $worker['last_name'];
 		$responded = (in_array($worker['id'], $responder_ids) ? $gold_star : "");	
-		$line = <<<EOHTML
-			<li><a href="/index.php?person={$worker["id"]}">{$worker["name"]}</a>{$responded}</li>
-EOHTML;
+		$line = '<li><a href="/survey_page_1.php?backto=' . NEXT_BREADCRUMBS . '&person='. $worker["id"] . '">' . $worker["name"] . '</a>' . $responded . '</li>';
+		// $line = '<li><a href="/index.php?person='. $worker["id"] . '&backto=' . NEXT_BREADCRUMBS . '">' . $worker["name"] . '</a>' . $responded . '</li>';
 		$lines .= $line;
 		if (0) deb("index.getPeopleAsLinks: html line:", $line);
 
@@ -196,13 +176,13 @@ EOHTML;
 }
 
 
-/**
- * @param[in] $worker_id string person's id from the _GET array
- */
-function build_survey($worker_id) {
-	if (0) deb("index.build_survey: respondent_id = ", $worker_id);
-	$survey = new Survey1($worker_id);
-	if (0) deb("index.build_survey: survey = ", $survey);
-	return $survey->renderOffersList();
-}
+// /**
+ // * @param[in] $worker_id string person's id from the _GET array
+ // */
+// function build_survey($worker_id) {
+	// if (0) deb("index.build_survey: respondent_id = ", $worker_id);
+	// $survey = new Survey1($worker_id);
+	// if (0) deb("index.build_survey: survey = ", $survey);
+	// return $survey->renderOffersList();
+// }
 ?>

@@ -21,16 +21,9 @@ if (($this_month == 11) || ($this_month == 12)) {
 }
 
 define('REQUIRED_MARKER', '<span style="color:red;"><strong>!</strong></span>');
+define('BACKTO_SEPARATOR', ',');
+// define('HOME_URL', 'index.php');
 
-// -------- page links for breadcrumbs --------
-define('HOME_LINK', 'Home,index.php'); 
-define('SIGNUPS_LINK', ';Signups,index.php?person='); 
-define('PREFS_LINK', ';Preferences,process.php?person='); 
-define('SEASONS_LINK', ';Manage Seasons,seasons.php'); 
-define('SURVEY_LINK', ';Manage Survey,survey_steps.php');  
-define('ASSIGNMENTS_LINK', ';Refine the Schedule,dashboard.php'); 
-define('CHANGE_SETS_LINK', ';Change Sets,change_sets.php');
-define('ADMIN_LINK', ';Admin Dashboard,admin.php');
 
 // -------- sqlite tables --------- 
 

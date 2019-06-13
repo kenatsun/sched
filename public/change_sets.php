@@ -1,16 +1,6 @@
 <?php
-session_start();
-
-global $relative_dir;
-if (!strlen($relative_dir)) {
-    $relative_dir = '.';
-}
-require_once "{$relative_dir}/utils.php";
-require_once "{$relative_dir}/change_sets_utils.php";
-require_once "{$relative_dir}/constants.inc";
-require_once "{$relative_dir}/config.php";
-require_once "{$relative_dir}/globals.php";
-require_once "{$relative_dir}/display/includes/header.php";
+require_once 'start.php';
+require_once "change_sets_utils.php";
 
 $scheduler_run_id = scheduler_run()['id'];
 if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
@@ -18,7 +8,10 @@ if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();
 
-$headline = renderHeadline("Saved Changes", HOME_LINK . ADMIN_LINK . ASSIGNMENTS_LINK, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
+if (0) deb("change_sets.php: PREVIOUS_BREADCRUMBS = {PREVIOUS_BREADCRUMBS}"); 
+
+$headline = renderHeadline("Saved Changes", BREADCRUMBS, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
+// $headline = renderHeadline("Saved Changes", HOME_LINK . ADMIN_LINK . ASSIGNMENTS_LINK, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id} and published = 0", "when_saved desc", (0));
 
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 
@@ -28,9 +21,9 @@ $change_sets_table .= '
 	<tr id="action_row" style="border-style:solid; border-width:1px; display:none; background-color:' . CHANGED_BACKGROUND_COLOR . '">
 		<td colspan="4" style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; background-color:rgba(0,0,0,0);">
 			<span style="font-size:11pt">
-				' . CHANGED_BACKGROUND_COLOR . ' marks changes to be undone 
+				Undo changes marked in ' . CHANGED_BACKGROUND_COLOR . '? 
 			</span>
-			<input type="submit" name="undo" value="Undo Changes"> <input type="submit" name="no_undo" value="Don\'t Undo Changes">
+			<input type="submit" name="undo" value="Yes"> <input type="submit" name="no_undo" value="No">
 		</td>
 	</tr>
 	';
@@ -61,7 +54,7 @@ foreach($change_sets as $i=>$change_set) {
 $change_sets_table .= '</table>';
 
 $change_sets_form = '
-	<form action="dashboard.php" method="post">' .
+	<form action="dashboard.php?backto=' . PREVIOUS_BREADCRUMBS . '" method="post">' .
 		$change_sets_table . '
 		<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '" />
 		<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '" />

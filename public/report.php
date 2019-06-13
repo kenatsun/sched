@@ -1,19 +1,19 @@
 <?php
-session_start(); 
+require_once('start.php');
+require_once "classes/PeopleList.php";
+// session_start(); 
 
-require_once('globals.php');
+// require_once('globals.php');
 
-global $relative_dir;
-if (!strlen($relative_dir)) {
-    $relative_dir = '.';
-}
+// global $relative_dir;
+// if (!strlen($relative_dir)) {
+    // $relative_dir = '.';
+// }
 
-require_once "{$relative_dir}/classes/PeopleList.php";
-require_once "{$relative_dir}/utils.php";
-require_once "{$relative_dir}/constants.inc";
-require_once "{$relative_dir}/config.php";
-
-require_once('display/includes/header.php');
+// require_once "utils.php";
+// require_once "constants.inc";
+// require_once "config.php";
+// require_once('display/includes/header.php');
 
 if (0) deb("report: _SESSION = ", $_SESSION);
 if (0) deb("report: userIsAdmin() = " . userIsAdmin());
@@ -242,7 +242,7 @@ EOHTML;
 EOHTML;
 }
 
-$headline = renderHeadline("Our Responses So Far", HOME_LINK);
+$headline = renderHeadline("Our Responses So Far", BREADCRUMBS);
 $months_overlay = $calendar->renderMonthsOverlay();
 $signups = renderJobSignups("Jobs we've signed up for", TRUE);
 $non_responders = (!surveyIsClosed() ? renderNonResponders() : "");

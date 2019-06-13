@@ -1,7 +1,8 @@
 <?php
 
-require_once 'globals.php';
-require_once 'display/includes/header.php';
+require_once 'start.php';
+// require_once 'globals.php';
+// require_once 'display/includes/header.php';
 require_once 'classes/person.php';
 require_once 'classes/PeopleList.php';
 require_once 'classes/OffersList.php';
@@ -66,12 +67,13 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", HOME_LINK); 
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs"); 
 		$send_email = renderSendEmailControl($this->person->name);
+		$next_breadcrumbs = NEXT_BREADCRUMBS;
 		return <<<EOHTML
 		{$headline}
 		<p>Welcome, {$this->person->name}!</p>
-		<form method="POST" action="process_survey1.php">
+		<form method="POST" action="survey_page_2.php?backto={$next_breadcrumbs}">
 			<input type="hidden" name="person" value="{$_GET['person']}">
 			<input type="hidden" name="username" value="{$this->person->username}">
 			<input type="hidden" name="posted" value="0">

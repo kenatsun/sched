@@ -1,6 +1,6 @@
 <?php
 
-require_once "utils.php";
+// require_once "utils.php";
 
 if (0) deb("globals.php: start");
 

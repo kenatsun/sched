@@ -1,7 +1,8 @@
 <?php
 
-require_once 'globals.php';
-require_once 'display/includes/header.php';
+require_once 'start.php';
+// require_once 'globals.php';
+// require_once 'display/includes/header.php';
 require_once 'classes/person.php';
 require_once 'classes/PeopleList.php';
 require_once 'classes/OffersList.php';
@@ -66,7 +67,7 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", HOME_LINK); 
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", BREADCRUMBS); 
 		$send_email = renderSendEmailControl($this->person->name);
 		return <<<EOHTML
 		{$headline}

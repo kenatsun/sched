@@ -10,10 +10,10 @@ require_once "{$relative_dir}/config.php";
 require_once "{$relative_dir}/globals.php";
 require_once "{$relative_dir}/change_sets_utils.php";
 
-if (0) deb("change_sets.php: _POST = ", $_POST);
+if (0) deb("change_set_utils.php: _POST = ", $_POST);
  
 define('OK_CHANGE_VALUE', 'ok_change');
-if (0) deb("change_sets.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
+if (0) deb("change_set_utils.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
 
 define('ADDED_COLOR', '');		// Format for worker added to shift
 define('ADDED_DECORATION', ' text-decoration:underline; ');		// Format for worker added to shift
@@ -257,7 +257,7 @@ function saveAssignmentBasedOnChangeSet($change_set_id, $posts) {
 		$where = "s.id = {$change_set_id} 
 			and c.change_set_id = s.id
 			and c.id in ({$ok_changes_string})";
-		$changes = sqlSelect($select, $from, $where, "", (0));
+		$changes = sqlSelect($select, $from, $where, "", (0), "changed assignments to save");
 		foreach ($changes as $i=>$change) {
 			if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() change = ", $change);			
 			saveAssignmentBasedOnChange($change);

@@ -1,30 +1,38 @@
 <?php
-require_once 'utils.php';
-require_once 'display/includes/header.php';
-require_once 'globals.php';
+require_once 'start.php';
+
+// session_start();
+
+// require_once 'utils.php';
+// require_once 'globals.php';
+// require_once 'display/includes/header.php';
 require_once 'auto_assignments/assignments.php';
 
 if (0) deb("run_scheduler_from_web.php: _POST = ", $_POST);
 if (0) deb("run_scheduler_from_web.php: _GET = ", $_GET);
 
-if (array_key_exists('previewonly', $_GET) || array_key_exists('previewonly', $_POST)) $preview_only = "?previewonly=";
+// $back_to_link = backTo($_GET, $_POST);
 
-$page .= renderHeadline('Run the Scheduler', HOME_LINK . ADMIN_LINK, "", 0);
-$page .= renderParametersForm();
+// if (0) deb("run_scheduler_from_web.php: back_to = {$back_to}");
+
+$page .= renderHeadline('Run the Scheduler', BREADCRUMBS, "", 0);
+// $page .= renderHeadline('Run the Scheduler', HOME_LINK . ADMIN_LINK . $back_to_link , "", 0);
+$page .= renderParametersForm($back_to);
 if ($_POST) $page .= renderSchedule($_POST); 
 print $page;
 
-function renderParametersForm() {
+function renderParametersForm($back_to) { 
+	if (0) deb("run_scheduler_from_web.renderParametersForm(): back_to = {$back_to}");
 	$form = '';
-	$form .= '<form action="run_scheduler_from_web.php' . $preview_only . '" method="post">'; 
+	$form .= '<form action="run_scheduler_from_web.php?backto="' . BREADCRUMBS . ' method="post">'; 
  	$form .= '<br>';
+	$form .= '<input type="hidden" name="backto" value = "' . BREADCRUMBS . '">';
 	$form .= '<input type="radio" name="option" value = "h" checked>Trial run - just show the results below<br>';
-	if (!$preview_only) {
+	if ($back_to_link == CREATE_SCHEDULE_LINK) {
 		// $form .= '<input type="radio" name="option" value = "d">Write assignments to database<br>';
 		$form .= '<input type="radio" name="option" value = "D">Write assignments to database (replacing any existing assignments for this season)<br>';
 	}
 	$form .= '<br>';	
-	// $form .= '<input type="hidden" name="Hi" value="x"/>'; 
 	$form .= '<input type="submit" value="Run It!">'; 
 	$form .= '</form>'; 
 	$form .= '<br><br>';	

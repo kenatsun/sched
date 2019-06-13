@@ -1,9 +1,11 @@
 <?php
 global $html_title;
-session_start();
+if (0) deb("header.php: before session_start()"); 
+//session_start();
 if (0) deb("header: gonna call determineUserStatus()",'');
-determineUserStatus();
-if (0) deb("header: called determineUserStatus()",'');
+// determineUserStatus();
+// if (1) deb("header: called determineUserStatus()",'');
+// if (1) deb("header: _SESSION['access_type'] = ", $_SESSION['access_type']);
 
 $head = <<<EOHTML
 <!doctype html> 
@@ -64,7 +66,11 @@ EOHTML;
 
 print $head;
 
-if (0) deb("header.php: start"); 
+// if (1) deb("header.php: _REQUEST =", $_REQUEST); 
+// if (1) deb("header.php: _GET =", $_GET); 
+// if (1) deb("header.php: _POST =", $_POST); 
+// $backto = $_REQUEST['backto']; 
+
 
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 	echo <<<EOHTML

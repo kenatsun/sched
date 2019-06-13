@@ -76,12 +76,10 @@ window.onload = function(){
 			if (this.checked) {
 				this.onclick=function(){
 					this.checked=false;
-					// alert("was CHECKED. rd = " + rd);
 					markUndos(rd);
 				}
 			} else {
 				this.onclick=null;
-				// this.onclick=markUndos(rd);
 			}
 		})
 	})
@@ -122,5 +120,11 @@ function markUndos(control) {
 		// Hide controls for undoing the changes with legend
 		document.getElementById("action_row").style.display = "none";
 	}
+}
+
+
+function setFormAction(form_id, action) { 
+	document.getElementById(form_id).action = action;
+	alert ("action = " + action);
 }
 

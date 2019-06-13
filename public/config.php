@@ -1,20 +1,18 @@
 <?php
-global $relative_dir;
-if (!strlen($relative_dir)) {
-	$relative_dir = '.';
-}
+// global $relative_dir;
+// if (!strlen($relative_dir)) {
+	// $relative_dir = '.';
+// }
 
-require_once "utils.php";
-require_once "constants.inc";
-require_once "globals.php";
-require_once "git_ignored.php";
+// require_once "utils.php";
+// require_once "constants.inc";
+// require_once "globals.php";
+// require_once "git_ignored.php";
 
 if (0) deb("config.php: start"); 
 
 define('BASE_DIR', '');
-// define('BASE_DIR', getRootPath()); 
 define('PUBLIC_DIR', BASE_DIR);
-// define('SCHEDULER_DIR', BASE_DIR . '/auto_assignments');
 define('DB_DIR', BASE_DIR . '../db');
 
 // Open the database

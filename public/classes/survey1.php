@@ -67,12 +67,13 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", BREADCRUMBS); 
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs"); 
 		$send_email = renderSendEmailControl($this->person->name);
+		$next_breadcrumbs = NEXT_BREADCRUMBS;
 		return <<<EOHTML
 		{$headline}
 		<p>Welcome, {$this->person->name}!</p>
-		<form method="POST" action="process_survey1.php">
+		<form method="POST" action="survey_page_2.php?backto={$next_breadcrumbs}">
 			<input type="hidden" name="person" value="{$_GET['person']}">
 			<input type="hidden" name="username" value="{$this->person->username}">
 			<input type="hidden" name="posted" value="0">

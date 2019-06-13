@@ -15,7 +15,7 @@ require_once 'participation.php';
 require_once 'seasons_utils.php';
 require_once 'admin_utils.php';
 
-if (0) deb("index.php: start.  my_url = $my_url");
+if (0) deb("index.php: start.");
 
 $season_id = getSeason('id');
 $season_name = get_season_name_from_db($season_id);
@@ -54,7 +54,7 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . '/dashboard.php?backto=' . NEXT_BREADCRUMBS);			
 	} else {
 		if (0) deb("index.php: gonna display first survey page");
-		$page = build_survey($worker_id);
+		// $page = build_survey($worker_id);
 	}
 }
 else {
@@ -153,7 +153,8 @@ function renderPeopleListAsLinks() {
 		if ($worker['first_name'] && $worker['last_name']) $space = " ";
 		$worker['name'] = $worker['first_name'] . $space . $worker['last_name'];
 		$responded = (in_array($worker['id'], $responder_ids) ? $gold_star : "");	
-		$line = '<li><a href="/index.php?person='. $worker["id"] . '&backto=' . NEXT_BREADCRUMBS . '">' . $worker["name"] . '</a>' . $responded . '</li>';
+		$line = '<li><a href="/survey_page_1.php?backto=' . NEXT_BREADCRUMBS . '&person='. $worker["id"] . '">' . $worker["name"] . '</a>' . $responded . '</li>';
+		// $line = '<li><a href="/index.php?person='. $worker["id"] . '&backto=' . NEXT_BREADCRUMBS . '">' . $worker["name"] . '</a>' . $responded . '</li>';
 		$lines .= $line;
 		if (0) deb("index.getPeopleAsLinks: html line:", $line);
 
@@ -175,13 +176,13 @@ function renderPeopleListAsLinks() {
 }
 
 
-/**
- * @param[in] $worker_id string person's id from the _GET array
- */
-function build_survey($worker_id) {
-	if (0) deb("index.build_survey: respondent_id = ", $worker_id);
-	$survey = new Survey1($worker_id);
-	if (0) deb("index.build_survey: survey = ", $survey);
-	return $survey->renderOffersList();
-}
+// /**
+ // * @param[in] $worker_id string person's id from the _GET array
+ // */
+// function build_survey($worker_id) {
+	// if (0) deb("index.build_survey: respondent_id = ", $worker_id);
+	// $survey = new Survey1($worker_id);
+	// if (0) deb("index.build_survey: survey = ", $survey);
+	// return $survey->renderOffersList();
+// }
 ?>

@@ -8,7 +8,7 @@ if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();
 
-if (0) deb("change_sets.php: return_breadcrumbs = {RETURN_BREADCRUMBS}"); 
+if (0) deb("change_sets.php: PREVIOUS_BREADCRUMBS = {PREVIOUS_BREADCRUMBS}"); 
 
 $headline = renderHeadline("Saved Changes", BREADCRUMBS, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
 // $headline = renderHeadline("Saved Changes", HOME_LINK . ADMIN_LINK . ASSIGNMENTS_LINK, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
@@ -54,7 +54,7 @@ foreach($change_sets as $i=>$change_set) {
 $change_sets_table .= '</table>';
 
 $change_sets_form = '
-	<form action="dashboard.php?backto=' . RETURN_BREADCRUMBS . '" method="post">' .
+	<form action="dashboard.php?backto=' . PREVIOUS_BREADCRUMBS . '" method="post">' .
 		$change_sets_table . '
 		<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '" />
 		<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '" />

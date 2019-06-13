@@ -43,10 +43,10 @@ if (0) deb("headline.php: NEXT_BREADCRUMBS = " . NEXT_BREADCRUMBS);
 // if (0) deb("headline.php: next_breadcrumbs =", $next_breadcrumbs);
 
 // The breadcrumbs to be shown on any page to which the current page is returning 
-define('RETURN_BREADCRUMBS', removeBreadcrumbs(BREADCRUMBS));
-if (0) deb("headline.php: RETURN_BREADCRUMBS = " . RETURN_BREADCRUMBS); 
-// $return_breadcrumbs = removeBreadcrumbs(BREADCRUMBS);
-// if (0) deb("headline.php: return_breadcrumbs =", $return_breadcrumbs);
+define('PREVIOUS_BREADCRUMBS', removeBreadcrumbs(BREADCRUMBS));
+if (0) deb("headline.php: PREVIOUS_BREADCRUMBS = " . PREVIOUS_BREADCRUMBS); 
+// $PREVIOUS_BREADCRUMBS = removeBreadcrumbs(BREADCRUMBS);
+// if (0) deb("headline.php: PREVIOUS_BREADCRUMBS =", $PREVIOUS_BREADCRUMBS);
 
 // // An array containing the url and the label of the BREADCRUMBS
 // define('LABELED_BREADCRUMBS', labelBreadcrumbs(BREADCRUMBS));
@@ -190,7 +190,8 @@ function labelBreadcrumbs($breadcrumbs_str) {
 		'/change_sets.php' => 'Undo Changes',
 		'/admin.php' => 'Admin Dashboard',
 		'/schedule_steps.php' => 'Create Schedule',
-		'/kw' => 'KW'
+		'/survey_page_1.php' => 'Signups',
+		'/survey_page_2.php' => 'Preferences'
 	);
 	$labeled_breadcrumbs = array();
 	

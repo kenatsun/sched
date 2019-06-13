@@ -124,7 +124,7 @@ function markUndos(control) {
 
 
 function setFormAction(form_id, action) { 
+	// Change the submit action for this form.  Usually invoked by onclick from a submit button.
 	document.getElementById(form_id).action = action;
-	alert ("action = " + action);
 }
 

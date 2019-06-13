@@ -233,7 +233,8 @@ class Survey {
 
 		if (0) deb("survey.renderSurvey: _GET =", $_GET);		
 		if (0) deb("survey.renderSurvey: _POST =", $_POST);  
-		$headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
+		$headline = renderHeadline("Step 2: Tell Us Your Preferences");
+		// $headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();
 		$send_email = renderSendEmailControl($this->worker->getName());

@@ -339,14 +339,15 @@ EOHTML;
 
 					$reg_meal_override = FALSE;
 					$mtg_override = FALSE;
-					if ($month_num == 9) {
-						if ($i == 19) {
-							$mtg_override = TRUE;
-						}
-						else if ($i == 17) {
-							$reg_meal_override = TRUE;
-						}
-					}
+					// Commented this out on 6/12/2019 - seems to be a GO quirk baked into the code - KW 
+					// if ($month_num == 9) {
+						// if ($i == 19) {
+							// $mtg_override = TRUE;
+						// }
+						// else if ($i == 17) {
+							// $reg_meal_override = TRUE;
+						// }
+					// }
 
 					if ($mtg_override || (!$reg_meal_override &&
 						array_key_exists($day_of_week, $mtg_nights) &&

@@ -102,7 +102,7 @@ function render_person_menu() {
 			{$workers}
 			</tr>
 		</table>
-		{$gold_star} marks the wonderful people who have responded to the questionnaire so far
+		{$gold_star} marks the wonderful people who have signed up for meals jobs so far
 	<br><br>
 EOHTML;
 	return $html;
@@ -144,16 +144,38 @@ function renderPeopleListAsLinks() {
 	$lines = '';
 	$count = 0;
 	$signups_table = OFFERS_TABLE;
-	$responder_ids = getResponders(); 
-	if (0) deb("index.renderPeopleListAsLinks(): responder_ids =", $responder_ids); 
+	// $responder_ids = getResponders(); 
+	// if (0) deb("index.renderPeopleListAsLinks(): responder_ids =", $responder_ids); 
 	$gold_star = '&nbsp<img src="/display/images/goldstar02.png" height="12">';
+	$white_star = '&nbsp<img src="/display/images/whitestar02.png" height="12">';
 
 	foreach($workers as $worker) {
-
 		if ($worker['first_name'] && $worker['last_name']) $space = " ";
 		$worker['name'] = $worker['first_name'] . $space . $worker['last_name'];
-		$responded = (in_array($worker['id'], $responder_ids) ? $gold_star : "");	
-		$line = '<li><a href="/survey_page_1.php?backto=' . NEXT_BREADCRUMBS . '&person='. $worker["id"] . '">' . $worker["name"] . '</a>' . $responded . '</li>';
+		$where = "season_id = {$season_id} and worker_id = " . $worker['id'];
+		$responded = sqlSelect("worker_id", SEASON_WORKER_TABLE, $where . " and first_response_timestamp is not null", "", (0))[0];
+		if (0) deb("index.getPeopleAsLinks: responded", $responded); 
+		// Count the number of jobs the worker has offered to do
+		// $offers_count = sqlSelect("offers_count", SEASON_WORKER_TABLE, $where . " and offers_count > 0", "", (0))[0];
+		if (0) deb("index.getPeopleAsLinks: offers_count", $offers_count); 
+		
+		if ($responded) { 
+			$select = "sum(instances) as offers_count";
+			$from = OFFERS_TABLE;
+			$offers_count = sqlSelect($select, $from, $where, "", (0))[0]['offers_count'];
+			if (0) deb("index.getPeopleAsLinks: responded", $responded); 
+			if (0) deb("index.getPeopleAsLinks: offers_count", $offers_count); 
+			if ($offers_count) {
+				$medals = (userIsAdmin()) ? $gold_star . " " . $offers_count : $gold_star; 
+			}
+			else $medals = $white_star;	
+		} else {
+			$responded = 0;
+			$offers_count = 0;
+			$medals = "";
+		}
+		// $responded = (in_array($worker['id'], $responder_ids) ? $gold_star : "");	
+		$line = '<li><a href="/survey_page_1.php?backto=' . NEXT_BREADCRUMBS . '&person='. $worker["id"] . '">' . $worker["name"] . '</a>' . $medals . '</li>';
 		// $line = '<li><a href="/index.php?person='. $worker["id"] . '&backto=' . NEXT_BREADCRUMBS . '">' . $worker["name"] . '</a>' . $responded . '</li>';
 		$lines .= $line;
 		if (0) deb("index.getPeopleAsLinks: html line:", $line);

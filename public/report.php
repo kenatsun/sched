@@ -1,19 +1,6 @@
 <?php
-require_once('start.php');
+require_once 'start.php';
 require_once "classes/PeopleList.php";
-// session_start(); 
-
-// require_once('globals.php');
-
-// global $relative_dir;
-// if (!strlen($relative_dir)) {
-    // $relative_dir = '.';
-// }
-
-// require_once "utils.php";
-// require_once "constants.inc";
-// require_once "config.php";
-// require_once('display/includes/header.php');
 
 if (0) deb("report: _SESSION = ", $_SESSION);
 if (0) deb("report: userIsAdmin() = " . userIsAdmin());
@@ -287,55 +274,21 @@ Sundays: {$meals_summary['sunday']}
 </html>
 EOHTML;
 
-// NOTE: Below is like above except it includes "renderMonthsOverlay"
-// print <<<EOHTML
-// {$headline}
-// {$signups}
-// <br>
-// {$months_overlay}
-// <br>
-// {$cal_string}
-// <br>
-// {$non_responders}
-// <br>
-// {$comments}
-
-// <!--
-// <h2>Number of meals scheduled per-day type:</h2>
-
-// <p>
-// Sundays: {$meals_summary['sunday']}
-// <br>Weekdays: {$meals_summary['weekday']}
-// <br> Meetings: {$meals_summary['meeting']}
-// </p>
-
-// <h2>Number of assignments needed:</h2>
-// <table cellpadding="3" cellspacing="0" border="0" class="striped" width="100%">
-// <thead>
-	// <tr>
-		// <th>Job Name</th>
-		// <th>Num Assignments Needed</th>
-	// </tr>
-// </thead>
-// <tbody>
-	// {$shift_summary_rows}
-// </tbody>
-// </table>
-// -->
-
-
-// </body>
-// </html>
-// EOHTML;
-
 // ------------------------------- functions
 
 
 function renderNonResponders() {
-	$non_responders = getNonResponders();
+	// $non_responders = getNonResponders();
+	$select = "first_name || ' ' || last_name as name";
+	$from = SEASON_WORKER_TABLE . " as sw, " . AUTH_USER_TABLE . " as w";
+	$where = "sw.worker_id = w.id and season_id = " . SEASON_ID . " and sw.first_response_timestamp is null";
+	// $where = "sw.worker_id = w.id and season_id = " . SEASON_ID . " and (sw.first_response_timestamp is null or sw.first_response_timestamp = '')";
+	$order_by = "first_name, last_name";
+	$non_responders = sqlSelect($select, $from, $where, $order_by, (0));
+	
 	if (0) deb("report.renderNonResponders: non_responders =", $non_responders);
-	foreach($non_responders as $id=>$name) {
-		$non_responder_names .= "<tr><td>{$name}</td></tr>
+	foreach($non_responders as $non_responder) {
+		$non_responder_names .= "<tr><td>{$non_responder['name']}</td></tr>
 			";
 	}
 	$non_responders_count = count($non_responders);	

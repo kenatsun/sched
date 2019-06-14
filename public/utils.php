@@ -1,7 +1,4 @@
 <?php
-// require_once 'constants.inc';
-// require_once 'git_ignored.php';
-
 
 //////////////////////////////////////////////////////// FUNCTIONS
 
@@ -686,40 +683,50 @@ function getJobAssignments($meal_id=NULL, $job_id=NULL, $worker_id=NULL) {
 }
 
 function getResponders() {
-	$responder_ids = array();
-	$signups_table = OFFERS_TABLE;
+	// $responder_ids = array();
+	// $signups_table = OFFERS_TABLE;
 	$season_id = SEASON_ID;
-	$where = "id IN (select worker_id from {$signups_table} WHERE season_id = {$season_id})";
-	$responders =  new PeopleList($where);
-	$responders_list = $responders->people;
-	if ($responders_list) {
-		foreach($responders_list as $index=>$person) {
-			if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
-			$responder_ids[] = $person['id'];
-		}
-	}
-	if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids); 
+	$season_worker_table = SEASON_WORKER_TABLE;
+	$responders = sqlSelect("worker_id as id", SEASON_WORKER_TABLE, "season_id = {$season_id} and first_response_timestamp is not null", "", (0));
+	foreach($responders as $responder) $responder_ids[] = $responder['id'];
+	if (0) deb("utils.getResponders: responder_ids =", $responder_ids); 
 	return $responder_ids; 
+	// // $where = "id IN (select worker_id from {$signups_table} WHERE season_id = {$season_id})";
+	// $where = "id IN (select worker_id from {$season_worker_table} WHERE season_id = {$season_id} and first_response_timestamp is not null)";
+	// $responders =  new PeopleList($where);
+	// $responders_list = $responders->people;
+	// if ($responders_list) {
+		// foreach($responders_list as $index=>$person) {
+			// if (0) deb("utils.getResponders: person[id] =", $person['id']); 
+			// $responder_ids[] = $person['id'];
+		// }
+	// }
+	// if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids); 
+	// return $responder_ids; 
 }
 
 function getNonResponders() {
-	$responder_ids = getResponders();
-	if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids);
-	$everybody = new PeopleList("");
-	$everybody_list = $everybody->people;
-	foreach($everybody_list as $index=>$person) {
-		if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
-		$everybody_ids[] = $person['id'];
-		if (!(in_array($person['id'], $responder_ids))){
-			$non_responder_ids[] = $person['id'];
-			$non_responder_names[] = $person['first_name'] . " " . $person['last_name'];
-		}
-	}
-	if (0) deb("utils.getNonResponders: everybody_ids =", $everybody_ids);
-	if (0) deb("utils.getNonResponders: non_responder_ids =", $non_responder_ids);
-	if (0) deb("utils.getNonResponders: non_responder_names =", $non_responder_names);
+	$non_responders = sqlSelect("worker_id as id", SEASON_WORKER_TABLE, "season_id = {$season_id} and first_response_timestamp is null", "", (0));
+	foreach($non_responders as $non_responder) $non_responder_ids[] = $non_responder['id'];
+	if (0) deb("utils.getNonResponders: responder_ids =", $non_responder_ids); 
+	return $non_responder_ids; 
+	// $responder_ids = getResponders();
+	// if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids);
+	// $everybody = new PeopleList("");
+	// $everybody_list = $everybody->people;
+	// foreach($everybody_list as $index=>$person) {
+		// if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
+		// $everybody_ids[] = $person['id'];
+		// if (!(in_array($person['id'], $responder_ids))){
+			// $non_responder_ids[] = $person['id'];
+			// $non_responder_names[] = $person['first_name'] . " " . $person['last_name'];
+		// }
+	// }
+	// if (0) deb("utils.getNonResponders: everybody_ids =", $everybody_ids);
+	// if (0) deb("utils.getNonResponders: non_responder_ids =", $non_responder_ids);
+	// if (0) deb("utils.getNonResponders: non_responder_names =", $non_responder_names);
 	
-	return $non_responder_names;
+	// return $non_responder_names;
 }
 
 // Get descriptions of all jobs for the specified season from the database.

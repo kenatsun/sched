@@ -1,26 +1,20 @@
 <?php
 
-require_once 'globals.php';
-require_once 'utils.php';
-require_once 'display/includes/header.php';
+require_once 'start.php';
 
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
 
 function renderSeasonsForm($seasons) {
-	// $current_season_id = sqlSelect("*", "seasons", "current_season = 1", "", (0), "seasons_utils.renderSeasonsForm()")[0]['id'];
-	if (0) deb("seasons_utils.renderSeasonsForm(): _POST = ", $_POST);
+		if (0) deb("seasons_utils.renderSeasonsForm(): _POST = ", $_POST);
 	if (0) deb("seasons_utils.renderSeasonsForm(): getSeason('id') = " . getSeason('id'));
 	if (0) deb("seasons_utils.renderSeasonsForm(): current_season_id = " . $current_season_id);
 	$td_style = 'style="font-size:11pt; border: 1px solid lightgray; text-align:center;"'; 
 	$form = "";
-	// $form .= '<form action="season.php" method="post">';
 	$form .= '<form action="seasons.php" method="post" onsubmit="return false">';
 	$form .= '<table style="width:50%; font-size:11pt; border-collapse: collapse;">';
 	$form .= '<tr>';
 		$form .= '<th style="text-align:center;">Season</th>';
 		$form .= '<th style="text-align:center;">Months</th>';
-		// $form .= '<th style="text-align:center;">Survey Starts</th>';
-		// $form .= '<th style="text-align:center;">Survey Ends</th>';
 		$form .= '<th style="text-align:center;">Current</th>';
 		$form .= '<th style="text-align:center;"></th>';
 	$form .= '</tr>';

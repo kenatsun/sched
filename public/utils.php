@@ -70,7 +70,8 @@ EOHTML;
 function userIsAdmin() {
 	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
 	if (0) deb("utils.userIsAdmin: SESSION['access_type']", $_SESSION['access_type']);
-	return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
+	return isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin"	? 1 : 0;
+	// return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
 }
 
 // ADMIN LOGIN FUNCTIONS - end ----------------------------------------------------

@@ -1,9 +1,10 @@
 <?php
-session_start(); 
+require_once 'start.php';
+// session_start(); 
 
-require_once 'globals.php';
-require_once 'utils.php';
-require_once 'display/includes/header.php';
+// require_once 'globals.php';
+// require_once 'utils.php';
+// require_once 'display/includes/header.php';
 
 $season = getSeason();
 

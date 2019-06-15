@@ -1,11 +1,8 @@
 <?php
 
-require_once 'globals.php';
-require_once 'constants.inc';
-require_once 'utils.php';
+require_once 'start.php';
 require_once 'admin_utils.php';
 require_once 'season_utils.php';
-require_once 'display/includes/header.php';
 
 // $season = getSeason();
 // if (0) deb("survey_and_scheduling_dates_tool.php: season =", $season);

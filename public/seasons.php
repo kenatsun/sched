@@ -1,9 +1,10 @@
 <?php
-session_start(); 
+require_once 'start.php';
+// session_start(); 
 
-require_once 'globals.php';
-require_once 'utils.php';
-require_once 'display/includes/header.php';
+// require_once 'globals.php';
+// require_once 'utils.php';
+// require_once 'display/includes/header.php';
 require_once 'seasons_utils.php';
 
 $dir = BASE_DIR;
@@ -24,6 +25,7 @@ $seasons = sqlSelect("*", SEASONS_TABLE, "", "start_date", (0), "Seasons");
 $page = "";
 $page .= renderHeadline("Manage Seasons", HOME_LINK); 
 $page .= '<br>';
+$page .= 'To work on a different season, click on its name.<br><br>';
 $page .= renderSeasonsForm($seasons);
 // $page .= renderCurrentSeasonControl("seasons.php", $seasons);
 print $page;

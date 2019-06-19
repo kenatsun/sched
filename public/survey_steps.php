@@ -1,16 +1,11 @@
 <?php
 require_once 'start.php';
-// session_start(); 
-
-// require_once 'globals.php';
-// require_once 'utils.php';
-// require_once 'display/includes/header.php';
 
 $season = getSeason();
 
 // Display the page
 $page = "";
-$page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", HOME_LINK . ADMIN_LINK, "", 0); 
+$page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", CRUMBS, "", 0); 
 $page .= renderPageBody($season); 
 print $page;
 

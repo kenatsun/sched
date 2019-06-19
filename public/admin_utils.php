@@ -12,8 +12,8 @@ require_once 'seasons_utils.php';
 
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
 
-function renderProcessLink($process, $n="") {
-	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. $process['href'] . '?parent_process_id=' . $process['process_id'] . '&backto="' . NEXT_BREADCRUMBS . '>' . $process['name'] . '</a></p>';
+function renderProcessLink($process, $n="") { 
+	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. makeURI($process['href'], NEXT_CRUMBS, 'parent_process_id=' . $process['process_id']) . '">' . $process['name'] . '</a></p>'; 
 	if (0) deb("index.renderProcessLink(): link = ", $link);
 	return $link;
 }

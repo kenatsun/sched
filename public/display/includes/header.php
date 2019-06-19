@@ -1,17 +1,16 @@
 <?php
 global $html_title;
-if (0) deb("header.php: before session_start()"); 
-//session_start();
+if (0) deb("header.php: start"); 
 if (0) deb("header: gonna call determineUserStatus()",'');
-// determineUserStatus();
-// if (1) deb("header: called determineUserStatus()",'');
-// if (1) deb("header: _SESSION['access_type'] = ", $_SESSION['access_type']);
+
+$favicon = getFavicon();
 
 $head = <<<EOHTML
 <!doctype html> 
 <html> 
 <head>
 	<title>{$html_title}</title>
+	<link rel="icon" type="image/ico" href="display/images/{$favicon}">
 	<link rel="stylesheet" href="display/styles/default.css" type="text/css">
 	<link rel="stylesheet" href="select2/select2.min.css" type="text/css">
 
@@ -65,12 +64,6 @@ $head = <<<EOHTML
 EOHTML;
 
 print $head;
-
-// if (1) deb("header.php: _REQUEST =", $_REQUEST); 
-// if (1) deb("header.php: _GET =", $_GET); 
-// if (1) deb("header.php: _POST =", $_POST); 
-// $backto = $_REQUEST['backto']; 
-
 
 if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 	echo <<<EOHTML

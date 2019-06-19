@@ -67,14 +67,15 @@ class Survey {
 	 */
 	public function setWorker($username=NULL, $worker_id=NULL,
 		$first_name=NULL, $last_name=NULL) {
+		if (0) deb("survey.setWorker username = $username, worker_id = $worker_id"); 
 
-		if (is_null($username)) {
-			if (is_null($this->username)) {
-				echo "Missing username in setWorker!\n";
-				exit;
-			}
-			$username = $this->username;
-		}
+		// if (is_null($username)) {
+			// if (is_null($this->username)) {
+				// echo "Missing username in setWorker!\n";
+				// exit;
+			// }
+			// $username = $this->username;
+		// }
 
 		if (is_null($worker_id)) {
 			if (is_null($this->worker_id)) {
@@ -233,7 +234,7 @@ class Survey {
 
 		if (0) deb("survey.renderSurvey: _GET =", $_GET);		
 		if (0) deb("survey.renderSurvey: _POST =", $_POST);  
-		$headline = renderHeadline("Step 2: Tell Us Your Preferences");
+		$headline = renderHeadline("Step 2: Tell Us Your Preferences", CRUMBS);
 		// $headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();

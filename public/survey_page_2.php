@@ -18,6 +18,7 @@ $shifts_offered_count = saveOffers($respondent, $offers);
 if (0) deb("process_survey1: shifts_offered_count =", $shifts_offered_count);
 displayNextPage($respondent, $shifts_offered_count);
 
+////////////////////////////////////////// FUNCTIONS
 
 function getSurveyRespondent($person_id) {
 	if (0) deb("survey_page_2.getSurveyRespondent(): POST =", $_POST);

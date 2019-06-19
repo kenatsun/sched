@@ -24,9 +24,7 @@ if ($_POST['season_id']) {
 $season_id = getSeason('id');
 $season_name = getSeason('name');
 
-$page .= renderHeadline("Administrator Dashboard", BREADCRUMBS, "currently working on the {$season_name} season", 0);
-// $page .= renderHeadline("Administrator Dashboard", NEXT_BREADCRUMBS, "currently working on the {$season_name} season", 0);
-// $page .= renderHeadline("Administrator Dashboard", HOME_LINK, "currently working on the {$season_name} season", 0);
+$page .= renderHeadline("Administrator Dashboard", CRUMBS, "currently working on the {$season_name} season", 0);
 $page .= '<br><h3><em>Work on This Season</em></h3>';
 $stages = sqlSelect("*", ADMIN_PROCESSES_TABLE, "type = 'Stage' and season_id = {$season_id}", "display_order", (0));
 foreach ($stages as $stage) {

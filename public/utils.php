@@ -539,14 +539,31 @@ function debt($label, $data=NULL) {
 // Render a link to another MO page
 function renderLink($text, $href) {
 	$dir = PUBLIC_DIR;
-	return '<p class="summary_report"><a href="'. $href . '">' . $text . '</a></p>';
+	$link = '<p class="summary_report"><a href="'. $href . '">' . $text . '</a></p>';
+	return $link;
+}
+
+//
+function makeURI($url, $back_to="", $query_string="") {
+	$uri = $url . "?";
+	if ($back_to) $uri .= "backto=" . $back_to;
+	if ($back_to && $query_string) $uri .= "&";
+	if ($query_string) $uri .= $query_string;
+	// $uri .= "#";
+	// $uri = urlencode($uri);
+	if (0) deb("utils.phpmakeURI(): back_to = $back_to"); 
+	if (0) deb("utils.phpmakeURI(): uri = $uri"); 
+	return $uri;
 }
 
 function renderToolsList($tools, $subhead=null) {
 	// Render the page components for each tool in a step
 	$body = $subhead;
-	foreach ($tools as $tool) {
-		$body .= '<p style="margin-left:2em;"><a href="'. $tool['href'] . '">' . $tool['name'] . '</a></p>';
+	foreach ($tools as $tool) { 
+		if (0) deb("utils.renderToolsList(): tool = ", $tool);
+		if (0) deb("utils.renderToolsList(): URI = ", makeURI($tool['href'], "", $tool['query_string']));
+		$body .= '<p style="margin-left:2em;"><a href="' . makeURI($tool['href'], "", $tool['query_string']) . '">' . $tool['name'] . '</a></p>';
+		// $body .= '<p style="margin-left:2em;"><a href="'. $tool['href'] . '">' . $tool['name'] . '</a></p>';
 		// $body .= '<br><br><h3>Tool ' . ++$n . ': ' . $tool['name'] . '</h3>';
 		// switch ($tool['process_id']) {
 			// case VIEW_SURVEY_RESULTS_ID:

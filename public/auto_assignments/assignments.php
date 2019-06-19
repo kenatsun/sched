@@ -7,8 +7,8 @@ function runScheduler($options) {
 	// $relative_dir = '../public/';
 	if (0) deb ("assignments.runScheduler(): options  =", $options);
 
-	require_once $relative_dir . 'globals.php';
-	require_once $relative_dir . 'config.php';
+	// require_once $relative_dir . 'globals.php';
+	// require_once $relative_dir . 'config.php';
 	require_once $relative_dir . 'classes/calendar.php';
 	require_once $relative_dir . 'classes/worker.php';
 	require_once $relative_dir . 'classes/roster.php';

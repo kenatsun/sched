@@ -229,7 +229,7 @@ EOHTML;
 EOHTML;
 }
 
-$headline = renderHeadline("Our Responses So Far", BREADCRUMBS);
+$headline = renderHeadline("Our Responses So Far", CRUMBS);
 $months_overlay = $calendar->renderMonthsOverlay();
 $signups = renderJobSignups("Jobs we've signed up for", TRUE);
 $non_responders = (!surveyIsClosed() ? renderNonResponders() : "");

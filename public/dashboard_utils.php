@@ -7,8 +7,8 @@ require_once "change_sets_utils.php";
 
 function displaySchedule($show_controls=true) { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
-	if (0) deb("dashboard.displaySchedule(): BREADCRUMBS = " . BREADCRUMBS);
-	if (0) deb("dashboard.displaySchedule(): NEXT_BREADCRUMBS = {NEXT_BREADCRUMBS}");
+	if (0) deb("dashboard.displaySchedule(): CRUMBS = " . CRUMBS);
+	if (0) deb("dashboard.displaySchedule(): NEXT_CRUMBS = {NEXT_CRUMBS}"); 
 	$now = date_create();
 	$now_f = date_format($now, "Y-m-d");
 	$change_request_end_date = $season['change_request_end_date'];
@@ -32,11 +32,13 @@ function displaySchedule($show_controls=true) {
 		$subhead = date_format($now, "F j, Y");
 		$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
-	$headline = renderHeadline($final . "Sunward Dinner Teams for {$season['name']}", BREADCRUMBS, $subhead, 0); 
+	$headline = renderHeadline($final . "Sunward Dinner Teams for {$season['name']}", CRUMBS, $subhead, 0); 
 	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm($show_controls);
 	// if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
-	$bullpen = '<br>' . renderBullpen();
+
+	if (0) deb("dashboard.displaySchedule(): array_key_exists(previewonly, _GET)? " . array_key_exists("previewonly", $_GET));
+	if (!array_key_exists("previewonly", $_GET)) $bullpen = '<br>' . renderBullpen();
 
 	$page = <<<EOHTML
 		{$headline}
@@ -104,13 +106,13 @@ function renderAssignmentsForm($show_controls=true) {
 				$publish_buttons = '
 					&nbsp;&nbsp;
 					<span name="publish_buttons" style="text-align:left;">
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;publish.php?backto=' . NEXT_BREADCRUMBS . '&apos;)" value="Publish changes (after review)"> 
+						<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("publish.php", NEXT_CRUMBS) . '&apos;)" value="Publish changes (after review)"> 
 						&nbsp;&nbsp;
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;change_sets.php?backto=' . NEXT_BREADCRUMBS . '&apos;)" value="Undo changes (after review)"> 
+						<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("change_sets.php", NEXT_CRUMBS) . '&apos;)" value="Undo changes (after review)"> 
 					</span>
 				'; 
 			}
-			if (0) deb("dashboard.php: NEXT_BREADCRUMBS = ", NEXT_BREADCRUMBS); 
+			if (0) deb("dashboard.php: NEXT_CRUMBS = ", NEXT_CRUMBS); 
 			if (0) deb("dashboard.php: publish_buttons = ", $publish_buttons); 
 			$publish_legend = '
 				&nbsp;&nbsp;
@@ -134,8 +136,8 @@ function renderAssignmentsForm($show_controls=true) {
 		// Make save row
 		$save_buttons = '
 			&nbsp;&nbsp;<span style="text-align:left;">
-				<input type="submit" id="save" name="save" onclick="setFormAction(&apos;assignments_form&apos;,&apos;change_set.php?backto=' . NEXT_BREADCRUMBS . '&apos;)" value="Save these changes (after review)"> 
-				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(&apos;assignments_form&apos;,&apos;dashboard.php?backto=' . BREADCRUMBS . '&apos;)" value="Cancel these changes"> 
+				<input type="submit" id="save" name="save" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("change_set.php", NEXT_CRUMBS) . '&apos;)" value="Save these changes (after review)"> 
+				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("dashboard.php", CRUMBS) . '&apos;)" value="Cancel these changes"> 
 			</span>&nbsp;&nbsp;
 		';
 		$save_legend = '
@@ -356,7 +358,7 @@ function renderAssignmentsForm($show_controls=true) {
 
 	$assignments_form = 
 		$assignments_form_headline . 
-		'<form id="assignments_form" action="dashboard.php?backto=' . NEXT_BREADCRUMBS . '" method="post">' . 
+		'<form id="assignments_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS) . '" method="post">' . 
 		$assignments_table .
 		'<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 		<input type="hidden" name="change_count" id="change_count" value="0" />

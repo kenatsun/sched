@@ -21,8 +21,6 @@ if (($this_month == 11) || ($this_month == 12)) {
 }
 
 define('REQUIRED_MARKER', '<span style="color:red;"><strong>!</strong></span>');
-define('BACKTO_SEPARATOR', ',');
-// define('HOME_URL', 'index.php');
 
 
 // -------- sqlite tables --------- 

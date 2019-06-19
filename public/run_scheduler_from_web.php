@@ -1,35 +1,25 @@
 <?php
 require_once 'start.php';
-
-// session_start();
-
-// require_once 'utils.php';
-// require_once 'globals.php';
-// require_once 'display/includes/header.php';
 require_once 'auto_assignments/assignments.php';
 
 if (0) deb("run_scheduler_from_web.php: _POST = ", $_POST);
 if (0) deb("run_scheduler_from_web.php: _GET = ", $_GET);
-
-// $back_to_link = backTo($_GET, $_POST);
-
-// if (0) deb("run_scheduler_from_web.php: back_to = {$back_to}");
-
-$page .= renderHeadline('Run the Scheduler', BREADCRUMBS, "", 0);
-// $page .= renderHeadline('Run the Scheduler', HOME_LINK . ADMIN_LINK . $back_to_link , "", 0);
-$page .= renderParametersForm($back_to);
+if (0) deb("run_scheduler_from_web.php: array_key_exists(previewonly, _GET?: )" . array_key_exists("previewonly", $_GET));
+if (array_key_exists("previewonly", $_GET)) $preview_only = "previewonly=";
+// if (0) deb("run_scheduler_from_web.php: !array_key_exists(previewonly=, _GET?: )" . !array_key_exists("previewonly=", $_GET));
+$page .= renderHeadline('Run the Scheduler', CRUMBS, "", 0);
+$page .= renderParametersForm($preview_only);
 if ($_POST) $page .= renderSchedule($_POST); 
 print $page;
 
-function renderParametersForm($back_to) { 
-	if (0) deb("run_scheduler_from_web.renderParametersForm(): back_to = {$back_to}");
-	$form = '';
-	$form .= '<form action="run_scheduler_from_web.php?backto="' . BREADCRUMBS . ' method="post">'; 
+function renderParametersForm($preview_only) { 
+	$form .= '<form action="' . makeURI("run_scheduler_from_web.php", CRUMBS, $preview_only) . '" method="post">'; 
  	$form .= '<br>';
-	$form .= '<input type="hidden" name="backto" value = "' . BREADCRUMBS . '">';
+	$form .= '<input type="hidden" name="backto" value = "' . CRUMBS . '">';
 	$form .= '<input type="radio" name="option" value = "h" checked>Trial run - just show the results below<br>';
-	if ($back_to_link == CREATE_SCHEDULE_LINK) {
-		// $form .= '<input type="radio" name="option" value = "d">Write assignments to database<br>';
+	// if ($back_to_link == CREATE_SCHEDULE_LINK) {
+	// if (!array_key_exists("previewonly", $_GET)) {
+	if (!$preview_only) {
 		$form .= '<input type="radio" name="option" value = "D">Write assignments to database (replacing any existing assignments for this season)<br>';
 	}
 	$form .= '<br>';	

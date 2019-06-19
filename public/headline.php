@@ -1,58 +1,112 @@
 <?php
 
+if (0) deb("headline.php: _SERVER['SCRIPT_URI'] = " . $_SERVER['SCRIPT_URI'] . "");
 if (0) deb("headline.php: _SERVER['SCRIPT_URL'] = " . $_SERVER['SCRIPT_URL'] . ""); 
 if (0) deb("headline.php: _SERVER['QUERY_STRING'] = " . $_SERVER['QUERY_STRING'] . ""); 
+if (0) deb("headline.php: _SERVER['HTTP_FORWARDED_REQUEST_URI'] = " . $_SERVER['HTTP_FORWARDED_REQUEST_URI'] . ""); 
 if (0) deb("headline.php: _SERVER =", $_SERVER); 
 if (0) deb("headline.php: _SESSION =", $_SESSION); 
 if (0) deb("headline.php: _REQUEST =", $_REQUEST); 
+if (0) deb("headline.php: _REQUEST['backto'] = " . $_REQUEST['backto']); 
 if (0) deb("headline.php: _GET =", $_GET); 
-if (0) deb("headline.php: _POST =", $_POST); 
+if (0) deb("headline.php: _POST =", $_POST);  
 
-// The url of the current page
-if ($_SERVER['SCRIPT_URL'] == "/") 
-	define('SCRIPT_URL', $_SERVER['PHP_SELF']);
-	// define('SCRIPT_URL', "/" . HOME_URL);
-else 
-	define('SCRIPT_URL', $_SERVER['SCRIPT_URL']);
-if (0) deb("headline.php: SCRIPT_URL = " . SCRIPT_URL); 
-if (0) deb("headline.php: _SERVER['PHP_SELF'] = " . $_SERVER['PHP_SELF']); 
+define('CRUMB_SEPARATOR', ';');
+if (0) deb("headline.php: CRUMB_SEPARATOR = " . CRUMB_SEPARATOR); 
+define('CRUMB_SEPARATOR_2', ',');
+if (0) deb("headline.php: CRUMB_SEPARATOR_2 = " . CRUMB_SEPARATOR_2);
 
-// The query string received by the current page
-define('QUERY_STRING', $_SERVER['QUERY_STRING']);
-if (0) deb("headline.php: QUERY_STRING = " . QUERY_STRING); 
 
-// The current breadcrumbs (caller stack of the current page)
-$breadcrumbs = $_REQUEST['backto'];
-if (0) deb("headline.php: breadcrumbs before removing own link = " . $breadcrumbs); 
-$breadcrumbs = str_replace(BACKTO_SEPARATOR . SCRIPT_URL, "", $_REQUEST['backto']);  // Don't add "my" url to "my" breadcrumbs
-if (0) deb("headline.php: breadcrumbs after removing own link = ". $breadcrumbs); 
-define('BREADCRUMBS', $breadcrumbs);
-// define('BREADCRUMBS', $_REQUEST['backto']);
-if (0) deb("headline.php: BREADCRUMBS = " . BREADCRUMBS); 
+define('CRUMMY', false); // Iff CRUMMY is true, crumbs will be shown.  This is to get on with other things while crumbs don't work
+if (CRUMMY) {
+	// The url of the current page (including query string if any)
+	if ($_SERVER['SCRIPT_URL'] == "/") 
+		define('SCRIPT_URL', $_SERVER['PHP_SELF']);
+	else 
+		define('SCRIPT_URL', $_SERVER['SCRIPT_URL']);
+	if (0) deb("headline.php: SCRIPT_URL = " . SCRIPT_URL); 
 
-// The breadcrumbs to be shown on any page that the current page is calling 
-if (!strpos(BREADCRUMBS, SCRIPT_URL)) {		// Add SCRIPT_URL to BREADCRUMBS to make NEXT_BREADCRUMBS
-	if (BREADCRUMBS && SCRIPT_URL) $separator = BACKTO_SEPARATOR;
-	define('NEXT_BREADCRUMBS', BREADCRUMBS . $separator . SCRIPT_URL);
-} else {																	// Unless it's already there
-	define('NEXT_BREADCRUMBS', BREADCRUMBS);
-}
-if (0) deb("headline.php: NEXT_BREADCRUMBS = " . NEXT_BREADCRUMBS); 
-// $next_breadcrumbs = BREADCRUMBS . $separator . $my_url;
-// $next_breadcrumbs = str_replace(SCRIPT_URL, "", $next_breadcrumbs);  // Get rid of duplicate breadcrumbs
-// if (0) deb("headline.php: next_breadcrumbs =", $next_breadcrumbs);
 
-// The breadcrumbs to be shown on any page to which the current page is returning 
-define('PREVIOUS_BREADCRUMBS', removeBreadcrumbs(BREADCRUMBS));
-if (0) deb("headline.php: PREVIOUS_BREADCRUMBS = " . PREVIOUS_BREADCRUMBS); 
-// $PREVIOUS_BREADCRUMBS = removeBreadcrumbs(BREADCRUMBS);
-// if (0) deb("headline.php: PREVIOUS_BREADCRUMBS =", $PREVIOUS_BREADCRUMBS);
+	// The URL that accessed this page
+	if ($_SERVER['HTTP_FORWARDED_REQUEST_URI'] == "/") 
+		$my_crumb = $_SERVER['PHP_SELF'];
+	else 
+		$my_crumb = $_SERVER['HTTP_FORWARDED_REQUEST_URI'];
+	$my_crumb = str_replace(CRUMB_SEPARATOR, CRUMB_SEPARATOR_2, $my_crumb); 
+	define('MY_CRUMB', $my_crumb);
+	if (0) deb("headline.php: MY_CRUMB = " . MY_CRUMB); 
 
-// // An array containing the url and the label of the BREADCRUMBS
-// define('LABELED_BREADCRUMBS', labelBreadcrumbs(BREADCRUMBS));
-// if (0) deb("headline.php: LABELED_BREADCRUMBS =", LABELED_BREADCRUMBS); 
-// // $labeled_breadcrumbs = labelBreadcrumbs(BREADCRUMBS);
-// // if (0) deb("headline.php: labeled_breadcrumbs =", $labeled_breadcrumbs);
+	// The crumbs to be displayed on this page (previous calling sequence)
+	define('HTTP_FORWARDED_REQUEST_URI', $_SERVER['HTTP_FORWARDED_REQUEST_URI']);
+	define('QUERY_STRING', $_SERVER['QUERY_STRING']);
+	$extra_queries = str_replace("backto=" . $crumbs . "&", "", QUERY_STRING);
+	if (0) deb("headline.php: extra_queries = " . $extra_queries);  
+	if (0) deb("headline.php: HTTP_FORWARDED_REQUEST_URI = " . HTTP_FORWARDED_REQUEST_URI);
+	// $crumbs = $_REQUEST['backto'];
+	$crumbs = substr(HTTP_FORWARDED_REQUEST_URI, strpos(HTTP_FORWARDED_REQUEST_URI, "=")+1); 
+	// $crumbs = substr($_SERVER['QUERY_STRING'], strpos($_SERVER['QUERY_STRING'], "?backto=")+1); 
+	// $crumbs = substr($_SERVER['QUERY_STRING'], strpos($_SERVER['QUERY_STRING'], "backto=")+7); 
+	// $crumbs = $_SERVER['QUERY_STRING']; 
+	define('CRUMBS', $crumbs);
+	if (0) deb("headline.php: CRUMBS = " . CRUMBS); 
+	// $crumbs_arr = explode(CRUMB_SEPARATOR, CRUMBS);
+	// define ('CRUMBS_ARR', $crumbs_arr);
+	define ('CRUMBS_ARR', explode(CRUMB_SEPARATOR, CRUMBS));
+	if (0) deb("headline.php: CRUMBS_ARR = ", CRUMBS_ARR); 
+
+	// The crumbs to be shown on any page that the current page is calling 
+	if (CRUMBS && MY_CRUMB) $separator = CRUMB_SEPARATOR;
+	define('NEXT_CRUMBS', CRUMBS . $separator . MY_CRUMB);
+	if (0) deb("headline.php: NEXT_CRUMBS = " . NEXT_CRUMBS);
+	// $next_crumbs_arr = explode(CRUMB_SEPARATOR, NEXT_CRUMBS);
+	// if (0) deb("headline.php: next_crumbs_arr = ", $next_crumbs_arr); 
+	define('NEXT_CRUMBS_ARR', explode(CRUMB_SEPARATOR, NEXT_CRUMBS));
+	if (0) deb("headline.php: NEXT_CRUMBS_ARR = ", NEXT_CRUMBS_ARR); 
+
+	// The crumbs to be shown on any page to which the current page is returning 
+	define('PREVIOUS_CRUMBS', removeCrumbs(CRUMBS));
+	if (0) deb("headline.php: PREVIOUS_CRUMBS = " . PREVIOUS_CRUMBS); 
+} else {
+	define('MY_CRUMB', "");
+	define('CRUMBS', "");
+	define('NEXT_CRUMBS', "");
+	define('PREVIOUS_CRUMBS', "");
+	define('CRUMBS_ARR', "");
+} 
+
+
+///////////////////////////////////////// old version:
+
+// // The query string received by the current page
+// define('QUERY_STRING', $_SERVER['QUERY_STRING']);
+// if (0) deb("headline.php: QUERY_STRING = " . QUERY_STRING); 
+
+// // The current crumbs (caller stack of the current page)
+// $crumbs = $_REQUEST['backto'];
+// if (0) deb("headline.php: crumbs before removing own link = " . $crumbs); 
+// $crumbs = str_replace(CRUMB_SEPARATOR . SCRIPT_URL, "", $_REQUEST['backto']);  // Don't add "my" url to "my" crumbs
+// if (0) deb("headline.php: crumbs after removing own link = ". $crumbs); 
+// define('CRUMBS', $crumbs);
+// // define('CRUMBS', $_REQUEST['backto']);
+// if (0) deb("headline.php: CRUMBS = " . CRUMBS); 
+
+// // The crumbs to be shown on any page that the current page is calling 
+// // $extra_queries = str_replace("backto=" . CRUMBS . "&", "", QUERY_STRING);
+// // if (0) deb("headline.php: extra_queries = " . $extra_queries); 
+
+// // $my_crumb = ($extra_queries) ? SCRIPT_URL . "?" . $extra_queries : SCRIPT_URL;
+// $my_crumb = SCRIPT_URL;
+// if (!strpos(CRUMBS, $my_crumb)) {		// Add my crumb to CRUMBS to make NEXT_CRUMBS
+	// if (CRUMBS && $my_crumb) $separator = CRUMB_SEPARATOR;
+	// define('NEXT_CRUMBS', CRUMBS . $separator . $my_crumb);
+// } else {																	// Unless it's already there
+	// define('NEXT_CRUMBS', $my_crumb);
+// }
+// if (0) deb("headline.php: NEXT_CRUMBS = " . NEXT_CRUMBS); 
+
+// // The crumbs to be shown on any page to which the current page is returning 
+// define('PREVIOUS_CRUMBS', removeCrumbs(CRUMBS));
+// if (0) deb("headline.php: PREVIOUS_CRUMBS = " . PREVIOUS_CRUMBS); 
 
 
 //////////////////////////////////////////////// FUNCTIONS 
@@ -60,22 +114,21 @@ if (0) deb("headline.php: PREVIOUS_BREADCRUMBS = " . PREVIOUS_BREADCRUMBS);
 /*
 Print a headline for a page
 */
-function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_link=1) {
-	// global $labeled_breadcrumbs;	
+function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_link=1) {
 	if (0) deb ("headline.renderHeadline(): text =", $text);
-	if (0) deb ("headline.renderHeadline(): breadcrumbs_str =", $breadcrumbs_str);
-	if (0) deb ("headline.renderHeadline(): labeled_breadcrumbs =", $labeled_breadcrumbs);
+	if (0) deb ("headline.renderHeadline(): crumbs_str =", $crumbs_str);
+	if (0) deb ("headline.renderHeadline(): labeled_crumbs =", $labeled_crumbs);
 	$td_style = 'background-color:white;';
-	$labeled_breadcrumbs = labelBreadcrumbs($breadcrumbs_str);
-	if ($labeled_breadcrumbs) {
-		foreach($labeled_breadcrumbs as $i=>$labeled_breadcrumb) {
-			$breadcrumbs_list .= '&nbsp;&nbsp;<a  href="'. $labeled_breadcrumb['url'] . '">' . $labeled_breadcrumb['label'] . '</a>'; 
+	$labeled_crumbs = labelCrumbs($crumbs_str);
+	if ($labeled_crumbs) {
+		foreach($labeled_crumbs as $i=>$labeled_crumb) {
+			$crumbs_list .= '&nbsp;&nbsp;<a  href="'. $labeled_crumb['url'] . '">' . $labeled_crumb['label'] . '</a>'; 
 		}
-		$breadcrumbs_display = '
+		$crumbs_display = '
 			<tr style="font-size:10pt; font-style:italic">
-				<td colspan="2" style="text-align:right; ' . $td_style . '"><<<<< &nbsp;&nbsp;go back to:' . $breadcrumbs_list . '</td>
+				<td colspan="2" style="text-align:right; ' . $td_style . '"><<<<< &nbsp;&nbsp;go back to:' . $crumbs_list . '</td>
 			</tr>';
-		if (0) deb ("headline.renderHeadline(): breadcrumbs_display =", $breadcrumbs_display);
+		if (0) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);
 	}
 
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
@@ -104,10 +157,10 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_lin
 			<input type="submit" value="Sign in as a plain old ordinary user.">
 		</form>
 		</p><br></div>';
-	if (0) deb ("headline.renderHeadline(): next_breadcrumbs =", $next_breadcrumbs);
+	if (0) deb ("headline.renderHeadline(): NEXT_CRUMBS = " . NEXT_CRUMBS);
 	if (userIsAdmin() && $show_admin_link) $admin_link =  
 		'<div style=' . $color . '>
-			<a style=' . $color . ' href="/admin.php?backto=' . $next_breadcrumbs . '"><strong>Open the Admin Dashboard</strong></a>
+			<a style=' . $color . ' href="'. makeURI("/admin.php", NEXT_CRUMBS) . '"><strong>Open the Admin Dashboard</strong></a>
 		</div>
 		<br>';
 
@@ -119,7 +172,7 @@ function renderHeadline($text, $breadcrumbs_str="", $subhead="", $show_admin_lin
 	{$admin_notice}
 	{$admin_link}
 	<table>
-		{$breadcrumbs_display}
+		{$crumbs_display}
 		<tr>
 			<td style="$td_style"><img src={$community_logo}></td>
 			{$headline}	
@@ -129,19 +182,19 @@ EOHTML;
 }
 
 
-// BREADCRUMBS FUNCTIONS - start ----------------------------------------------
+// CRUMBS FUNCTIONS - start ----------------------------------------------
 
 
-function addBreadcrumb($crumbs="", $crumb_to_add="") {
-	if ($crumbs && $crumb_to_add) $crumbs .= BACKTO_SEPARATOR;
+function addCrumb($crumbs="", $crumb_to_add="") {
+	if ($crumbs && $crumb_to_add) $crumbs .= CRUMB_SEPARATOR;
 	$crumbs .= $crumb_to_add;
-	if (0) deb("headline.addBreadcrumb(): crumbs after add = {$crumbs}");
+	if (0) deb("headline.addCrumb(): crumbs after add = {$crumbs}");
 	return $crumbs; 
 }
 
-function removeBreadcrumbs($crumbs="", $n=1) {
-	// Remove the rightmost $n breadcrumbs from a breadcrumbs string
-	if (0) deb("headline.removeBreadcrumbs(): crumbs before removing {$n} = {$crumbs}");
+function removeCrumbs($crumbs="", $n=1) {
+	// Remove the rightmost $n crumbs from a crumbs string
+	if (0) deb("headline.removeCrumbs(): crumbs before removing {$n} = {$crumbs}");
 	for ($i=1; $i<=$n; $i++) {
 		if (strrpos($crumbs, ",")) {
 			$crumbs = substr($crumbs, 0, $i);
@@ -149,38 +202,17 @@ function removeBreadcrumbs($crumbs="", $n=1) {
 			$crumbs = "";
 		}
 	}
-	if (0) deb("headline.removeBreadcrumbs(): crumbs after removing {$n} = {$crumbs}");
+	if (0) deb("headline.removeCrumbs(): crumbs after removing {$n} = {$crumbs}");
 	return $crumbs;
 }
 
-// function getBreadcrumbs() {
-	// // if (0) deb("headline.getBreadcrumbs(): _POST = ", $_POST);
-	// // if (0) deb("headline.getBreadcrumbs(): _GET = ", $_GET);
-	// // $crumbs = "";
-	// // if (array_key_exists('backto', $_GET)) $crumbs = $_GET['backto'];
-	// // elseif (array_key_exists('backto', $_POST))	$crumbs = $_POST['backto'];
-	// $crumbs = $_REQUEST['backto'];
-	// if (0) deb("headline.getBreadcrumbs(): crumbs = {$crumbs}");
-	// return $crumbs;
-// }
 
-// ---------- constants for breadcrumbs ---------
-
-define('HOME_LINK', 'Home,index.php'); 
-define('SIGNUPS_LINK', 'Manage&nbsp;Seasons,seasons.php'); 
-define('SURVEY_LINK', 'Manage&nbsp;Survey,survey_steps.php');  
-define('ASSIGNMENTS_LINK', 'Refine&nbsp;the&nbsp;Schedule,dashboard.php'); 
-define('CHANGE_SETS_LINK', 'Change&nbsp;Sets,change_sets.php');
-define('ADMIN_LINK', 'Admin&nbsp;Dashboard,admin.php');
-define('CREATE_SCHEDULE_LINK', 'Create&nbsp;the&nbsp;Schedule,schedule_steps.php');
-
-
-function labelBreadcrumbs($breadcrumbs_str) { 
-	// Returns the breadcrumbs in $breadcrumbs_str,
-	// if it appears in the $breadcrumb_labels array",
-	// in an array containing the 'url' and the 'label' to be displayed in the breadcrumbs list.
+function labelCrumbs($crumbs_str) { 
+	// Returns the crumbs in $crumbs_str,
+	// if it appears in the $crumb_labels array",
+	// in an array containing the 'url' and the 'label' to be displayed in the crumbs list.
 	
-	$breadcrumb_labels = array(
+	$crumb_labels = array(
 		'/' => 'Home',
 		'/index.php' => 'Home',
 		'/seasons.php' => 'Manage Seasons',
@@ -193,29 +225,44 @@ function labelBreadcrumbs($breadcrumbs_str) {
 		'/survey_page_1.php' => 'Signups',
 		'/survey_page_2.php' => 'Preferences'
 	);
-	$labeled_breadcrumbs = array();
+	$labeled_crumbs = array();
 	
-	if (0) deb ("headline.labelBreadcrumbs(): breadcrumbs_str =", $breadcrumbs_str);
-	if ($breadcrumbs_str) {
-		$breadcrumbs_arr = explode(BACKTO_SEPARATOR, $breadcrumbs_str);
-		if (0) deb ("headline.labelBreadcrumbs(): breadcrumbs_arr =", $breadcrumbs_arr);
-		foreach($breadcrumbs_arr as $i=>$breadcrumb) {
-			if ($breadcrumb_labels[$breadcrumb]) {
-				$labeled_breadcrumb = array (
-					'url' => $breadcrumb . "?backto=" . $previous_urls,
-					'label' => $breadcrumb_labels[$breadcrumb]
-				);
-			$labeled_breadcrumbs[] = $labeled_breadcrumb;
-			if (0) deb ("headline.labelBreadcrumbs(): labeled_breadcrumb =", $labeled_breadcrumb);
-			$previous_urls = addBreadcrumb($previous_urls, $breadcrumb);
+	if (0) deb ("headline.labelCrumbs(): crumbs_str =", $crumbs_str);
+	if ($crumbs_str) {
+		// $crumbs_arr = explode(CRUMB_SEPARATOR, $crumbs_str);
+		$crumbs_arr = CRUMBS_ARR;
+		if (0) deb ("headline.labelCrumbs(): CRUMBS_ARR =", CRUMBS_ARR);
+		if (0) deb ("headline.labelCrumbs(): crumbs_arr =", $crumbs_arr);
+		if ($crumbs_arr) {
+			foreach($crumbs_arr as $i=>$crumb) {
+				$crumb_url = explode("?", $crumb, 2)[0];
+				if (!$crumb_url) $crumb_url = $crumb;
+				if (0) deb ("headline.labelCrumbs(): crumb_url =", $crumb_url);
+				if ($crumb_labels[$crumb_url]) {
+					$labeled_crumb = array (
+						'url' => $crumb,
+						'label' => $crumb_labels[$crumb_url]
+					);
+				}
+				$labeled_crumbs[] = $labeled_crumb; 
 			}
 		}
 	}
-	if (0) deb ("headline.labelBreadcrumbs(): labeled_breadcrumbs =", $labeled_breadcrumbs);
-	return $labeled_breadcrumbs; 
+	if (0) deb ("headline.labelCrumbs(): labeled_crumbs =", $labeled_crumbs);
+	return $labeled_crumbs; 
 }
 
-// BREADCRUMBS FUNCTIONS - end ----------------------------------------------
+// ---------- constants for crumbs ---------
+
+define('HOME_LINK', 'Home,index.php'); 
+define('SIGNUPS_LINK', 'Manage&nbsp;Seasons,seasons.php'); 
+define('SURVEY_LINK', 'Manage&nbsp;Survey,survey_steps.php');  
+define('ASSIGNMENTS_LINK', 'Refine&nbsp;the&nbsp;Schedule,dashboard.php'); 
+define('CHANGE_SETS_LINK', 'Change&nbsp;Sets,change_sets.php');
+define('ADMIN_LINK', 'Admin&nbsp;Dashboard,admin.php');
+define('CREATE_SCHEDULE_LINK', 'Create&nbsp;the&nbsp;Schedule,schedule_steps.php');
+
+// CRUMBS FUNCTIONS - end ----------------------------------------------
 
 
 

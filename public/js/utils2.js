@@ -7,6 +7,7 @@ function colorChangedControl(control) {
 	var change_count = document.getElementById("change_count");
 	var i;
 
+	// alert("colorChangedControl(control): hi!");
 	// Determine whether this control is set to do a change
 	
 	if (control.type == "select-one") {
@@ -126,5 +127,25 @@ function markUndos(control) {
 function setFormAction(form_id, action) { 
 	// Change the submit action for this form.  Usually invoked by onclick from a submit button.
 	document.getElementById(form_id).action = action;
+}
+
+
+function publishVersion(URL) {
+	// alert ("publishVersion(): URL = " + URL); 
+	var versions = document.getElementsByName("version");
+	var version;
+	// alert ("publishVersion(): versions = " + versions.length);
+	for (i = 0; i < versions.length; i++) {
+		// alert ("publishVersion(): versions.value = " + versions[i].value + " checked = " + versions[i].checked);
+		// alert ("publishVersion(): versions.checked = " + versions[i].checked);
+		if (versions[i].checked) {
+			version = versions[i].value;
+			// alert ("publishVersion(): version = " + version);
+			window.open(URL + version); 
+			return false;			
+			// return versions[i].value; 
+		}
+	}
+	alert ("You must select a version");
 }
 

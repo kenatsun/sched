@@ -265,7 +265,7 @@ EOHTML;
 				}
 
 				$date_string = SEASON_START_YEAR . "-" . zeroPad($month_num, 2) . "-" . zeroPad($i, 2); 
-				$meal = sqlSelect("*", MEALS_TABLE, "date = '{$date_string}'", "", (0), "calendar.renderMealsInCalendar(): meal")[0];
+				$meal = sqlSelect("*", MEALS_TABLE, "date = '{$date_string}'", "skip_indicator = 0", (0), "calendar.renderMealsInCalendar(): meal")[0];
 				$meal_id = $meal['id'];
 				if (0) deb("calendar.renderMealsInCalendar(): SEASON_START_YEAR: " . SEASON_START_YEAR); 
 				$cell = '';	

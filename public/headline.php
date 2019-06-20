@@ -148,7 +148,7 @@ function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_link=1) 
 	if ($instance_notice && !userIsAdmin()) $instance_notice .= "<br>";
 	// $end_session_label = "End this session and start a new one.";
 	// $sign_in_as_guest_label = "Sign in as a guest";
-	if (userIsAdmin()) $admin_notice =
+	if (userIsAdmin() && !$_GET['printable'] == 1) $admin_notice =
 		'
 		<div style=' . $color . '><p>
 		<form method="post" action="' . $_SERVER['PHP_SELF'] . '">

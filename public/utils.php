@@ -762,7 +762,7 @@ function getJobsFromDB($season_id) {
 
 function renderJobSignups($headline=NULL, $include_details) {
 	$jobs = getJobs();
-	if (0) deb("report.php: renderJobSignups(): getJobs() returns:", $jobs);
+	if (0) deb("report.php: renderJobSignups(): getJobs():", $jobs);
 	$signups = getJobSignups();
 	if (0) deb("report.php: renderJobSignups(): getJobSignups() returns:", $signups);
 
@@ -834,6 +834,21 @@ function renderJobSignups($headline=NULL, $include_details) {
 		$signup_rows = "";
 	}
 
+	$meals_in_season = sqlSelect("count(id) as id", MEALS_TABLE, "skip_indicator = 0 and season_id = " . SEASON_ID, (0))[0]['id'];
+	// Render a row showing total jobs to fill for each job
+	if (0) deb("utils.renderJobSignups(): meals_in_season = ", $meals_in_season);
+	$needed_row = "<tr>
+		<td {$background}><strong>jobs to fill</strong></td>";
+	// if (0) deb("utils.renderJobSignups(): jobs = ", $jobs);
+	foreach($jobs as $index=>$job) {
+		if (0) deb("utils.renderJobSignups(): job['instances'] = ", $job['instances']);
+		$shifts_count = $meals_in_season * $job['workers_per_shift'];
+		$needed_row .= "<td {$background}><strong>" . $shifts_count . "</strong></td>";
+		// $needed_row .= "<td {$background}><strong>{$job['instances']}</strong></td>";
+		if (userIsAdmin() && $include_details) $needed_row .= "<td {$background}></td><td {$background}></td>";
+	}
+	$needed_row .= "</tr>";
+
 	// Render a row showing total signups for each job
 	$background = ($include_details ? ' style="background:lightgreen;" ' : ' style="background:white;" ');
 	$totals_row = "<tr>
@@ -844,20 +859,13 @@ function renderJobSignups($headline=NULL, $include_details) {
 	}
 	$totals_row .= "</tr>";
 	
-	// Render a row showing total jobs to fill for each job
-	$needed_row = "<tr>
-		<td {$background}><strong>jobs to fill</strong></td>";
-	foreach($jobs as $index=>$job) {
-		$needed_row .= "<td {$background}><strong>{$job['instances']}</strong></td>";
-		if (userIsAdmin() && $include_details) $needed_row .= "<td {$background}></td><td {$background}></td>";
-	}
-	$needed_row .= "</tr>";
-
 	// Render a row showing total signups shortfall for each job
 	$shortfall_row = "<tr>
 		<td {$background}><strong>signups still needed</strong></td>";
 	foreach($jobs as $index=>$job) {
-		$shortfall = $job['instances'] - $job['signups'];
+		// $shortfall = $job['instances'] - $job['signups'];
+		$shifts_count = $meals_in_season * $job['workers_per_shift'];
+		$shortfall = $shifts_count - $job['signups'];
 		if ($shortfall == 0) $shortfall = '';
 		$shortfall_row .= "<td {$background}><strong>{$shortfall}</strong></td>";
 		if (userIsAdmin() && $include_details) $shortfall_row .= "<td {$background}></td><td {$background}></td>";

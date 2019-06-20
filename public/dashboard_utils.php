@@ -5,7 +5,7 @@ require_once "change_sets_utils.php";
 
 //////////////////////////////////////////////////////////////// FUNCTIONS
 
-function displaySchedule($show_controls=true) { 
+function displaySchedule($controls_display="show", $change_markers_display="show") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
 	if (0) deb("dashboard.displaySchedule(): CRUMBS = " . CRUMBS);
 	if (0) deb("dashboard.displaySchedule(): NEXT_CRUMBS = {NEXT_CRUMBS}"); 
@@ -34,7 +34,7 @@ function displaySchedule($show_controls=true) {
 	}
 	$headline = renderHeadline($final . "Sunward Dinner Teams for {$season['name']}", CRUMBS, $subhead, 0); 
 	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
-	$assignments_form = renderAssignmentsForm($show_controls);
+	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
 	// if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 
 	if (0) deb("dashboard.displaySchedule(): array_key_exists(previewonly, _GET)? " . array_key_exists("previewonly", $_GET));
@@ -50,7 +50,7 @@ EOHTML;
 	print $page;
 }
 
-function renderAssignmentsForm($show_controls=true) {	
+function renderAssignmentsForm($controls_display="show", $change_markers_display="show") {	
 	$jobs_table = SURVEY_JOB_TABLE;
 	$shifts_table = SCHEDULE_SHIFTS_TABLE;
 	$workers_table = AUTH_USER_TABLE;
@@ -60,9 +60,10 @@ function renderAssignmentsForm($show_controls=true) {
 	$meals_table = MEALS_TABLE;
 	$season_id = SEASON_ID;
 	
+	if (0) deb("dashboard.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
 	$jobs = getJobs();
 	if (0) deb("dashboard.php.renderAssignmentsForm(): jobs = ", $jobs);
-	if (0) deb("dashboard.php.renderAssignmentsForm(): show_controls = ", $show_controls);
+	if (0) deb("dashboard.php.renderAssignmentsForm(): controls_display = ", $controls_display);
 
 	// Get id of the most recent scheduler run
 	$scheduler_run_id = scheduler_run()['id'];
@@ -97,18 +98,19 @@ function renderAssignmentsForm($show_controls=true) {
 
 	// Make the actions rows
 	if (userIsAdmin()) {
-		if (0) deb("dashboard.php.renderAssignmentsForm(): show_controls =", $show_controls);
+		// if (0) deb("dashboard.php.renderAssignmentsForm(): controls_display =", $controls_display);
+		if (0) deb("dashboard.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
 
 		// Make publish row, if there are any saved changes
 		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $scheduler_run_id . " and published = 0", "", (0))[0];
-		if ($change_sets) {
-			if ($show_controls) {
+		if ($change_sets && $change_markers_display == "show") {
+			if ($controls_display == "show") {
 				$publish_buttons = '
 					&nbsp;&nbsp;
 					<span name="publish_buttons" style="text-align:left;">
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("publish.php", NEXT_CRUMBS) . '&apos;)" value="Publish changes (after review)"> 
+						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("publish.php", NEXT_CRUMBS) . '\')" value="Publish changes (after review)"> 
 						&nbsp;&nbsp;
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("change_sets.php", NEXT_CRUMBS) . '&apos;)" value="Undo changes (after review)"> 
+						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_sets.php", NEXT_CRUMBS) . '\')" value="Undo changes (after review)"> 
 					</span>
 				'; 
 			}
@@ -136,8 +138,8 @@ function renderAssignmentsForm($show_controls=true) {
 		// Make save row
 		$save_buttons = '
 			&nbsp;&nbsp;<span style="text-align:left;">
-				<input type="submit" id="save" name="save" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("change_set.php", NEXT_CRUMBS) . '&apos;)" value="Save these changes (after review)"> 
-				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(&apos;assignments_form&apos;,&apos;' . makeURI("dashboard.php", CRUMBS) . '&apos;)" value="Cancel these changes"> 
+				<input type="submit" id="save" name="save" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_set.php", NEXT_CRUMBS) . '\')" value="Save these changes (after review)"> 
+				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS) . '\')" value="Cancel these changes"> 
 			</span>&nbsp;&nbsp;
 		';
 		$save_legend = '
@@ -165,7 +167,7 @@ function renderAssignmentsForm($show_controls=true) {
 		if (0) deb("dashboard.renderAssignmentsForm() meal_month = {$meal_month}");
 		if (0) deb("dashboard.php.renderAssignmentsForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
 
-		if ($nrows == $save_button_interval && userIsAdmin() && $show_controls) {
+		if ($nrows == $save_button_interval && userIsAdmin() && $controls_display == "show") {
 			if (0) deb("dashboard.renderAssignmentsForm(): publish_actions_row (repeat) = ", $publish_actions_row);
 			$meal_rows .= $publish_actions_row . $save_actions_row . $header_row;
 			// $meal_rows .= $actions_row . $header_row;
@@ -223,7 +225,7 @@ function renderAssignmentsForm($show_controls=true) {
 				if (0) deb("dashboard.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assm_id = {$assignment['assignment_id']}");		
 				
 				// If assignment's status changed since generation, make a change marker
-				if ($has_changed) {
+				if ($has_changed && $change_markers_display == "show") {
 					// Get data about the latest change
 					$select = "s.when_saved as when_saved, s.id as id";
 					$from = CHANGES_TABLE . " as c, " . CHANGE_SETS_TABLE . " as s";
@@ -261,12 +263,12 @@ function renderAssignmentsForm($show_controls=true) {
 				
 				// Render the assignment if it exists and/or has been removed since generation
 				// Don't show an assignment that was not generated and doesn't currently exist
-				if ($exists_now || $has_changed) {
+				if ($exists_now || ($has_changed && $change_markers_display == "show")) {
 					$shift_cell .= '<tr><td style="' . $assignment_color . '"><strong>' . $assignment_icon . '&nbsp;<span style="' . $assignment_decoration . '">' . $assignment['worker_name'] . '</span></strong>' . $wkr_id . $change_marker; 
 					if ($exists_now) --$slots_to_fill;
 				}
 				
-				if (userIsAdmin() && $show_controls) {
+				if (userIsAdmin() && $controls_display == "show") {
 					// Display controls that would remove worker from shift, unless worker has been removed already
 					if ($exists_now) {	
 						$id = 'remove_sh_' . $shift_id . '_wkr_' . $assignment['worker_id'];
@@ -311,7 +313,7 @@ function renderAssignmentsForm($show_controls=true) {
 				}
 			}
 			
-			if (userIsAdmin() && $show_controls) { 
+			if (userIsAdmin() && $controls_display == "show") { 
 				// Figure out which workers could be added to this shift
 				$available_workers = getAvailableWorkersForShift($shift_id, FALSE, TRUE);
 				if (0) deb("dashboard.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, available_workers = ", $available_workers); 

@@ -47,7 +47,7 @@ function finishSurvey($survey, $person_id) {
 	} else {
 		$insufficient_prefs_msg = '';
 	}
-	$headline = renderHeadline("Thank you, {$person_name}!", HOME_LINK . SIGNUPS_LINK . $person_id); // . PREFS_LINK . $person_id);
+	$headline = renderHeadline("Thank you, {$person_name}!", CRUMBS); // . PREFS_LINK . $person_id);
 	$out = <<<EOHTML
 	{$headline}
 <p>Dear {$person_first_name} ~

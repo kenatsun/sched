@@ -5,6 +5,7 @@ $season = getSeason();
 
 // Display the page
 $page = "";
+// $page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", ADMIN_LINK, "", 0); 
 $page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", CRUMBS, "", 0); 
 $page .= renderPageBody($season); 
 print $page;

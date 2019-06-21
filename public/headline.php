@@ -16,16 +16,15 @@ if (0) deb("headline.php: CRUMB_SEPARATOR = " . CRUMB_SEPARATOR);
 define('CRUMB_SEPARATOR_2', ',');
 if (0) deb("headline.php: CRUMB_SEPARATOR_2 = " . CRUMB_SEPARATOR_2);
 
+// The url of the current page (including query string if any)
+if ($_SERVER['SCRIPT_URL'] == "/") 
+	define('SCRIPT_URL', $_SERVER['PHP_SELF']);
+else 
+	define('SCRIPT_URL', $_SERVER['SCRIPT_URL']);
+if (0) deb("headline.php: SCRIPT_URL = " . SCRIPT_URL); 
 
 define('CRUMMY', false); // Iff CRUMMY is true, crumbs will be shown.  This is to get on with other things while crumbs don't work
 if (CRUMMY) {
-	// The url of the current page (including query string if any)
-	if ($_SERVER['SCRIPT_URL'] == "/") 
-		define('SCRIPT_URL', $_SERVER['PHP_SELF']);
-	else 
-		define('SCRIPT_URL', $_SERVER['SCRIPT_URL']);
-	if (0) deb("headline.php: SCRIPT_URL = " . SCRIPT_URL); 
-
 
 	// The URL that accessed this page
 	if ($_SERVER['HTTP_FORWARDED_REQUEST_URI'] == "/") 
@@ -71,42 +70,14 @@ if (CRUMMY) {
 	define('CRUMBS', "");
 	define('NEXT_CRUMBS', "");
 	define('PREVIOUS_CRUMBS', "");
-	define('CRUMBS_ARR', "");
+	if (SCRIPT_URL != '/index.php') {
+		$crumbs_arr = array();
+		$crumbs_arr[] = '/index.php';
+		if (userIsAdmin()) $crumbs_arr[] = '/admin.php';
+	}
+	define('CRUMBS_ARR', $crumbs_arr);
+	if (0) deb("headline.php: CRUMBS_ARR = ", CRUMBS_ARR); 
 } 
-
-
-///////////////////////////////////////// old version:
-
-// // The query string received by the current page
-// define('QUERY_STRING', $_SERVER['QUERY_STRING']);
-// if (0) deb("headline.php: QUERY_STRING = " . QUERY_STRING); 
-
-// // The current crumbs (caller stack of the current page)
-// $crumbs = $_REQUEST['backto'];
-// if (0) deb("headline.php: crumbs before removing own link = " . $crumbs); 
-// $crumbs = str_replace(CRUMB_SEPARATOR . SCRIPT_URL, "", $_REQUEST['backto']);  // Don't add "my" url to "my" crumbs
-// if (0) deb("headline.php: crumbs after removing own link = ". $crumbs); 
-// define('CRUMBS', $crumbs);
-// // define('CRUMBS', $_REQUEST['backto']);
-// if (0) deb("headline.php: CRUMBS = " . CRUMBS); 
-
-// // The crumbs to be shown on any page that the current page is calling 
-// // $extra_queries = str_replace("backto=" . CRUMBS . "&", "", QUERY_STRING);
-// // if (0) deb("headline.php: extra_queries = " . $extra_queries); 
-
-// // $my_crumb = ($extra_queries) ? SCRIPT_URL . "?" . $extra_queries : SCRIPT_URL;
-// $my_crumb = SCRIPT_URL;
-// if (!strpos(CRUMBS, $my_crumb)) {		// Add my crumb to CRUMBS to make NEXT_CRUMBS
-	// if (CRUMBS && $my_crumb) $separator = CRUMB_SEPARATOR;
-	// define('NEXT_CRUMBS', CRUMBS . $separator . $my_crumb);
-// } else {																	// Unless it's already there
-	// define('NEXT_CRUMBS', $my_crumb);
-// }
-// if (0) deb("headline.php: NEXT_CRUMBS = " . NEXT_CRUMBS); 
-
-// // The crumbs to be shown on any page to which the current page is returning 
-// define('PREVIOUS_CRUMBS', removeCrumbs(CRUMBS));
-// if (0) deb("headline.php: PREVIOUS_CRUMBS = " . PREVIOUS_CRUMBS); 
 
 
 //////////////////////////////////////////////// FUNCTIONS 
@@ -116,7 +87,7 @@ Print a headline for a page
 */
 function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_link=1) {
 	if (0) deb ("headline.renderHeadline(): text =", $text);
-	if (0) deb ("headline.renderHeadline(): crumbs_str =", $crumbs_str);
+	if (0) deb ("headline.renderHeadline(): crumbs_str = '" . $crumbs_str . "'");
 	if (0) deb ("headline.renderHeadline(): labeled_crumbs =", $labeled_crumbs);
 	$td_style = 'background-color:white;';
 	$labeled_crumbs = labelCrumbs($crumbs_str);
@@ -228,13 +199,15 @@ function labelCrumbs($crumbs_str) {
 	$labeled_crumbs = array();
 	
 	if (0) deb ("headline.labelCrumbs(): crumbs_str =", $crumbs_str);
-	if ($crumbs_str) {
+	if ($crumbs_str || CRUMBS_ARR) {
 		// $crumbs_arr = explode(CRUMB_SEPARATOR, $crumbs_str);
 		$crumbs_arr = CRUMBS_ARR;
 		if (0) deb ("headline.labelCrumbs(): CRUMBS_ARR =", CRUMBS_ARR);
 		if (0) deb ("headline.labelCrumbs(): crumbs_arr =", $crumbs_arr);
-		if ($crumbs_arr) {
-			foreach($crumbs_arr as $i=>$crumb) {
+		// if ($crumbs_arr) {
+			// foreach($crumbs_arr as $i=>$crumb) {
+		if (CRUMBS_ARR) {
+			foreach(CRUMBS_ARR as $i=>$crumb) {
 				$crumb_url = explode("?", $crumb, 2)[0];
 				if (!$crumb_url) $crumb_url = $crumb;
 				if (0) deb ("headline.labelCrumbs(): crumb_url =", $crumb_url);
@@ -263,6 +236,39 @@ define('ADMIN_LINK', 'Admin&nbsp;Dashboard,admin.php');
 define('CREATE_SCHEDULE_LINK', 'Create&nbsp;the&nbsp;Schedule,schedule_steps.php');
 
 // CRUMBS FUNCTIONS - end ----------------------------------------------
+
+///////////////////////////////////////// old version of CRUMBS generators:
+
+// // The query string received by the current page
+// define('QUERY_STRING', $_SERVER['QUERY_STRING']);
+// if (0) deb("headline.php: QUERY_STRING = " . QUERY_STRING); 
+
+// // The current crumbs (caller stack of the current page)
+// $crumbs = $_REQUEST['backto'];
+// if (0) deb("headline.php: crumbs before removing own link = " . $crumbs); 
+// $crumbs = str_replace(CRUMB_SEPARATOR . SCRIPT_URL, "", $_REQUEST['backto']);  // Don't add "my" url to "my" crumbs
+// if (0) deb("headline.php: crumbs after removing own link = ". $crumbs); 
+// define('CRUMBS', $crumbs);
+// // define('CRUMBS', $_REQUEST['backto']);
+// if (0) deb("headline.php: CRUMBS = " . CRUMBS); 
+
+// // The crumbs to be shown on any page that the current page is calling 
+// // $extra_queries = str_replace("backto=" . CRUMBS . "&", "", QUERY_STRING);
+// // if (0) deb("headline.php: extra_queries = " . $extra_queries); 
+
+// // $my_crumb = ($extra_queries) ? SCRIPT_URL . "?" . $extra_queries : SCRIPT_URL;
+// $my_crumb = SCRIPT_URL;
+// if (!strpos(CRUMBS, $my_crumb)) {		// Add my crumb to CRUMBS to make NEXT_CRUMBS
+	// if (CRUMBS && $my_crumb) $separator = CRUMB_SEPARATOR;
+	// define('NEXT_CRUMBS', CRUMBS . $separator . $my_crumb);
+// } else {																	// Unless it's already there
+	// define('NEXT_CRUMBS', $my_crumb);
+// }
+// if (0) deb("headline.php: NEXT_CRUMBS = " . NEXT_CRUMBS); 
+
+// // The crumbs to be shown on any page to which the current page is returning 
+// define('PREVIOUS_CRUMBS', removeCrumbs(CRUMBS));
+// if (0) deb("headline.php: PREVIOUS_CRUMBS = " . PREVIOUS_CRUMBS); 
 
 
 

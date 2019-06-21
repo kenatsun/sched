@@ -1,16 +1,10 @@
 <?php
-// session_start();
 require_once 'start.php';
-
-// require_once 'utils.php';
-// require_once 'globals.php';
 require_once 'classes/calendar.php';
 require_once 'classes/PeopleList.php'; 
 require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
-
-// require_once 'display/includes/header.php';
 require_once 'participation.php';
 require_once 'seasons_utils.php';
 require_once 'admin_utils.php';
@@ -33,7 +27,7 @@ EOHTML;
 // Make the page
 global $extended;
 if (0) deb("index: userIsAdmin() = " . userIsAdmin());
-$page .= renderHeadline("Sunward Meals Scheduling - {$season_name} Survey", CRUMBS);
+$page .= renderHeadline("Sunward Meals Scheduling - {$season_name} Survey", "");
 $extended = (sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['survey_extended']) ? 1 : 0;
 $now = time();
 if ($now <= DEADLINE || $extended || userIsAdmin()) {

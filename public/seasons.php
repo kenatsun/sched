@@ -23,7 +23,7 @@ if ($_POST['delete_season']) deleteSeason($_POST['delete_season']);
 $seasons = sqlSelect("*", SEASONS_TABLE, "", "start_date", (0), "Seasons"); 
 
 $page = "";
-$page .= renderHeadline("Manage Seasons", HOME_LINK); 
+$page .= renderHeadline("Manage Seasons", CRUMBS); 
 $page .= '<br>';
 $page .= 'To work on a different season, click on its name.<br><br>';
 $page .= renderSeasonsForm($seasons);

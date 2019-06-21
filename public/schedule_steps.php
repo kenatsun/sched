@@ -4,7 +4,7 @@ require_once 'start.php';
 $season = getSeason(); 
 
 // Display the page
-$page .= renderHeadline("Generate and Refine the " . $season['name'] . " Season Schedule", NEXT_CRUMBS, "", 0); 
+$page .= renderHeadline("Generate and Refine the " . $season['name'] . " Season Schedule", CRUMBS, "", 0); 
 $page .= renderPageBody($season); 
 print $page;
 

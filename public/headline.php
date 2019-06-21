@@ -144,11 +144,11 @@ function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_link=1) 
 	$instance = INSTANCE;
 	$database = DATABASE;
 	$color = '"color:red"';
-	$instance_notice = ($instance ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "");
+	$instance_notice = $instance && !$_GET['printable'] == 1 ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "";
 	if ($instance_notice && !userIsAdmin()) $instance_notice .= "<br>";
 	// $end_session_label = "End this session and start a new one.";
 	// $sign_in_as_guest_label = "Sign in as a guest";
-	if (userIsAdmin() && !$_GET['printable'] == 1) $admin_notice =
+	if (userIsAdmin() && !$_GET['printable'] == 1) $admin_notice = 
 		'
 		<div style=' . $color . '><p>
 		<form method="post" action="' . $_SERVER['PHP_SELF'] . '">

@@ -39,7 +39,7 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.p
 // Display the page
 $page = "";
 if (0) deb("season.php: NEXT_CRUMBS =", NEXT_CRUMBS); 
-if (1 ) deb("season.php: CRUMBS = " . CRUMBS); 
+if (0) deb("season.php: CRUMBS = " . CRUMBS); 
 $page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", CRUMBS, "", 0); 
 // $page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", HOME_LINK . ADMIN_LINK, "", 0); 
 $page .= renderPageBody($season, $parent_process_id);

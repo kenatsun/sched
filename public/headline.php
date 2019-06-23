@@ -75,6 +75,7 @@ if (CRUMMY) {
 		$crumbs_arr[] = '/index.php';
 		if (userIsAdmin()) $crumbs_arr[] = '/admin.php';
 	}
+	if ($_GET['version']) $crumbs_arr = "";  // no breadcrumbs for printable presentation of schedule
 	define('CRUMBS_ARR', $crumbs_arr);
 	if (0) deb("headline.php: CRUMBS_ARR = ", CRUMBS_ARR); 
 } 

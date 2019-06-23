@@ -47,8 +47,11 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 			// $break;
 	}
 	if (0) deb("dashboard.displaySchedule(): adjective = " . $adjective);
-	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", CRUMBS, $subhead, 0); 
-	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
+	if (0) deb("dashboard.displaySchedule(): version = " . $version);
+	$crumbs = $version ? "" : CRUMBS;  // Omit breadcrumbs from printable versions
+	if (0) deb("dashboard.displaySchedule(): crumbs = " . $crumbs);
+	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $crumbs, $subhead, 0);
+	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
 	// if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 

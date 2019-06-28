@@ -10,8 +10,7 @@ purgeUnsavedChangeSets();
 
 if (0) deb("change_sets.php: PREVIOUS_CRUMBS = {PREVIOUS_CRUMBS}"); 
 
-$headline = renderHeadline("Undo Changes?", CRUMBS, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
-// $headline = renderHeadline("Saved Changes", HOME_LINK . ADMIN_LINK . ASSIGNMENTS_LINK, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
+$headline = renderHeadline("Undo Changes?", CRUMBS_DISPLAY, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id} and published = 0", "when_saved desc", (0));
 
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 

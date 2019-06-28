@@ -94,6 +94,7 @@ function deleteSeason($season_id) {
 
 function seasonIsDeletable($season) {
 	if (0) deb("seasons_utils.seasonIsDeletable(): season = ", $season);
+	if (0) deb("seasons_utils.seasonIsDeletable(): season['deletable'] = ", $season['deletable']);
 	$season_id = $season['id'];
 	// Can't delete the current season
 	if ($season['current_season']) return FALSE; 

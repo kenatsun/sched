@@ -36,7 +36,7 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 	$worker_id = array_get($_GET, 'person');
 	if (0) deb("index: person from _GET:", $worker_id);
 	if (0) deb("index: _GET:", $_GET);
-	if (0) deb("index: NEXT_CRUMBS: " . NEXT_CRUMBS);
+	if (0) deb("index: NEXT_CRUMBS_IDS: " . NEXT_CRUMBS_IDS);
 	if (is_null($worker_id)) {
 		if (0) deb("index.php: gonna display home page");
 		$page .= render_countdown();
@@ -45,8 +45,8 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= render_person_menu();
 		$page .= render_footer();
 		$page .= render_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
-		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS));	
-		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS));			
+		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));	
+		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS_IDS));			
 	} else {
 		if (0) deb("index.php: gonna display first survey page");
 		// $page = build_survey($worker_id);
@@ -56,8 +56,8 @@ else {
 	if (0) deb("index.php: survey closed, so gonna display home page without user links");
 	$formatted_date = date('r', DEADLINE);
 	$page .= render_countdown();
-	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS));		
-	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS));	
+	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));		
+	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS_IDS));	
 }
 
 print $page;
@@ -170,7 +170,7 @@ function renderPeopleListAsLinks() {
 			$medals = "";
 		}
 		// $responded = (in_array($worker['id'], $responder_ids) ? $gold_star : "");	
-		$line = '<li><a href="' . makeURI("survey_page_1.php", NEXT_CRUMBS, 'person='. $worker["id"]) . '">' . $worker["name"] . '</a>' . $medals . '</li>';
+		$line = '<li><a href="' . makeURI("survey_page_1.php", NEXT_CRUMBS_IDS, 'person='. $worker["id"]) . '">' . $worker["name"] . '</a>' . $medals . '</li>';
 		$lines .= $line;
 		if (0) deb("index.getPeopleAsLinks: html line:", $line);
 

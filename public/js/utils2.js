@@ -130,22 +130,22 @@ function setFormAction(form_id, action) {
 }
 
 
-function publishVersion(URL) {
-	// alert ("publishVersion(): URL = " + URL); 
-	var versions = document.getElementsByName("version");
-	var version;
-	// alert ("publishVersion(): versions = " + versions.length);
-	for (i = 0; i < versions.length; i++) {
-		// alert ("publishVersion(): versions.value = " + versions[i].value + " checked = " + versions[i].checked);
-		// alert ("publishVersion(): versions.checked = " + versions[i].checked);
-		if (versions[i].checked) {
-			version = versions[i].value;
-			// alert ("publishVersion(): version = " + version);
-			window.open(URL + version); 
+function publishTeams(URL) {
+	// alert ("publishTeams(): URL = " + URL); 
+	var editions = document.getElementsByName("edition");
+	var edition;
+	// alert ("publishTeams(): editions = " + editions.length);
+	for (i = 0; i < editions.length; i++) {
+		// alert ("publishTeams(): editions.value = " + editions[i].value + " checked = " + editions[i].checked);
+		// alert ("publishTeams(): editions.checked = " + editions[i].checked);
+		if (editions[i].checked) {
+			edition = editions[i].value;
+			// alert ("publishTeams(): edition = " + edition);
+			window.open(URL + edition); 
 			return false;			
-			// return versions[i].value; 
+			// return editions[i].value; 
 		}
 	}
-	alert ("You must select a version");
+	alert ("You must select a edition");
 }
 

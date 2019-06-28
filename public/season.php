@@ -38,10 +38,9 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.p
 
 // Display the page
 $page = "";
-if (0) deb("season.php: NEXT_CRUMBS =", NEXT_CRUMBS); 
-if (0) deb("season.php: CRUMBS = " . CRUMBS); 
-$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", CRUMBS, "", 0); 
-// $page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", HOME_LINK . ADMIN_LINK, "", 0); 
+if (1) deb("season.php: NEXT_CRUMBS_IDS =", NEXT_CRUMBS_IDS); 
+if (1) deb("season.php: CRUMBS_DISPLAY = " . CRUMBS_DISPLAY); 
+$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", CRUMBS_DISPLAY, "", 0); 
 $page .= renderPageBody($season, $parent_process_id);
 print $page;
 

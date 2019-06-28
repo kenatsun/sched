@@ -1,10 +1,5 @@
 <?php
 require_once 'start.php';
-// session_start(); 
-
-// require_once 'globals.php';
-// require_once 'utils.php';
-// require_once 'display/includes/header.php';
 require_once 'seasons_utils.php';
 
 $dir = BASE_DIR;
@@ -23,7 +18,7 @@ if ($_POST['delete_season']) deleteSeason($_POST['delete_season']);
 $seasons = sqlSelect("*", SEASONS_TABLE, "", "start_date", (0), "Seasons"); 
 
 $page = "";
-$page .= renderHeadline("Manage Seasons", CRUMBS); 
+$page .= renderHeadline("Manage Seasons", CRUMBS_DISPLAY); 
 $page .= '<br>';
 $page .= 'To work on a different season, click on its name.<br><br>';
 $page .= renderSeasonsForm($seasons);

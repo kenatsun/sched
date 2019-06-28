@@ -1,9 +1,8 @@
 <?php
-require_once "globals.php";
-require_once "utils.php";
+require_once "start.php";
 require_once "classes/person.php";
 require_once "classes/survey.php";
-require_once "git_ignored.php";
+// require_once "git_ignored.php";
 
 function finishSurvey($survey, $person_id) {
 	if (0) deb("finish.finishSurvey(): survey:", $survey);
@@ -31,7 +30,7 @@ function finishSurvey($survey, $person_id) {
 	if ($_POST['send_email'] == 'default') $sending_email = SEND_EMAIL;
 	elseif ($_POST['send_email'] == 'yes') $sending_email = TRUE;
 	else $sending_email = FALSE;	
-	$email_coming = ($sending_email) ? "<p>We're also sending you an email containing this info (to {$person_email}), for your reference." : "";
+	$email_coming = ($sending_email) ? "<p>&nbsp;&nbsp;&nbsp;&nbsp;We're also sending you an email containing this info (to {$person_email}), for your reference." : "";
 	if (0) deb("finish.finishSurvey(): sending_email =", $sending_email);
 	if (0) deb("finish.finishSurvey(): email_coming =", $email_coming);
 		
@@ -47,19 +46,28 @@ function finishSurvey($survey, $person_id) {
 	} else {
 		$insufficient_prefs_msg = '';
 	}
-	$headline = renderHeadline("Thank you, {$person_name}!", CRUMBS); // . PREFS_LINK . $person_id);
+	$headline = renderHeadline("Thank you, {$person_name}!", CRUMBS_DISPLAY);
+	
+	$signup_crumb = sqlSelect("*", CRUMBS_TABLE, "url = '/survey_page_1.php'", "when_created desc", (0))[0];
+	$signup_uri = makeURI($signup_crumb['url'], "", $signup_crumb['query_string']);
+	if (0) deb("finish.displayResultsPage(): signup_uri:", $signup_uri);
+	$index_uri = makeURI("/index.html", "", "");
+	
+	// Render the page
 	$out = <<<EOHTML
 	{$headline}
 <p>Dear {$person_first_name} ~
+<br><br>
 <p>Thanks for completing your {$community} meals scheduling survey!
 {$prefs_line}
 {$email_coming}
-<p>~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)</p>
+<br><br>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~ The Sunward Meals Committee (Suzanne, Ken, Mark, Jon, & Ed)</p> 
 
 {$summary_text}
 <br>
-<p>You may <a href="{$dir}/survey_page_1.php?person={$person->id}">change your responses</a>
-	or <a href="{$dir}/index.php">take the survey for another person</a> at any time until {$deadline}, 
+<p>You may <a href="{$signup_uri}">change your responses</a>
+	or <a href="{$index_uri}">take the survey for another person</a> at any time until {$deadline}, 
 	when the survey closes.</p>
 EOHTML;
 	if (0) deb("finish.displayResultsPage(): worker = ", $worker);

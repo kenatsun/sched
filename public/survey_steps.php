@@ -6,7 +6,7 @@ $season = getSeason();
 // Display the page
 $page = "";
 // $page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", ADMIN_LINK, "", 0); 
-$page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", CRUMBS, "", 0); 
+$page .= renderHeadline("Conduct the " . $season['name'] . " Season Survey", CRUMBS_DISPLAY, "", 0); 
 $page .= renderPageBody($season); 
 print $page;
 
@@ -45,11 +45,11 @@ function renderPageBody($season) {
 		}
 	}
 
-	$where = "type = 'Tool' 
-		and season_id = " . $season['id'] . "
-		and parent_process_id = " . MONITOR_MANAGE_SURVEY_ID;
-	$tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
-	if (0) deb("survey_steps.renderPageBody(): tools = ", $tools);
+	// $where = "type = 'Tool' 
+		// and season_id = " . $season['id'] . "
+		// and parent_process_id = " . MONITOR_MANAGE_SURVEY_ID;
+	// $tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
+	// if (0) deb("survey_steps.renderPageBody(): tools = ", $tools);
 	return $body;
 }
 

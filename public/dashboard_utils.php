@@ -5,10 +5,10 @@ require_once "change_sets_utils.php";
 
 //////////////////////////////////////////////////////////////// FUNCTIONS
 
-function displaySchedule($controls_display="show", $change_markers_display="show", $version="") { 
+function displaySchedule($controls_display="show", $change_markers_display="show", $edition="") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
-	if (0) deb("dashboard.displaySchedule(): CRUMBS = " . CRUMBS);
-	if (0) deb("dashboard.displaySchedule(): NEXT_CRUMBS = {NEXT_CRUMBS}"); 
+	if (0) deb("dashboard.displaySchedule(): CRUMBS_DISPLAY = " . CRUMBS_DISPLAY);
+	if (0) deb("dashboard.displaySchedule(): NEXT_CRUMBS_IDS = {NEXT_CRUMBS_IDS}"); 
 	$now = date_create();
 	$now_f = date_format($now, "Y-m-d");
 	$change_request_end_date = $season['change_request_end_date'];
@@ -16,10 +16,10 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	$scheduling_end_date = $season['scheduling_end_date'];
 	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS");
 	// if (0) deb("dashboard.displaySchedule(): change_request_end_date = " . $change_request_end_date . "; scheduling_end_date = " . $scheduling_end_date . "; now = " . $now_f . "");
-	if (0) deb("dashboard.displaySchedule(): version = " . $version);
+	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
 	// if ($now_f <= $change_request_end_date) {		// If now is before the change request deadline 
-	if ($version == "first") {		
-	// switch ($version) {
+	if ($edition == "first") {		
+	// switch ($edition) {
 		// case "first":
 			// if (0) deb("before change req end date");
 			if (0) deb("first");
@@ -28,16 +28,16 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 			$change_requests_line = "Please send change requests by " . $change_request_end_date_f . " to ";
 			// $break;
 		// } elseif ($now_f <= $scheduling_end_date) {		// If now is before the end of the scheduling period
-		} elseif ($version == "revised") {		
+		} elseif ($edition == "revised") {		
 		// case "revised":
 			// if (0) deb("before scheduling end date");
 			if (0) deb("revised");
 			$adjective = "Revised ";
 			$subhead = "as of " . date_format($now, "g a F jS");
 			$change_requests_line = "Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
-			// $change_requests_line = "Proposed changes since the last version are marked with " . ADDED_ICON . " and " . REMOVED_ICON . ".<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
+			// $change_requests_line = "Proposed changes since the last edition are marked with " . ADDED_ICON . " and " . REMOVED_ICON . ".<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
 			// $break; 
-		} elseif ($version == "final") {		
+		} elseif ($edition == "final") {		
 		// case "final":
 			if (0) deb("final");
 			// if (0) deb("after end dates");
@@ -47,8 +47,8 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 			// $break;
 	}
 	if (0) deb("dashboard.displaySchedule(): adjective = " . $adjective);
-	if (0) deb("dashboard.displaySchedule(): version = " . $version);
-	$crumbs = $version ? "" : CRUMBS;  // Omit breadcrumbs from printable versions
+	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
+	$crumbs = $edition ? "" : CRUMBS_DISPLAY;  // Omit breadcrumbs from printable editions
 	if (0) deb("dashboard.displaySchedule(): crumbs = " . $crumbs);
 	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $crumbs, $subhead, 0);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
@@ -125,13 +125,13 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				$publish_buttons = '
 					&nbsp;&nbsp;
 					<span name="publish_buttons" style="text-align:left;">
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("publish.php", NEXT_CRUMBS) . '\')" value="Publish changes (after review)"> 
+						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("publish.php", NEXT_CRUMBS_IDS) . '\')" value="Publish changes (after review)"> 
 						&nbsp;&nbsp;
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_sets.php", NEXT_CRUMBS) . '\')" value="Undo changes (after review)"> 
+						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_sets.php", NEXT_CRUMBS_IDS) . '\')" value="Undo changes (after review)"> 
 					</span>
 				'; 
 			}
-			if (0) deb("dashboard.php: NEXT_CRUMBS = ", NEXT_CRUMBS); 
+			if (0) deb("dashboard.php: NEXT_CRUMBS_IDS = ", NEXT_CRUMBS_IDS); 
 			if (0) deb("dashboard.php: publish_buttons = ", $publish_buttons); 
 			$publish_legend = '
 				&nbsp;&nbsp;
@@ -155,8 +155,8 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		// Make save row
 		$save_buttons = '
 			&nbsp;&nbsp;<span style="text-align:left;">
-				<input type="submit" id="save" name="save" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_set.php", NEXT_CRUMBS) . '\')" value="Save these changes (after review)"> 
-				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS) . '\')" value="Cancel these changes"> 
+				<input type="submit" id="save" name="save" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_set.php", NEXT_CRUMBS_IDS) . '\')" value="Save these changes (after review)"> 
+				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS_DISPLAY) . '\')" value="Cancel these changes"> 
 			</span>&nbsp;&nbsp;
 		';
 		$save_legend = '
@@ -377,7 +377,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 	$assignments_form = 
 		$assignments_form_headline . 
-		'<form id="assignments_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS) . '" method="post">' . 
+		'<form id="assignments_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '" method="post">' . 
 		$assignments_table .
 		'<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 		<input type="hidden" name="change_count" id="change_count" value="0" />

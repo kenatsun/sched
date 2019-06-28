@@ -67,15 +67,14 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		if (0) deb("survey1.renderOffersList(): CRUMBS:", CRUMBS);
-		if (0) deb("survey1.renderOffersList(): NEXT_CRUMBS:", NEXT_CRUMBS);
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", CRUMBS); 
+		if (0) deb("survey1.renderOffersList(): CRUMBS_DISPLAY:", CRUMBS_DISPLAY);
+		if (0) deb("survey1.renderOffersList(): NEXT_CRUMBS_IDS:", NEXT_CRUMBS_IDS);
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", CRUMBS_DISPLAY); 
 		$send_email = renderSendEmailControl($this->person->name); 
 		return 
 		$headline . '
 		<p>Welcome, ' . $this->person->name . '!</p>
-		<form method="POST" action="' . makeURI("survey_page_2.php", NEXT_CRUMBS) . '">
-			<input type="hidden" name="person" value="' . $_GET['person'] . '">
+		<form method="POST" action="' . makeURI("survey_page_2.php", NEXT_CRUMBS_IDS, "person=" . $_GET['person']) . '">
 			<input type="hidden" name="username" value="' . $this->person->username . '">
 			<input type="hidden" name="posted" value="0">' .
 			$this->renderInstructions() .
@@ -84,6 +83,19 @@ EOHTML;
 			$send_email . '
 			<button class="pill" type="submit" value="Save" id="end">Next</button>
 		</form>';
+		// return 
+		// $headline . '
+		// <p>Welcome, ' . $this->person->name . '!</p>
+		// <form method="POST" action="' . makeURI("survey_page_2.php", NEXT_CRUMBS_IDS, "person=" . $_GET['person']) . '">
+			// <input type="hidden" name="person" value="' . $_GET['person'] . '">
+			// <input type="hidden" name="username" value="' . $this->person->username . '">
+			// <input type="hidden" name="posted" value="0">' .
+			// $this->renderInstructions() .
+			// $this->renderHints() .
+			// $this->offers_list->renderOffersList($this->offers) .
+			// $send_email . '
+			// <button class="pill" type="submit" value="Save" id="end">Next</button>
+		// </form>';
 	}
 
 	protected function renderInstructions() {
@@ -225,15 +237,15 @@ EOSQL;
 			$this->job_count++;
 			}
 		}
-		if (0) deb("Survey1: saveOffers(): Job count:", $this->job_count);
-		if (0) deb("Survey1: saveOffers(): Job response count:", $this->job_response_count);
-		if (0) deb("Survey1: saveOffers(): Shift count:", $this->shifts_offered_count);
-		if (0) deb("Survey1: saveOffers(): jobs_offered_count:", $this->jobs_offered_count);
-		if (0) deb("Survey1: saveOffers(): jobs_nixed_count:", $this->jobs_nixed_count);
-		if (0) deb("Survey1: saveOffers(): jobs_null_count:", $this->jobs_null_count);
-		if (0) deb("Survey1: saveOffers(): offer_summary:", $this->offer_summary);
-		if (0) deb("Survey1: saveOffers(): zero_summary:", $zero_summary);
-		if (0) deb("Survey1: saveOffers(): null_summary:", $this->null_summary);
+		if (0) deb("survey1.saveOffers(): Job count:", $this->job_count);
+		if (0) deb("survey1.saveOffers(): Job response count:", $this->job_response_count);
+		if (0) deb("survey1.saveOffers(): Shift count:", $this->shifts_offered_count);
+		if (0) deb("survey1.saveOffers(): jobs_offered_count:", $this->jobs_offered_count);
+		if (0) deb("survey1.saveOffers(): jobs_nixed_count:", $this->jobs_nixed_count);
+		if (0) deb("survey1.saveOffers(): jobs_null_count:", $this->jobs_null_count);
+		if (0) deb("survey1.saveOffers(): offer_summary:", $this->offer_summary);
+		if (0) deb("survey1.saveOffers(): zero_summary:", $zero_summary);
+		if (0) deb("survey1.saveOffers(): null_summary:", $this->null_summary);
 	}
 
 
@@ -266,7 +278,7 @@ EOSQL;
 </ul>";
 		} 
 
-		if (0) deb("survey1: renderSaved(): summary_text:", $summary_text);
+		if (0) deb("survey1.renderSaved(): summary_text:", $summary_text);
 		$dir = BASE_DIR;
 		return <<<EOHTML
 	<style>

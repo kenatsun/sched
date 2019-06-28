@@ -13,7 +13,7 @@ require_once 'seasons_utils.php';
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
 
 function renderProcessLink($process, $n="") { 
-	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. makeURI($process['href'], NEXT_CRUMBS, 'parent_process_id=' . $process['process_id']) . '">' . $process['name'] . '</a></p>'; 
+	$link = '<p class="summary_report">' . $process['type'] . ' ' . $n . ': <a href="'. makeURI($process['href'], NEXT_CRUMBS_IDS, 'parent_process_id=' . $process['process_id']) . '">' . $process['name'] . '</a></p>'; 
 	if (0) deb("index.renderProcessLink(): link = ", $link);
 	return $link;
 }
@@ -22,13 +22,15 @@ function renderProcessLink($process, $n="") {
 function render_new_season_link($text) {
 	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.render_new_season_link()")[0];
 	// return '<p class="summary_report"><a href="'. $stage['href'] . '?season_id=&parent_process_id=' . SET_UP_SEASON_ID . '">' . $text . '</a></p>';
-	return '<p class="summary_report"><a href="/season.php?season_id=&parent_process_id=' . SET_UP_SEASON_ID . '">' . $text . '</a></p>';
+	return '<p class="summary_report"><a href="' . makeURI("/season.php", NEXT_CRUMBS_IDS, 'season_id=&parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>';
+	// return '<p class="summary_report"><a href="/season.php?season_id=&parent_process_id=' . SET_UP_SEASON_ID . '">' . $text . '</a></p>';
 }
 
 
 function render_seasons_link($text) {
 	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.render_new_season_link()")[0];
-	return '<p class="summary_report"><a href="/seasons.php">' . $text . '</a></p>'; 
+	return '<p class="summary_report"><a href="' . makeURI("/seasons.php", NEXT_CRUMBS_IDS, 'season_id=&parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>'; 
+	// return '<p class="summary_report"><a href="/seasons.php">' . $text . '</a></p>'; 
 }
 
 function render_update_admin_tasks_link($text) {

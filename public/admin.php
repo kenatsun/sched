@@ -24,15 +24,15 @@ if ($_POST['season_id']) {
 $season_id = getSeason('id');
 $season_name = getSeason('name');
 
-$page .= renderHeadline("Administrator Dashboard", CRUMBS, "currently working on the {$season_name} season", 0);
-$page .= '<br><h3><em>Work on This Season</em></h3>';
+$page .= renderHeadline("Administrator Dashboard", CRUMBS_DISPLAY, "currently working on the {$season_name} season", 0);
+$page .= '<br><h3><em>Work on this season</em></h3>';
 $stages = sqlSelect("*", ADMIN_PROCESSES_TABLE, "type = 'Stage' and season_id = {$season_id}", "display_order", (0));
 foreach ($stages as $stage) {
 	$page .= renderProcessLink($stage, ++$n);
 }
-$page .= '<br><h3><em>Work on Another Season</em></h3>'; 
-$page .= render_new_season_link("Create a New Season");
-$page .= render_seasons_link("List of All Seasons");
+$page .= '<br><h3><em>Work on another season</em></h3>'; 
+$page .= render_new_season_link("Create a new season");
+$page .= render_seasons_link("Select a season to work on");
 
 print $page;
 

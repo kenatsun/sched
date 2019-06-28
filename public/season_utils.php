@@ -321,7 +321,9 @@ function saveChangesToSeason($post) {
 		if (0) deb("season.saveChangesToSeason(): required_fields_missing = $required_fields_missing");
 		
 		if ($post['season_end_month']) $postcols[] = array("sql"=>"year", "value"=>date("Y", strtotime($post['season_end_month'])));
-		$postcols[] = array("sql"=>"deletable", "value"=>$post['deletable']); 
+		
+		$deletable = $post['deletable'] ? 1 : 0;
+		$postcols[] = array("sql"=>"deletable", "value"=>$deletable); 
 	}
 
 	// Process data from the survey setup form

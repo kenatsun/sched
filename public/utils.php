@@ -544,14 +544,15 @@ function renderLink($text, $href) {
 }
 
 //
-function makeURI($url, $back_to="", $query_string="") {
+function makeURI($url, $crumbs="", $other_queries="") {
 	$uri = $url . "?";
-	if ($back_to) $uri .= "backto=" . $back_to;
-	if ($back_to && $query_string) $uri .= "&";
-	if ($query_string) $uri .= $query_string;
+	if ($crumbs) $uri .= "breadcrumbs=" . $crumbs;
+	if ($crumbs && $other_queries) $uri .= "&";
+	if ($other_queries) $uri .= $other_queries;
 	// $uri .= "#";
 	// $uri = urlencode($uri);
-	if (0) deb("utils.phpmakeURI(): back_to = $back_to"); 
+	if (0) deb("utils.phpmakeURI(): crumbs = $crumbs"); 
+	if (0) deb("utils.phpmakeURI(): other_queries = $other_queries"); 
 	if (0) deb("utils.phpmakeURI(): uri = $uri"); 
 	return $uri;
 }
@@ -561,21 +562,8 @@ function renderToolsList($tools, $subhead=null) {
 	$body = $subhead;
 	foreach ($tools as $tool) { 
 		if (0) deb("utils.renderToolsList(): tool = ", $tool);
-		if (0) deb("utils.renderToolsList(): URI = ", makeURI($tool['href'], "", $tool['query_string']));
-		$body .= '<p style="margin-left:2em;"><a href="' . makeURI($tool['href'], "", $tool['query_string']) . '">' . $tool['name'] . '</a></p>';
-		// $body .= '<p style="margin-left:2em;"><a href="'. $tool['href'] . '">' . $tool['name'] . '</a></p>';
-		// $body .= '<br><br><h3>Tool ' . ++$n . ': ' . $tool['name'] . '</h3>';
-		// switch ($tool['process_id']) {
-			// case VIEW_SURVEY_RESULTS_ID:
-				// $body .= renderLink("Click here to see the responses to date", $tool['href']); 
-				// break;
-			// case TAKE_SURVEY_ID:
-				// $body .= renderLink("Click here to take the survey for someone else", $tool['href']);
-				// break;
-			// case RUN_SCHEDULER_PREVIEW_ID:
-				// $body .= renderLink("Click here to see what the Scheduler would generate from the responses received so far", $tool['href']); 
-				// break;
-		// }
+		if (0) deb("utils.renderToolsList(): URI = ", makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']));
+		$body .= '<p style="margin-left:2em;"><a href="' . makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']) . '">' . $tool['name'] . '</a></p>';
 	}
 	return $body;
 } 

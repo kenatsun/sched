@@ -4,7 +4,7 @@ require_once 'start.php';
 $season = getSeason(); 
 
 // Display the page
-$page .= renderHeadline("Generate and Refine the " . $season['name'] . " Season Schedule", CRUMBS, "", 0); 
+$page .= renderHeadline("Create the " . $season['name'] . " Teams", CRUMBS_DISPLAY, "", 0); 
 $page .= renderPageBody($season); 
 print $page;
 
@@ -22,7 +22,7 @@ function renderPageBody($season) {
 	
 	// Render the page components for each step
 	foreach ($steps as $step) {
-		$step_name = $step['href'] ? ' <a href="' . makeURI($step['href'], NEXT_CRUMBS, $step['query_string']) . '">' . $step['name'] . '</a> ' : $step['name'];
+		$step_name = $step['href'] ? ' <a href="' . makeURI($step['href'], NEXT_CRUMBS_IDS, $step['query_string']) . '">' . $step['name'] . '</a> ' : $step['name'];
 		$body .= '<br><br><h3>Step ' . ++$n . ': ' . $step_name . '</h3>';
 		switch ($step['process_id']) {
 			case RUN_SCHEDULER_ID:

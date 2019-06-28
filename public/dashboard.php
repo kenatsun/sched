@@ -8,7 +8,7 @@ if (0) deb("dashboard.php: _POST = ", $_POST);
 if (0) deb("dashboard.php: _GET = ", $_GET);
 $controls_display = $_GET['controls_display'] ? $_GET['controls_display'] : "show";
 $change_markers_display = $_GET['change_markers_display'] ? $_GET['change_markers_display'] : "show";
-$version = $_GET['version'] ? $_GET['version'] : "";
+$edition = $_GET['edition'] ? $_GET['edition'] : "";
 
 if ($_POST) {
 	if (0) deb("dashboard.php: _POST = ", $_POST);
@@ -47,6 +47,6 @@ if ($_POST) {
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();  
 
-displaySchedule($controls_display, $change_markers_display, $version);
+displaySchedule($controls_display, $change_markers_display, $edition);
 
 ?>

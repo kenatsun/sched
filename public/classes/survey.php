@@ -1,10 +1,6 @@
 <?php
 
 require_once 'start.php';
-// require_once 'globals.php';
-// require_once 'utils.php';
-// require_once 'display/includes/header.php';
-
 require_once 'classes/calendar.php';
 require_once 'classes/roster.php';
 require_once 'classes/worker.php';
@@ -234,64 +230,30 @@ class Survey {
 
 		if (0) deb("survey.renderSurvey: _GET =", $_GET);		
 		if (0) deb("survey.renderSurvey: _POST =", $_POST);  
-		$headline = renderHeadline("Step 2: Tell Us Your Preferences", CRUMBS);
-		// $headline = renderHeadline("Step 2: Tell Us Your Preferences", HOME_LINK . SIGNUPS_LINK . $this->worker->id);
+		$headline = renderHeadline("Step 2: Tell Us Your Preferences", CRUMBS_DISPLAY);
 		$season_name = get_season_name_from_db();
 		$first_name = $this->worker->getFirstName();
 		$send_email = renderSendEmailControl($this->worker->getName());
-		// if(userIsAdmin()) {
-			// $send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $this->worker->getName() . '?</div><br>';
-			// // $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
-			// // $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
-		// } else {
-			// $send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
-			// // $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
-		// }
 		
-		return <<<EOHTML
-		{$headline}
-		<form method="POST" class="kform" action="process.php">
-			<input type="hidden" name="username" value="{$this->worker->getUsername()}">
+		return 
+		$headline . 
+		'<form method="POST" class="kform" action="' . makeURI("process.php", NEXT_CRUMBS_IDS, "person=" . $this->worker->id) . '">
+			<input type="hidden" name="username" value="' . $this->worker->getUsername() . '">
 			<input type="hidden" name="posted" value="1">
 			<br>
-			<p>Thanks, {$first_name}!  You've signed up to do these jobs during {$season_name}:</p>
-			{$this->shifts_summary}
-			<p>Here's your chance to tell the "Scheduler" program about when you can do these jobs and who you prefer to do them with.  As it generates a schedule of dinners for the {$season_name} season, the Scheduler will do its best to honor everybody's expressed preferences.</p>
+			<p>Thanks, ' . $first_name . '!  You\'ve signed up to do these jobs during ' . $season_name . ':</p>' .
+			$this->shifts_summary .
+			'<p>Here\'s your chance to tell the "Scheduler" program about when you can do these jobs and who you prefer to do them with.  As it generates a schedule of dinners for the ' . $season_name . ' season, the Scheduler will do its best to honor everybody\'s expressed preferences.</p>
 			<p style="color:red"><strong>If you enter any changes on this page, be sure to scroll down to the bottom and hit the "Finish" button before you leave the page, so your changes will be saved.</strong></p>
-			<br>
-			{$this->renderCalendar()}
-			{$this->renderCleanAfterSelfPreferences($this->requests)}
-			<br>
-			{$this->renderCoworkerPreferences()}
-			{$this->renderComments()}
-			{$send_email}
-			<button class="pill" type="submit" value="Save" id="end">Finish</button>
-		</form>
-EOHTML;
-
-			// 
-
-			// NOTE: Below is like above except it includes "renderMonthsOverlay"
-		// return <<<EOHTML
-		// {$headline}
-		// {$this->calendar->renderMonthsOverlay()}
-		// <form method="POST" class="kform" action="process.php">
-			// <input type="hidden" name="username" value="{$this->worker->getUsername()}">
-			// <input type="hidden" name="posted" value="1">
-			// <br>
-			// <p>Thanks, {$first_name}!  You've signed up to do these jobs during {$season_name}:</p>
-			// {$this->shifts_summary}
-			// <p>Here's your chance to tell the "Scheduler" program about when you can do these jobs and who you prefer to do them with.  As it generates a schedule of dinners for the {$season_name} season, the Scheduler will do its best to honor everybody's expressed preferences.</p>
-			// <p style="color:red"><strong>If you enter any changes on this page, be sure to scroll down to the bottom and hit the "Finish" button before you leave the page, so your changes will be saved.</strong></p>
-			// <br>
-			// {$this->renderCalendar()}
-			// {$this->renderCleanAfterSelfPreferences($this->requests)}
-			// <br>
-			// {$this->renderCoworkerPreferences()}
-			// {$this->renderComments()}
-			// <button class="pill" type="submit" value="Save" id="end">Finish</button>
-		// </form>
-// EOHTML;
+			<br>' .
+			$this->renderCalendar() .
+			$this->renderCleanAfterSelfPreferences($this->requests) .
+			'<br>' .
+			$this->renderCoworkerPreferences() .
+			$this->renderComments() .
+			$send_email .
+			'<button class="pill" type="submit" value="Save" id="end">Finish</button>
+		</form>';
 	}
 
 	private function renderCalendar() {
@@ -456,10 +418,11 @@ EOHTML;
 		if (0) deb("survey.run: _POST =", $_POST);
 		$this->popUsername();
 		if (0) deb("survey.run: this->username =", $this->username);
+		if (0) deb("survey.run: this->worker_id before =", $this->worker_id);
 		$this->lookupWorkerId();
-		if (0) deb("survey.run: this->worker_id =", $this->worker_id);
+		if (0) deb("survey.run: this->worker_id after =", $this->worker_id);
 		$this->setWorker();
-		if (0) deb("survey.run: this->worker =", $this->worker);
+		if (0) deb("survey.run: this->worker =", $this->worker); 
 
 		$this->lookupAvoidList();
 		$this->lookupPreferList();
@@ -492,17 +455,19 @@ EOHTML;
 
 
 	protected function lookupWorkerId() {
-		$auth_user_table = AUTH_USER_TABLE;
-		$sql = <<<EOSQL
-select id from {$auth_user_table} where username='{$this->username}'
-EOSQL;
+		$this->worker_id = $_GET['person'];
+		return;
+		// $auth_user_table = AUTH_USER_TABLE;
+		// $sql = <<<EOSQL
+// select id from {$auth_user_table} where username='{$this->username}'
+// EOSQL;
 
-		// get this worker's ID
-		$this->worker_id = NULL;
-		foreach($this->dbh->query($sql) as $row) {
-			$this->worker_id = $row['id'];
-			return;
-		}
+		// // get this worker's ID
+		// $this->worker_id = NULL;
+		// foreach($this->dbh->query($sql) as $row) {
+			// $this->worker_id = $row['id'];
+			// return;
+		// }
 	}
 
 	protected function processPost() {

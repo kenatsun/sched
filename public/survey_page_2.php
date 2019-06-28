@@ -69,18 +69,18 @@ function saveOffers($respondent, $offers) {
 		if (!is_numeric($job_id)) continue;
 		$job_name = get_job_name($job_id);
 		$offer = normalizeOffer($offer);
-		if (0) deb("Survey1: saveOffers(): job_name=offer", $job_name." = ".$offer);
+		if (0) deb("survey_page_2.saveOffers(): job_name=offer", $job_name." = ".$offer);
 		$sql = "
 			REPLACE INTO {$offers_table} (worker_id, job_id, season_id, instances, type) 
 				VALUES({$respondent->id}, {$job_id}, {$season_id}, {$offer}, 'a')";
-		if (0) deb("Survey1: saveOffers(): SQL:", $sql);
+		if (0) deb("survey_page_2.saveOffers(): SQL:", $sql);
 		$success = $dbh->exec($sql);
-		if (0) deb("Survey1: saveOffers(): success?", $success);
+		if (0) deb("survey_page_2.saveOffers(): success?", $success);
 		if ($success) {
 			$shifts_offered_count += $offer;
 		}
 	}
-	if (0) deb("Survey1: saveOffers(): Shift count:", $shifts_offered_count);
+	if (0) deb("survey_page_2.saveOffers(): Shift count:", $shifts_offered_count);
 	return $shifts_offered_count;
 }
 
@@ -93,7 +93,9 @@ function normalizeOffer($offer) {
 }
 
 function displayNextPage($respondent, $shifts_offered_count) {
-	if ($shifts_offered_count > 0) {
+	if (0) deb("survey_page_2.displayNextPage(): _POST =", $_POST);
+	if (0) deb("survey_page_2.displayNextPage(): _GET =", $_GET);
+	if ($shifts_offered_count > 0 || !$_POST) {
 		displayPreferencesSurvey($respondent);
 	} else { 
 		displayNoShiftsOfferedPage($respondent);

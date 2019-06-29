@@ -22,7 +22,6 @@ $page .= renderHeadline("Manage Seasons", CRUMBS_DISPLAY);
 $page .= '<br>';
 $page .= 'To work on a different season, click on its name.<br><br>';
 $page .= renderSeasonsForm($seasons);
-// $page .= renderCurrentSeasonControl("seasons.php", $seasons);
 print $page;
 
 ?>

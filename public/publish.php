@@ -5,7 +5,7 @@ require_once "dashboard_utils.php";
 
 $headline = renderHeadline("Publish Changes?", CRUMBS_DISPLAY, "", 0);  
 
-$form .= '<form method="POST" id="publish_form" name="publish_form" action="' . makeURI("dashboard.php", CRUMBS_DISPLAY) . '">';
+$form .= '<form method="POST" id="publish_form" name="publish_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '">'; 
 
 // Which edition is being published? (this affects labeling of the display and printout)
 $form .= '<p>Which edition of the schedule is this?</p>';

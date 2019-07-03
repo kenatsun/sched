@@ -1,28 +1,21 @@
 <?php
-// global $relative_dir;
-// if (!strlen($relative_dir)) {
-	// $relative_dir = '.';
-// }
-
-// require_once "utils.php";
-// require_once "constants.inc";
-// require_once "globals.php";
-// require_once "git_ignored.php";
 
 if (0) deb("config.php: start"); 
 
+
+date_default_timezone_get('America/Detroit');
 define('BASE_DIR', '');
 define('PUBLIC_DIR', BASE_DIR);
 define('DB_DIR', BASE_DIR . '../db');
+define("REQUEST_QUERY_STRING", $_SERVER['QUERY_STRING']);
+define("SESSION_ID", $_REQUEST['PHPSESSID']);
+define('COMMUNITY', 'Sunward');
 
 // Open the database
 create_sqlite_connection();
 
-date_default_timezone_get('America/Detroit');
-define('COMMUNITY', 'Sunward');
-
-// Configure the season
-setSeasonConstants();
+// Configure the session
+setSessionConstants();
 
 // Define jobs and categories of jobs
 defineJobCategories();
@@ -58,7 +51,7 @@ function get_num_shift_overrides() {
 	return [
 		/*
 		'example' => [
-			WEEKDAY_ASST_COOK => 1,
+			WEEKDAY_ASST_COOK => 1, 
 		],
 		*/
 	];
@@ -67,60 +60,91 @@ function get_num_shift_overrides() {
 
 //////////////////////////////////////////////////////// FUNCTIONS
 
-function setSeasonConstants() {
+function setSessionConstants() {
+	
+	if (0) deb("config.setSessionConstants(): _REQUEST = ", $_REQUEST);
 
-	// Reset current season in database if there's a POST request to do so
-	if (array_key_exists('current_season_id', $_POST) && ($_POST['current_season_id'] != $season['id'])) {
+	$global_season = sqlSelect("*", SEASONS_TABLE, "current_season = 1", "", (0), "config.setSessionConstants(): ")[0];
+
+	// Create (if necessary) and get the current session
+	if (!sqlSelect("*", SESSIONS_TABLE, "session_id = '" . SESSION_ID . "'", "", (0))[0]) {
+		$columns = "session_id, season_id, when_created";
+		$values = "'" . SESSION_ID . "', " . $global_season['id'] . ", '" . date("Y-m-d H:i:s") . "'";
+		sqlInsert(SESSIONS_TABLE, $columns, $values, (0));
+	}
+	sqlUpdate(SESSIONS_TABLE, "when_last_active = '" . date("Y-m-d H:i:s") . "'", "session_id = '" . SESSION_ID . "'");
+	$session = sqlSelect("*", SESSIONS_TABLE, "session_id = '" . SESSION_ID . "'", "", (0))[0];
+	
+	// Reset global season in database if there's a _REQUEST to do so
+	if (array_key_exists('global_season_id', $_REQUEST)) {
 		sqlUpdate(SEASONS_TABLE, "current_season = NULL", "", "", (0));
-		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$_POST['current_season_id']}", "", (0), "config.setSeasonConstants(): set new current season");		
+		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$_REQUEST['global_season_id']}", "", (0), "config.setSessionConstants(): set new global season");		
 	}
 
-	// Get current season from database
-	$season = sqlSelect("*", SEASONS_TABLE, "current_season = 1", "", (0), "config.setSeasonConstants(): ")[0];
-	if (0) deb("config.setSeasonConstants(): season = ", $season);
+	// Set GLOBAL_SEASON constant
+	$global_season = sqlSelect("*", SEASONS_TABLE, "current_season = 1", "", (0), "config.setSessionConstants(): ")[0];
+	define("GLOBAL_SEASON_ID", $global_season['id']);
+	if (0) deb("config.setSessionConstants(): GLOBAL_SEASON_ID = " . GLOBAL_SEASON_ID);
+
+	// Reset session season in database if there's a _REQUEST request to do so
+	if (array_key_exists('session_season_id', $_REQUEST)) {
+		sqlUpdate(SESSIONS_TABLE, "season_id = {$_REQUEST['session_season_id']}", "session_id = '" . SESSION_ID . "'", (0), "config.setSessionConstants(): set new session season");		
+	}
+
+	// If this session has no session season, set its session season to global season
+	if (!$session['season_id']) {
+		$global_season = sqlSelect("*", SEASONS_TABLE, "current_season = 1", "", (0), "config.setSessionConstants(): ")[0];
+		if (0) deb("config.setSessionConstants(): global_season = ", $global_season);
+		sqlUpdate(SESSIONS_TABLE, "season_id = " . $global_season['id'], "session_id = '" . SESSION_ID . "'", [1]);
+	}
+	
+	// Get season for this session
+	$session = sqlSelect("*", SESSIONS_TABLE, "session_id = '" . SESSION_ID . "'", "", (0))[0];
+	$season = sqlSelect("*", SEASONS_TABLE, "id = " . $session['season_id'], "", (0), "config.setSessionConstants(): ")[0];
+	if (0) deb("config.setSessionConstants(): season = ", $season);
 		
 	// Assign this season's attributes to constants.
 
 	define('SEASON_ID', $season['id']);
-	if (0) deb("config.setSeasonConstants(): SEASON_ID = " . SEASON_ID); 
+	if (0) deb("config.setSessionConstants(): SEASON_ID = " . SEASON_ID); 
 
 	define('SEASON_TYPE', $season['season_type']);
-	if (0) deb("config.setSeasonConstants(): SEASON_TYPE = " . SEASON_TYPE);
+	if (0) deb("config.setSessionConstants(): SEASON_TYPE = " . SEASON_TYPE);
 
-	if (0) deb("config.setSeasonConstants(): season['start_date'] = " . $season['start_date']);
+	if (0) deb("config.setSessionConstants(): season['start_date'] = " . $season['start_date']);
 	if ($season['start_date']) {
 		define('SEASON_START_YEAR', DateTime::createFromFormat("Y-m-d", $season['start_date'])->format("Y"));
-		if (0) deb("config.setSeasonConstants(): SEASON_START_YEAR = " . SEASON_START_YEAR);
+		if (0) deb("config.setSessionConstants(): SEASON_START_YEAR = " . SEASON_START_YEAR);
 	}
 
 	if ($season['end_date']) {
 			define('SEASON_END_YEAR', DateTime::createFromFormat("Y-m-d", $season['end_date'])->format("Y"));
-			if (0) deb("config.setSeasonConstants(): SEASON_END_YEAR = " . SEASON_END_YEAR);
+			if (0) deb("config.setSessionConstants(): SEASON_END_YEAR = " . SEASON_END_YEAR);
 	}
 	
 	if ($season['end_date']) {
 		define('DEADLINE', strtotime($season['survey_closing_date'] . " 23:59:59"));
-		if (0) deb("config.setSeasonConstants(): DEADLINE = " . DEADLINE);
+		if (0) deb("config.setSessionConstants(): DEADLINE = " . DEADLINE);
 	}
 	
 	// Assign this season's job ids to constants
 	$where = "season_id = {$season['id']} and constant_name = 'WEEKDAY_HEAD_COOK'";
-	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSeasonConstants")[0];
-	if (0) deb("config.setSeasonConstants(): season_job = ", $season_job);
+	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSessionConstants")[0];
+	if (0) deb("config.setSessionConstants(): season_job = ", $season_job);
 	define('WEEKDAY_HEAD_COOK', $season_job['id']);
-	if (0) deb("config.setSeasonConstants(): WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
+	if (0) deb("config.setSessionConstants(): WEEKDAY_HEAD_COOK = ", WEEKDAY_HEAD_COOK);
 
 	$where = "season_id = {$season['id']} and constant_name = 'WEEKDAY_ASST_COOK'";
-	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSeasonConstants")[0];
-	if (0) deb("config.setSeasonConstants(): season_job = ", $season_job);
+	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSessionConstants")[0];
+	if (0) deb("config.setSessionConstants(): season_job = ", $season_job);
 	define('WEEKDAY_ASST_COOK', $season_job['id']);
-	if (0) deb("config.setSeasonConstants(): WEEKDAY_ASST_COOK = ", WEEKDAY_ASST_COOK);
+	if (0) deb("config.setSessionConstants(): WEEKDAY_ASST_COOK = ", WEEKDAY_ASST_COOK);
 
 	$where = "season_id = {$season['id']} and constant_name = 'WEEKDAY_CLEANER'";
-	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSeasonConstants")[0];
-	if (0) deb("config.setSeasonConstants(): season_job = ", $season_job);
+	$season_job = sqlSelect("*", SURVEY_JOB_TABLE, $where, "id", (0), "setSessionConstants")[0];
+	if (0) deb("config.setSessionConstants(): season_job = ", $season_job);
 	define('WEEKDAY_CLEANER', $season_job['id']);
-	if (0) deb("config.setSeasonConstants(): WEEKDAY_CLEANER = ", WEEKDAY_CLEANER); 
+	if (0) deb("config.setSessionConstants(): WEEKDAY_CLEANER = ", WEEKDAY_CLEANER); 
 }
 
 /*

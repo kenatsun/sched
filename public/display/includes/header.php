@@ -43,25 +43,8 @@ $head = <<<EOHTML
         }
 		window.onbeforeunload = unloadPage; 
     </script>
-	<script>
-	function confirmDeleteSeason(id, name) {
-	  var txt;
-	  var r = confirm("Permanently delete the " + name + " season?");
-	  if (r == true) {
-		let form = document.createElement('form');
-		form.action = "seasons.php";
-		form.method = 'POST';
-		form.innerHTML = '<input name="delete_season" value="' + id + '">';
-		document.body.append(form);
-		form.submit();
-		txt = "Season " + name + " has been deleted!";
-	  } else {
-		txt = "Season " + name + " won't be deleted";
-	  }
-	  document.getElementById("result").innerHTML = txt;
-	}
-	</script>
 EOHTML;
+ 
 
 print $head;
 
@@ -71,11 +54,35 @@ if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
 	<script src="js/survey_library.js"></script>
 EOHTML;
 }
+
+	// This script was moved to utils2.js
+	// <script>
+	// function confirmDeleteSeason(id, name) {
+	  // var txt;
+	  // var r = confirm("Permanently delete the " + name + " season?");
+	  // if (r == true) {
+		// let form = document.createElement('form');
+		// form.action = "seasons.php";
+		// form.method = 'POST';
+		// form.innerHTML = '<input name="delete_season" value="' + id + '">';
+		// document.body.append(form);
+		// form.submit();
+		// txt = "Season " + name + " has been deleted!";
+	  // } else {
+		// txt = "Season " + name + " won't be deleted";
+	  // }
+	  // document.getElementById("result").innerHTML = txt;
+	// }
+	// </script>
+
+
 ?>
 
 </head>
 
 <body>
+
+
 
 
 

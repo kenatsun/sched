@@ -439,26 +439,33 @@ function array_get($array, $key, $default=NULL) {
 	return $default;
 }
 
-// Get the id of the current season from the database
+// Get the current season or a specified attribute of it from the database
 function getSeason($attribute="") {
 	if ($attribute) {
-		return sqlSelect("{$attribute}", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0][$attribute];
+		return sqlSelect($attribute, "seasons", "id = " . SEASON_ID, "", (0), "utils.getSeason('id')")[0][$attribute];
 	} else {
-		return sqlSelect("*", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0];
+		return sqlSelect("*", "seasons", "id = " . SEASON_ID, "", (0), "utils.getSeason('id')")[0];
 	}
+	// if ($attribute) {
+		// return sqlSelect("{$attribute}", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0][$attribute];
+	// } else {
+		// return sqlSelect("*", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0];
+	// }
 }
 
-// Set the id of the current season in the database
-function setSeason($id) {
-	if (!$id) return;
-	$season_exists = sqlSelect("*", "seasons", "id = {$id}", "", (0), "utils.setSeason()")[0];
-	if ($season_exists) {
-		sqlUpdate(SEASONS_TABLE, "current_season = null", "", (0), "utils.setSeason()");
-		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$id}", (0), "utils.setSeason()");
-	} else {
-		echo "Error: Season with id " . $id . " doesn't exist.";
-	}
-}
+// // Set the id of the current season in the database
+// function setSeason($id) {
+	// if (0) deb("utils.setSeason(): season_id = " . $id);
+
+	// if (!$id) return;
+	// $season_exists = sqlSelect("*", "seasons", "id = {$id}", "", (0), "utils.setSeason()")[0];
+	// if ($season_exists) {
+		// sqlUpdate(SEASONS_TABLE, "current_season = null", "", (0), "utils.setSeason()");
+		// sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$id}", (0), "utils.setSeason()");
+	// } else {
+		// echo "Error: Season with id " . $id . " doesn't exist.";
+	// }
+// }
 
 /**
  * Get the upcoming season's ID.

@@ -6,7 +6,8 @@ require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
 require_once 'participation.php';
-require_once 'seasons_utils.php';
+// require_once 'seasons.php'; 
+// require_once 'seasons_utils.php';
 require_once 'admin_utils.php';
 
 if (0) deb("index.php: start.");
@@ -46,10 +47,9 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= render_footer();
 		$page .= render_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
 		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));	
-		$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS_IDS));			
+		if (scheduler_run()['id']) $page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS_IDS));			
 	} else {
 		if (0) deb("index.php: gonna display first survey page");
-		// $page = build_survey($worker_id);
 	}
 }
 else {
@@ -139,8 +139,6 @@ function renderPeopleListAsLinks() {
 	$lines = '';
 	$count = 0;
 	$signups_table = OFFERS_TABLE;
-	// $responder_ids = getResponders(); 
-	// if (0) deb("index.renderPeopleListAsLinks(): responder_ids =", $responder_ids); 
 	$gold_star = '&nbsp<img src="/display/images/goldstar02.png" height="12">';
 	$white_star = '&nbsp<img src="/display/images/whitestar02.png" height="12">';
 
@@ -191,14 +189,4 @@ function renderPeopleListAsLinks() {
 	return $out;
 }
 
-
-// /**
- // * @param[in] $worker_id string person's id from the _GET array
- // */
-// function build_survey($worker_id) {
-	// if (0) deb("index.build_survey: respondent_id = ", $worker_id);
-	// $survey = new Survey1($worker_id);
-	// if (0) deb("index.build_survey: survey = ", $survey);
-	// return $survey->renderOffersList();
-// }
 ?>

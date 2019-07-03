@@ -67,9 +67,9 @@ class Survey1 {
 <div class="saved_notification">{$out}</div>
 EOHTML;
 		}
-		if (0) deb("survey1.renderOffersList(): CRUMBS_DISPLAY:", CRUMBS_DISPLAY);
+		if (0) deb("survey1.renderOffersList(): CRUMBS_QUERY:", CRUMBS_QUERY);
 		if (0) deb("survey1.renderOffersList(): NEXT_CRUMBS_IDS:", NEXT_CRUMBS_IDS);
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", CRUMBS_DISPLAY); 
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", CRUMBS_QUERY); 
 		$send_email = renderSendEmailControl($this->person->name); 
 		return 
 		$headline . '

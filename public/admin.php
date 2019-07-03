@@ -6,7 +6,8 @@ require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
 require_once 'participation.php';
-require_once 'seasons_utils.php';
+// require_once 'seasons_utils.php';
+// require_once 'seasons.php';
 require_once 'season_utils.php';
 require_once 'admin_utils.php';
 
@@ -16,22 +17,20 @@ foreach($seasons as $season) {
 	generateAdminProcessesForSeason($season['id']);
 }
 
-if ($_POST['season_id']) {	
-	setSeason($_POST['season_id']);
-} elseif($_GET['season_id']) {	
-	setSeason($_GET['season_id']);
-}
+if (0) deb("admin.php: _REQUEST['global_season_id'] = " . $_REQUEST['global_season_id']);
+
 $season_id = getSeason('id');
 $season_name = getSeason('name');
+if (0) deb("admin.php: season_id = " . $season_id);
 
-$page .= renderHeadline("Administrator Dashboard", CRUMBS_DISPLAY, "currently working on the {$season_name} season", 0);
+$page .= renderHeadline("Administrator Dashboard", CRUMBS_QUERY, "currently working on the {$season_name} season", 0);
 $page .= '<br><h3><em>Work on this season</em></h3>';
 $stages = sqlSelect("*", ADMIN_PROCESSES_TABLE, "type = 'Stage' and season_id = {$season_id}", "display_order", (0));
 foreach ($stages as $stage) {
 	$page .= renderProcessLink($stage, ++$n);
 }
 $page .= '<br><h3><em>Work on another season</em></h3>'; 
-$page .= render_new_season_link("Create a new season");
+$page .= renderNewSeasonLink("Create a new season");
 $page .= render_seasons_link("Select a season to work on");
 
 print $page;

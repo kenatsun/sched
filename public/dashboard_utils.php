@@ -7,7 +7,7 @@ require_once "change_sets_utils.php";
 
 function displaySchedule($controls_display="show", $change_markers_display="show", $edition="") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
-	if (0) deb("dashboard.displaySchedule(): CRUMBS_DISPLAY = " . CRUMBS_DISPLAY);
+	if (0) deb("dashboard.displaySchedule(): CRUMBS_QUERY = " . CRUMBS_QUERY);
 	if (0) deb("dashboard.displaySchedule(): NEXT_CRUMBS_IDS = {NEXT_CRUMBS_IDS}"); 
 	$now = date_create();
 	$now_f = date_format($now, "Y-m-d");
@@ -48,7 +48,7 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	}
 	if (0) deb("dashboard.displaySchedule(): adjective = " . $adjective);
 	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
-	$crumbs = $edition ? "" : CRUMBS_DISPLAY;  // Omit breadcrumbs from printable editions
+	$crumbs = $edition ? "" : CRUMBS_QUERY;  // Omit breadcrumbs from printable editions
 	if (0) deb("dashboard.displaySchedule(): crumbs = " . $crumbs);
 	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $crumbs, $subhead, 0);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
@@ -156,7 +156,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		$save_buttons = '
 			&nbsp;&nbsp;<span style="text-align:left;">
 				<input type="submit" id="save" name="save" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_set.php", NEXT_CRUMBS_IDS) . '\')" value="Save these changes (after review)"> 
-				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS_DISPLAY) . '\')" value="Cancel these changes"> 
+				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS_IDS) . '\')" value="Cancel these changes"> 
 			</span>&nbsp;&nbsp;
 		';
 		$save_legend = '

@@ -3,11 +3,11 @@
 require_once "start.php";
 require_once "dashboard_utils.php";
 
-$headline = renderHeadline("Publish Changes?", CRUMBS_DISPLAY, "", 0);  
+$headline = renderHeadline("Publish Changes?", CRUMBS_QUERY, "", 0);
 
-$form .= '<form method="POST" id="publish_form" name="publish_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '">'; 
+$form .= '<form method="POST" id="publish_form" name="publish_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '">';  
 
-// Which edition is being published? (this affects labeling of the display and printout)
+// Which edition is being published? (this affects labeling of the display and printout) 
 $form .= '<p>Which edition of the schedule is this?</p>';
 $form .= '<input type="radio" name="edition" value="first">First<br>';
 $form .= '<input type="radio" name="edition" value="revised">Revised<br>'; 

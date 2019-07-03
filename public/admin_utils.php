@@ -7,7 +7,8 @@ require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
 require_once 'participation.php';
-require_once 'seasons_utils.php';
+// require_once 'seasons.php';
+// require_once 'seasons_utils.php';
 
 
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
@@ -19,22 +20,19 @@ function renderProcessLink($process, $n="") {
 }
 
 
-function render_new_season_link($text) {
-	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.render_new_season_link()")[0];
-	// return '<p class="summary_report"><a href="'. $stage['href'] . '?season_id=&parent_process_id=' . SET_UP_SEASON_ID . '">' . $text . '</a></p>';
-	return '<p class="summary_report"><a href="' . makeURI("/season.php", NEXT_CRUMBS_IDS, 'season_id=&parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>';
-	// return '<p class="summary_report"><a href="/season.php?season_id=&parent_process_id=' . SET_UP_SEASON_ID . '">' . $text . '</a></p>';
+function renderNewSeasonLink($text) {
+	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderNewSeasonLink()")[0];
+	return '<p class="summary_report"><a href="' . makeURI("/season.php", NEXT_CRUMBS_IDS, 'new_season&parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>';
 }
 
 
 function render_seasons_link($text) {
-	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.render_new_season_link()")[0];
-	return '<p class="summary_report"><a href="' . makeURI("/seasons.php", NEXT_CRUMBS_IDS, 'season_id=&parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>'; 
-	// return '<p class="summary_report"><a href="/seasons.php">' . $text . '</a></p>'; 
+	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderNewSeasonLink()")[0];
+	return '<p class="summary_report"><a href="' . makeURI("/seasons.php", NEXT_CRUMBS_IDS, 'parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>'; 
 }
 
 function render_update_admin_tasks_link($text) {
-	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.render_new_season_link()")[0];
+	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderNewSeasonLink()")[0];
 	return '<p class="summary_report"><a href="/admin.php?update_admin_tasks">' . $text . '</a></p>';
 }
 

@@ -24,7 +24,7 @@ if (0) deb("headline.php: my_url = " . $my_url);
 // Purge obsolete breadcrumbs from CRUMBS_TABLE whenever returning to root
 if (!$request_crumbs_ids) sqlDelete(CRUMBS_TABLE, "session_id = '" . $request_session_id . "'", (0));
 
-// Render crumbs of calling path, creating the CRUMBS_DISPLAY constant
+// Render crumbs of calling path, creating the CRUMBS_QUERY constant
 if ($request_crumbs_ids) {
 	$request_crumbs_arr = sqlSelect("*", CRUMBS_TABLE, "id in (" . $request_crumbs_ids . ")", "when_created asc, id asc", (0)); 
 	// If this page was called from itself, remove it from crumbs
@@ -33,18 +33,14 @@ if ($request_crumbs_ids) {
 	$last_query_crumb_index = key($request_crumbs_arr);
 	if ($my_url == $last_query_crumb_url) unset($request_crumbs_arr[$last_query_crumb_index]);
 	if (0) deb("headline.php: my_url = " . $my_url); 
-	// if (0) deb("headline.php: my_crumb_url = " . $my_crumb_url); 
 	if (0) deb("headline.php: last_query_crumb_url = " . $last_query_crumb_url); 
 	foreach($request_crumbs_arr as $i=>$crumb) {
-		$crumbs_display .= '&nbsp;&nbsp;<a href="'. $crumb['url'] . '?' . $crumb['query_string'] . '">' . $crumb['crumb_label'] . '</a>'; 
+		$crumbs_query .= '&nbsp;&nbsp;<a href="'. $crumb['url'] . '?' . $crumb['query_string'] . '">' . $crumb['crumb_label'] . '</a>'; 
 		$my_crumbs_ids .= $my_crumbs_ids ? "," . $crumb['id'] : $crumb['id'];
 	}
 }
-define("CRUMBS_DISPLAY", $crumbs_display);
-define("CRUMBS_IDS", $my_crumbs_ids);
 if (0) deb("headline.php: crumb_ids = " . $request_crumbs_ids);
-if (0) deb("headline.php: crumbs_display = " . $crumbs_display);
-if (0) deb("headline.php: CRUMBS_DISPLAY = " . CRUMBS_DISPLAY); 
+if (0) deb("headline.php: crumbs_display = " . $crumbs_query);
 if (0) deb("headline.php: request_crumbs_arr = ", $request_crumbs_arr); 
 
 // Construct my crumb, the one that leads back to this page (with its original query string) - CRUMBS_TABLE version
@@ -66,18 +62,26 @@ $values = "'" . $_REQUEST['PHPSESSID'] . "', '" . $my_url . "', '" . $query_stri
 sqlInsert(CRUMBS_TABLE, $columns, $values, (0));  
  
 // Append my_crumb_id to crumb_ids to form NEXT_CRUMBS_IDS, which will be passed in forward links
-$my_crumb_id = sqlSelect("max(id) as id, url", CRUMBS_TABLE, "", "", (0))[0]['id'];
-if ($request_crumbs_arr) $last_query_crumb_url = end($request_crumbs_arr)['url'];
-
-// if ($my_url == $last_query_crumb_url) { 
-	// $next_crumbs_ids = $request_crumbs_ids;
-// } else {
+// unless it duplicates the last
+$my_crumb = sqlSelect("max(id) as id, url", CRUMBS_TABLE, "", "", (0))[0];
+$my_crumb_id = $my_crumb['id'];
+$my_crumb_url = $my_crumb['url'];
+if ($request_crumbs_ids) $last_crumb_url = end($request_crumbs_arr)['url'];
+if (0) deb("headline.php: my_crumb_url = " . $my_crumb_url); 
+if (0) deb("headline.php: last_crumb_url = " . $last_crumb_url); 
+if ($last_crumb_url == $my_crumb_url) {
+	$next_crumbs_ids = $request_crumbs_ids;		
+} else {
 	if ($request_crumbs_ids && $my_crumb_id) $separator = ",";  
-	$next_crumbs_ids = $request_crumbs_ids . $separator . $my_crumb_id;
-// }
+	$next_crumbs_ids = $request_crumbs_ids . $separator . $my_crumb_id;	
+}
+
+// Define global constants for this session
+define("PREVIOUS_CRUMBS_IDS", $_REQUEST['breadcrumbs']);  
+define("CRUMBS_IDS", $my_crumbs_ids);
+define("CRUMBS_QUERY", $crumbs_query);
 define("NEXT_CRUMBS_IDS", $next_crumbs_ids);  
 if (0) deb("headline.php: NEXT_CRUMBS_IDS = ", NEXT_CRUMBS_IDS); 
-
 
 //////////////////////////////////////////////// FUNCTIONS 
 
@@ -119,10 +123,10 @@ function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_link=1) 
 		<br>';
 
 	// Render breadcrumbs display
-	if (CRUMBS_DISPLAY) {
+	if (CRUMBS_QUERY) {
 		$crumbs_display = '
 			<tr style="font-size:10pt; font-style:italic">
-				<td colspan="2" style="text-align:right; ' . $td_style . '"><<<<< &nbsp;&nbsp;go back to:' . CRUMBS_DISPLAY . '</td>
+				<td colspan="2" style="text-align:right; ' . $td_style . '"><<<<< &nbsp;&nbsp;go back to:' . CRUMBS_QUERY . '</td>
 			</tr>';
 	}
 	if (0) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);

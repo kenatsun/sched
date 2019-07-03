@@ -57,6 +57,7 @@ define('ADMIN_PROCESSES_TABLE', 'admin_processes');
 define('JOB_TYPES_TABLE', 'job_types');
 define('PAGES_TABLE', 'pages');
 define('CRUMBS_TABLE', 'crumbs');
+define('SESSIONS_TABLE', 'sessions');
 
 // -------- admin process ids ---------
 define('SET_UP_SEASON_ID', 1);

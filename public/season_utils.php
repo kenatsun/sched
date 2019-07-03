@@ -1,8 +1,6 @@
 <?php
-require_once 'globals.php';
-require_once 'utils.php';
+require_once 'start.php';
 require_once 'admin_utils.php';
-require_once 'display/includes/header.php';
 
 
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
@@ -58,7 +56,7 @@ function renderEditSeasonForm($season, $parent_process_id) {
 	}
 	$form = "";
 	$form .= '<p>' . REQUIRED_MARKER . ' marks required fields</p>';
-	$form .= '<form action="season.php" method="post" name="season_status_form">';
+	$form .= '<form action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS) . '" method="post" name="season_status_form">';
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="season_status" value="' . $season_status . '">';
 	$form .= '<table style="font-size:11pt;">';
@@ -362,7 +360,8 @@ function saveChangesToSeason($post) {
 		if (0) deb("season.saveChangesToSeason(): values =", $values);
 		sqlInsert(SEASONS_TABLE, $columns, $values, (0), "seasons.saveChangesToSeason()");
 		$season_id = sqlSelect("max(id) as id", SEASONS_TABLE, "", "")[0]['id'];
-		setSeason($season_id);
+		sqlUpdate(SESSIONS_TABLE, "season_id = " . $season_id, "session_id = '" . SESSION_ID . "'");
+		// setSeason($season_id);
 		if (0) deb("season_utils.saveChangesToSeason(): new season id: $season_id, new current season id: " . getSeason("id"));
 
 		// Generate the admin processes for this new season

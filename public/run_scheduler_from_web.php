@@ -4,11 +4,11 @@ require_once 'auto_assignments/assignments.php';
 
 if (0) deb("run_scheduler_from_web.php: _POST = ", $_POST);
 if (0) deb("run_scheduler_from_web.php: _GET = ", $_GET);
-if (0) deb("run_scheduler_from_web.php: CRUMBS_DISPLAY = ", CRUMBS_DISPLAY);
+if (0) deb("run_scheduler_from_web.php: CRUMBS_QUERY = ", CRUMBS_QUERY);
 if (0) deb("run_scheduler_from_web.php: array_key_exists(previewonly, _GET?: )" . array_key_exists("previewonly", $_GET));
 if (array_key_exists("previewonly", $_GET)) $preview_only = "previewonly=";
 // if (0) deb("run_scheduler_from_web.php: !array_key_exists(previewonly=, _GET?: )" . !array_key_exists("previewonly=", $_GET));
-$page .= renderHeadline('Run the Scheduler', CRUMBS_DISPLAY, "", 0);
+$page .= renderHeadline('Run the Scheduler', CRUMBS_QUERY, "", 0);
 $page .= renderParametersForm($preview_only);
 if ($_POST) $page .= renderSchedule($_POST); 
 print $page;

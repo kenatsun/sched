@@ -13,7 +13,7 @@ require_once "change_sets_utils.php";
 // function displayChangeSet($change_set_id) {
 	
 	if (0) deb("change_set.displayChangeSet(): change_set_id = $change_set_id");
-	$headline = renderHeadline("Pending Changes", CRUMBS_DISPLAY); 
+	$headline = renderHeadline("Pending Changes", CRUMBS_QUERY); 
 	$changes_table = renderChangeSet($change_set_id, TRUE);
 	$ok_change_value = OK_CHANGE_VALUE;
 	$changes_form = '

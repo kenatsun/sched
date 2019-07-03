@@ -1,9 +1,5 @@
 <?php
 
-// require_once "utils.php";
-
-if (0) deb("globals.php: start");
-
 define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
 // -------- some page formatting constants ---------

@@ -16,6 +16,7 @@ define('PLACEHOLDER', 'XXXXXXXX');
 define('DOMAIN', '@gocoho.org');
 define('HAS_CONFLICT', -1);
 
+
 $dows = days_of_week();
 foreach($dows as $i=>$dow) {
 	define($dow['full_name_uppercase'], (int)$dow['number']);

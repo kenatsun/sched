@@ -1,6 +1,8 @@
 <?php
 require_once 'start.php';
 require_once "change_sets_utils.php";
+print '<script src="js/change_sets.js"></script>';
+
 
 $scheduler_run_id = scheduler_run()['id'];
 if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
@@ -8,7 +10,7 @@ if (0) deb("change_sets.php: scheduler_run_id = {$scheduler_run_id}");
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();
 
-if (0) deb("change_sets.php: PREVIOUS_CRUMBS = {PREVIOUS_CRUMBS}"); 
+if (0) deb("change_sets.php: PREVIOUS_CRUMBS_IDS = {PREVIOUS_CRUMBS_IDS}"); 
 
 $headline = renderHeadline("Undo Changes?", CRUMBS_QUERY, "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = {$scheduler_run_id} and published = 0", "when_saved desc", (0));
@@ -46,17 +48,18 @@ foreach($change_sets as $i=>$change_set) {
 		<tr id="undo_tr_' . $change_set['id'] . '">
 			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; background-color:rgba(0,0,0,0);">' . renderChangeSet($change_set['id'], FALSE) . '</td>
 			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; white-space: nowrap; background-color:rgba(0,0,0,0);">' . $saved_date . '<br>' . $saved_time . '</td>
-			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; text-align: center; background-color:rgba(0,0,0,0);"><input type="radio" name="' . $undo_name . '" value="' . $change_set['id'] . '" onchange="markUndos(' . $undo_name . ')"></td>
+			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; text-align: center; background-color:rgba(0,0,0,0);"><input type="radio" name="' . $undo_name . '" value="' . $change_set['id'] . '" ></td>
 		</tr>';
 }
+// onclick="nullRadio(\'' . $undo_name . '_' . $change_set['id'] . '\')"
+// id="' . $undo_name . '_' . $change_set['id'] . ' 
+// onchange="markUndos(' . $undo_name . ')"
 
 $change_sets_table .= '</table>';
 
 $change_sets_form = '
-	<form action=' . makeURI("dashboard.php" . PREVIOUS_CRUMBS) . '" method="post">' .
+	<form action=' . makeURI("dashboard.php", PREVIOUS_CRUMBS_IDS) . '" method="post">' .
 		$change_sets_table . '
-		<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '" />
-		<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '" />
 	</form>';
 
 if (!$change_sets) $change_sets_form = "<br>There are no change sets at this time.";

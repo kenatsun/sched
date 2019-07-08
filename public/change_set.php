@@ -17,7 +17,7 @@ require_once "change_sets_utils.php";
 	$changes_table = renderChangeSet($change_set_id, TRUE);
 	$ok_change_value = OK_CHANGE_VALUE;
 	$changes_form = '
-		<form action="' . makeURI("dashboard.php", PREVIOUS_CRUMBS) . '" method="post">'
+		<form action="' . makeURI("dashboard.php", PREVIOUS_CRUMBS_IDS) . '" method="post">'
 			. $changes_table .
 			'<tr><td colspan={$ncols}><h2>&nbsp;&nbsp;&nbsp; <input type="submit" name="confirm" value="Confirm Changes"> <input type="submit" name="discard" value="Discard Changes"></h2> </td><tr>
 			<input type="hidden" name="ok_change_value" id="ok_change_value" value="' . $ok_change_value . '"/> 

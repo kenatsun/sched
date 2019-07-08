@@ -30,6 +30,7 @@ function renderPageBody($season) {
 				$body .= '<p><a style="margin-left:2em;" href="docs/announcement - poster version.doc" download>Download Announcement (poster version)</a></p>';
 				$body .= '<p><a style="margin-left:2em;" href="docs/announcement - mail merge version.doc" download>Download Announcement (mail merge version)</a></p>';
 				$filename = "docs/announcement - workers list.csv";
+				if (0) deb("survey_steps.renderPageBody(): calling exportSurveyAnnouncementCSV()"); 
 				print exportSurveyAnnouncementCSV($season, $filename); 
 				$body .= '<p><a style="margin-left:2em;" href="' . $filename . '" download>Download Workers List</a></p>';
 				break;
@@ -43,12 +44,6 @@ function renderPageBody($season) {
 				break;
 		}
 	}
-
-	// $where = "type = 'Tool' 
-		// and season_id = " . $season['id'] . "
-		// and parent_process_id = " . MONITOR_MANAGE_SURVEY_ID;
-	// $tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
-	// if (0) deb("survey_steps.renderPageBody(): tools = ", $tools);
 	return $body;
 }
 

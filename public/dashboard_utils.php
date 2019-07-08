@@ -377,7 +377,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 	$assignments_form = 
 		$assignments_form_headline . 
-		'<form id="assignments_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '" method="post">' . 
+		'<form id="assignments_form" name="assignments_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '" method="post">' . 
 		$assignments_table .
 		'<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 		<input type="hidden" name="change_count" id="change_count" value="0" />

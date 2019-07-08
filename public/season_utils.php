@@ -8,7 +8,7 @@ require_once 'admin_utils.php';
 function renderPageBody($season, $parent_process_id) {
 	
 	if (0) deb("season_utils.renderPageBody(): season = ", $season);
-	if (0) deb("season_utils.renderPageBody(): curr season = " . getSeason('id'));
+	if (0) deb("season_utils.renderPageBody(): curr season = " . getSeason('id')); 
 	$where = "type = 'Step' 
 		and season_id = " . getSeason('id') . "
 		and parent_process_id = " . SET_UP_SEASON_ID;
@@ -17,6 +17,7 @@ function renderPageBody($season, $parent_process_id) {
 	
 	// Render the page components for each step
 	foreach ($steps as $step) {
+		$body .= '<a name="' . $step['process_id'] . '"></a>'; 
 		$body .= '<br><br><h3>Step ' . ++$n . ': ' . $step['name'] . '</h3>';
 		switch ($step['process_id']) {
 			case EDIT_SEASON_ID:
@@ -45,7 +46,7 @@ function renderEditSeasonForm($season, $parent_process_id) {
 	
 	if (0) deb("season.renderEditSeasonForm(): start: season =", $season);
 	$season_status = ($season) ? "existing" : "new";
-	if ($season) {		// Existing season's start and end months are not updatable
+	if ($season_status == "existing") {		// Existing season's start and end months are not updatable
 		$start_month_value = date("F Y", strtotime($season['start_date']));
 		$end_month_value = date("F Y", strtotime($season['end_date']));
 		$required = "";
@@ -56,14 +57,20 @@ function renderEditSeasonForm($season, $parent_process_id) {
 	}
 	$form = "";
 	$form .= '<p>' . REQUIRED_MARKER . ' marks required fields</p>';
-	$form .= '<form action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS) . '" method="post" name="season_status_form">';
+	$form .= '<form action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_SEASON_ID) . '" method="post" name="edit_season_form">'; 
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="season_status" value="' . $season_status . '">';
 	$form .= '<table style="font-size:11pt;">';
 
 	// Season name
-	$form .= '<tr><td style="text-align:right">name:</td>
-		<td><input type="text" name="name" value="' . $season['name'] . '"> ' . REQUIRED_MARKER . '</td></tr>';
+	$form .= '<tr><td style="text-align:right">name (without year):</td>
+		<td><input type="text" id="name_without_year" onblur="setSeasonFullName()" name="name_without_year" value="' . $season['name_without_year'] . '"> ' . REQUIRED_MARKER . '</td></tr>';
+	$form .= '<tr><td style="text-align:right">year:</td>
+		<td><input type="text" id="year" onblur="setSeasonFullName()" name="year" value="' . $season['year'] . '"></td></tr>';
+	$form .= '<tr><td style="text-align:right">full season name:</td>
+		<td id="full_name">' . $season['name'] . '</td></tr>';
+	$form .= '<input type="hidden" id="name" name="name" value="' . $season['name'] . '">';
+	
 
 	// Season start and end dates
 	if (0) deb("season.renderEditSeasonForm(): season['start_date'] =", $season['start_date']);
@@ -107,11 +114,11 @@ function renderEditMealsCalendarForm($season, $parent_process_id) {
 
 	$form = '';
 	if (0) deb("season.renderEditMealsCalendarForm() season from arg = ", $season);
-	$form .= '<form enctype="multipart/form-data" action="season.php" method="POST">';
+	$form .= '<form enctype="multipart/form-data" action= ' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_MEALS_CALENDAR_ID) . ' method="POST" name="edit_meals_calendar_form">'; 
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="edit_meals">';
 	$form .= renderEditMealsCalendarTable($season, $meals);
-    $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
+  $form .= '<p><input type="submit" value="Save Changes"><input type="reset" value="Cancel Changes"></p>';
 	$form .= '</form>';
 	return $form;	
 }
@@ -161,12 +168,12 @@ function renderEditMealsCalendarTable($season, $meals) {
 function renderWorkerImportForm($season, $parent_process_id) {
 	if (!$season) return;
 	$form = '';
-	$form .= '<form enctype="multipart/form-data" action="season.php" method="POST">';
+	$form .= '<form enctype="multipart/form-data" action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", IMPORT_WORKERS_ID) . '" method="POST" name="import_workers_form">';
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="import_workers">';
     $form .= '<input type="hidden" name="MAX_FILE_SIZE" value="30000" />';
     $form .= '<p>Select file to import: <input name="userfile" type="file" /></p>';
-    $form .= '<p><input type="submit" value="Import Workers" /></p>';
+    $form .= '<p><input type="submit" value="Import Workers" /><input type="reset" value="Cancel Import"></p>';
 	$form .= '</form>';
 	return $form;
 }
@@ -177,11 +184,11 @@ function renderWorkerEditForm($season, $parent_process_id) {
 	if (!sqlSelect("id", SEASON_WORKER_TABLE, "season_id = {$season['id']}", "", (0), "renderWorkerEditForm(): season_workers")) return;
 	$form = '';
 	if (0) deb("season.renderWorkerEditForm() season from arg = ", $season);
-	$form .= '<form enctype="multipart/form-data" action="season.php" method="POST">';
+	$form .= '<form enctype="multipart/form-data" action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_WORKERS_ID) . '" method="POST" name="edit_workers_form">';
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="update_workers">';
 	$form .= renderWorkerTable($season);
-    $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
+  $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
 	$form .= '</form>';
 	return $form;	
 }
@@ -254,7 +261,7 @@ function renderSurveySetupForm($season, $next, $parent_process_id=null) {
 
 	if (0) deb("season.renderSurveySetupForm(): season_id =", $season['id']);
 	$form = "";
-	$form .= '<form action="' . $next . '" method="post" name="survey_setup_form">';
+	$form .= '<form action="' . makeURI($next, PREVIOUS_CRUMBS_IDS, "", SET_SURVEY_DATES_ID) . '" method="post" name="set_survey_dates_form">';
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="survey_setup">';
 	$form .= '<table style="font-size:11pt;">';
@@ -308,8 +315,13 @@ function saveChangesToSeason($post) {
 
 	// Process data from the new season form
 	if (array_key_exists('season_status', $post)) {
-		if ($post['name']) $postcols[] = array("sql"=>"name", "value"=>$post['name']);
-		else $required_fields_missing .= "name&";
+		if ($post['name_without_year']) $postcols[] = array("sql"=>"name_without_year", "value"=>$post['name_without_year']);
+		else $required_fields_missing .= "name_without_year&";
+
+		$postcols[] = array("sql"=>"year", "value"=>$post['year']);
+		
+		if ($post['name_without_year'] && $post['year']) $separator = " "; else $separator = "";
+		$postcols[] = array("sql"=>"name", "value"=>$post['name_without_year'] . $separator . $post['year']);
 
 		if ($post['season_start_month']) $postcols[] = array("sql"=>"start_date", "value"=>$post['season_start_month'] . "-01");
 		else $required_fields_missing .= "start_date&";

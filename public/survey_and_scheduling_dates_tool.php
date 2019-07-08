@@ -20,9 +20,7 @@ if (0) deb("survey_and_scheduling_dates_tool.php: season =", $season);
 // Display the page
 $page = "";
 $page .= renderHeadline("Adjust Survey & Scheduling Dates", CRUMBS_QUERY, "", 0); 
-// $page .= renderHeadline("Adjust Survey & Scheduling Dates", HOME_LINK . ADMIN_LINK . SURVEY_LINK, "", 0); 
 $page .= "<br>";
-// $page .= renderHeadline((($season) ? $season['name'] : "New") . " Season", HOME_LINK . SURVEY_LINK); 
 $page .= renderSurveySetupForm($season, "survey_and_scheduling_dates_tool.php"); 
 print $page;
 

@@ -21,8 +21,6 @@ define('ADDED_ICON', '<img src="/display/images/plusIcon.png" width="18" height=
 define('REMOVED_COLOR', ' background:White; ');	// Format for worker removed from shift
 define('REMOVED_DECORATION', ' text-decoration:line-through; ');	// Format for worker removed from shift
 define('REMOVED_ICON', '<img src="/display/images/minusIcon.png" width="18" height="18">');		// Format for worker removed from shift
-define('UNCHANGED_BACKGROUND_COLOR', 'white');	// Background for unchanged unsaved field
-define('CHANGED_BACKGROUND_COLOR', 'yellow');	// Background for changed unsaved field
 
 // Show change set from form data, get user confirmation
 // Render one change set

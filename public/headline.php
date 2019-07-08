@@ -102,17 +102,15 @@ function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_link=1) 
 	$color = '"color:red"';
 	$instance_notice = $instance && !$_GET['printable'] == 1 ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "";
 	if ($instance_notice && !userIsAdmin()) $instance_notice .= "<br>";
-	// $end_session_label = "End this session and start a new one.";
-	// $sign_in_as_guest_label = "Sign in as a guest";
 
 	// Render admin notice (shown iff user is admin)
 	if (userIsAdmin() && !$_GET['printable'] == 1) $admin_notice = 
 		'
 		<div style=' . $color . '><p>
-		<form method="post" action="' . $_SERVER['PHP_SELF'] . '">
-			<input type="hidden" name="sign_in_as_guest" value="1">
+		<form method="post" action="' . makeURI($_SERVER['PHP_SELF'], CRUMBS_IDS) . '" name="guest_form"> 
+			<input type="hidden" name="sign_in_as_guest" value="1"> 
 			<p><strong>You are signed into this session as an admin. </strong>
-			<input type="submit" value="Sign in as a plain old ordinary user.">
+			<input type="submit" name="sign_in_as_user" value="Sign in as a plain old ordinary user.">
 		</form>
 		</p><br></div>';
 	if (0) deb ("headline.renderHeadline(): NEXT_CRUMBS_IDS = " . NEXT_CRUMBS_IDS);

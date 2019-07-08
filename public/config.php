@@ -8,6 +8,7 @@ define('BASE_DIR', '');
 define('PUBLIC_DIR', BASE_DIR);
 define('DB_DIR', BASE_DIR . '../db');
 define("REQUEST_QUERY_STRING", $_SERVER['QUERY_STRING']);
+define("SCRIPT_URL", $_SERVER['SCRIPT_URL']);
 define("SESSION_ID", $_REQUEST['PHPSESSID']);
 define('COMMUNITY', 'Sunward');
 
@@ -57,6 +58,9 @@ function get_num_shift_overrides() {
 	];
 }
 
+print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
+print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
+print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
 
 //////////////////////////////////////////////////////// FUNCTIONS
 

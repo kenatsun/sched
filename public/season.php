@@ -2,6 +2,8 @@
 require_once 'start.php';
 require_once 'season_utils.php';
 $dir = BASE_DIR;
+print '<script src="js/season.js"></script>';
+
 
 // Read the current data for this season (if it exists)
 if (0) deb("season.php: _REQUEST =", $_REQUEST); 
@@ -11,29 +13,12 @@ if (0) deb("season.php: _FILES =", $_FILES);
 if (0) deb("season.php: _GET['parent_process_id'] = {$_GET['parent_process_id']}");
 if (0) deb("season.php: array_key_exists('season_id', _POST['season_id']) =", array_key_exists('season_id', $_POST));
 
-// // If request is a POST to display an existing season, POST['season_id'] will indicate the season
-// // If request is a POST to display an empty form to create a new season, POST['season_id'] will have value null
-// if (array_key_exists('season_id', $_POST)) {
-	// $season_id = $_POST['season_id'];
-// // If request is a GET to display an existing season, get the season_id from it
-// // If request is a GET to display an empty form to create a new season, GET['season_id'] will have value null
-// } elseif (array_key_exists('season_id', $_GET)) {
-	// $season_id = $_GET['season_id'];
-	// if ($season_id) setSeason($season_id);
-// }
-
-// If request is a SERVER to display an empty form to create a new season, SERVER['new_season'] will be present
-// If request is a SERVER to display an existing season, SERVER['new_season'] will be absent, so display session season
 if (!array_key_exists('new_season', $_REQUEST)) {
 	$season_id = SEASON_ID;
 }
 
-// If request is to display the current season, do that
-// else $season_id = getSeason('id');
-
 // Get the id of the parent admin process (stage)
 if ($_REQUEST['parent_process_id']) $parent_process_id = $_REQUEST['parent_process_id'];
-// elseif ($_POST['parent_process_id']) $parent_process_id = $_POST['parent_process_id'];
 
 // If request is to store season data, do that
 if (array_key_exists('season_status', $_POST) || array_key_exists('survey_setup', $_POST)) $season_id = saveChangesToSeason($_POST);

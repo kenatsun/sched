@@ -1,6 +1,6 @@
 <?php
 
-if (0) deb("constants.php: start");
+if (0) deb("constants.inc: start");
 
 /*
  * Collection of constant declarations
@@ -8,18 +8,9 @@ if (0) deb("constants.php: start");
 
 define('RESULTS_FILE', 'schedule.txt');
 
-# ---------- date stuff -------------
-define('WINTER', 'winter');
-define('SPRING', 'spring');
-define('FALL', 'fall');
-define('SUMMER', 'summer');
-
-$this_year = date('Y'); 
-$this_month = date('n');
-if (($this_month == 11) || ($this_month == 12)) {
-	$this_year++;
-}
-
+// -------- display-related constants ----------
+define('UNCHANGED_BACKGROUND_COLOR', 'white');	// Background for unchanged unsaved field
+define('CHANGED_BACKGROUND_COLOR', 'yellow');	// Background for changed unsaved field
 define('REQUIRED_MARKER', '<span style="color:red;"><strong>!</strong></span>');
 
 
@@ -58,6 +49,7 @@ define('JOB_TYPES_TABLE', 'job_types');
 define('PAGES_TABLE', 'pages');
 define('CRUMBS_TABLE', 'crumbs');
 define('SESSIONS_TABLE', 'sessions');
+
 
 // -------- admin process ids ---------
 define('SET_UP_SEASON_ID', 1);

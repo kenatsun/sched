@@ -551,11 +551,12 @@ function renderLink($text, $href) {
 }
 
 //
-function makeURI($url, $crumbs="", $other_queries="") {
+function makeURI($url, $crumbs="", $other_queries="", $anchor="") {
 	$uri = $url . "?";
 	if ($crumbs) $uri .= "breadcrumbs=" . $crumbs;
 	if ($crumbs && $other_queries) $uri .= "&";
 	if ($other_queries) $uri .= $other_queries;
+	if ($anchor) $uri .= "#" . $anchor;
 	// $uri .= "#";
 	// $uri = urlencode($uri);
 	if (0) deb("utils.phpmakeURI(): crumbs = $crumbs"); 
@@ -581,6 +582,7 @@ function exportSurveyAnnouncementCSV($season, $filename) {
 	$columns[] = array("sql"=>"w.first_name || ' ' || w.last_name", "colname"=>"worker_name");
 	$columns[] = array("sql"=>"w.unit", "colname"=>"unit");
 	$columns[] = array("sql"=>"s.name", "colname"=>"season_name");
+	$columns[] = array("sql"=>"s.name_without_year", "colname"=>"season_name_without_year");
 	$columns[] = array("sql"=>"s.start_date", "colname"=>"season_start_date");
 	$columns[] = array("sql"=>"s.end_date", "colname"=>"season_end_date");
 	$columns[] = array("sql"=>"s.survey_opening_date", "colname"=>"survey_opening_date");

@@ -224,5 +224,33 @@ function nullRadio() {
 			}
 		})
 	})
+}
 
+function toggleSignIn(user_is_admin) {
+	alert("toggleSignIn(): user_is_admin = " + user_is_admin);
+	var sign_in_as = document.getElementById("sign_in_as");
+	if (user_is_admin == 1) {
+		sign_in_as.value = "guest";
+	} else {
+		sign_in_as.value = "admin";
+	}
+	alert("toggleSignIn(): sign_in_as.value = " + sign_in_as.value);
+}
+
+function getPassword(new_status) {
+	// alert("getPassword(): new_status = " + new_status);
+	if (new_status == "admin") {
+		var clink = document.getElementById("community_logo_link");
+		alert ("getPassword(): clink = " + clink);
+		alert ("getPassword(): clink.href = " + $(clink).attr("href"));
+		var retVal = prompt("Enter admin password: ", "");
+		if (retVal != "a") {
+			alert ("Incorrect password: admin access denied.");
+			alert ("getPassword(): clink before = " + clink);
+			clink.value = clink.replace("sign_in_as=admin", "sign_in_as=guest");
+			alert ("getPassword(): clink after = " + clink);
+			return false;
+		}
+		// document.write("You have entered : " + retVal);		
+	}
 }

@@ -41,37 +41,35 @@ function scheduler_run() {
 // ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
 
 function determineUserStatus() {
-	if (isset($_GET['admin']) || isset($_GET['a'])) { 
-		if (0) deb("utils.determineUserStatus: Should be setting admin cookie");
+	if (0) deb("utils.determineUserStatus: _REQUEST['sign_in_as'] = ", $_REQUEST['sign_in_as']);
+	if ($_REQUEST['sign_in_as'] === "admin") { 
+		promptForAdminPassword();
+	} elseif ($_REQUEST['password'] === ADMIN_PASSWORD) {
 		$_SESSION['access_type'] = 'admin';
-	}
-	if (isset($_POST['sign_in_as_guest'])) {
+	} elseif ($_REQUEST['sign_in_as'] === "guest") {
 		$_SESSION['access_type'] = 'guest';
 	}
-	if (0) deb("utils.determineUserStatus: _GET = ", $_GET);
-	if (0) deb("utils.determineUserStatus: _POST = ", $_POST);
-	if (0) deb("utils.determineUserStatus: _COOKIE = ", $_COOKIE);
 	if (0) deb("utils.determineUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
 	if (0) deb("utils.determineUserStatus: _SESSION = ", $_SESSION);
 }
 
 function promptForAdminPassword() {
 	$_SESSION['access_type'] = 'guest';
-	print <<<EOHTML
-		<form method="post" action="{$_SERVER['PHP_SELF']}">
+	// print '
+		// <form method="post" target="_blank" action="' . $_SERVER['PHP_SELF'] . '"> 
+	print '<div style="color:red; font-weight:bold; animation:blink;">
+		<form method="post" target="_blank" action="' . makeURI($_SERVER['PHP_SELF'], "", REQUEST_QUERY_STRING) . '">  
 			<p>For administrator access, enter password:</p>
 			<input type="password" name="password">
 			<input type="submit" value="go">
 		</form>
-EOHTML;
+		</div>
+';
 }
 
-
 function userIsAdmin() {
-	// return (isset($_COOKIE["admin"]) && $_COOKIE["admin"] == TRUE ? 1 : 0);
 	if (0) deb("utils.userIsAdmin: SESSION['access_type']", $_SESSION['access_type']);
 	return isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin"	? 1 : 0;
-	// return (isset($_SESSION['access_type']) && $_SESSION['access_type'] == "admin" ? 1 : 0);
 }
 
 // ADMIN LOGIN FUNCTIONS - end ----------------------------------------------------

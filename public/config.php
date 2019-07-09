@@ -11,9 +11,13 @@ define("REQUEST_QUERY_STRING", $_SERVER['QUERY_STRING']);
 define("SCRIPT_URL", $_SERVER['SCRIPT_URL']);
 define("SESSION_ID", $_REQUEST['PHPSESSID']);
 define('COMMUNITY', 'Sunward');
+define("ADMIN_PASSWORD", "a");
 
 // Open the database
 create_sqlite_connection();
+
+// Determine if user is admin or guest
+determineUserStatus();
 
 // Configure the session
 setSessionConstants();
@@ -59,6 +63,7 @@ function get_num_shift_overrides() {
 }
 
 print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
+print '<input type="hidden" id="sign_in_as" value="">';
 print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
 print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
 

@@ -7,8 +7,6 @@ require_once 'classes/OffersList.php';
 require_once 'classes/person.php';
 require_once 'classes/survey1.php';
 require_once 'participation.php';
-// require_once 'seasons.php';
-// require_once 'seasons_utils.php';
 
 
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
@@ -47,7 +45,5 @@ function generateAdminProcessesForSeason($season_id) {
 		}
 	}
 }
- 
-
 
 ?>

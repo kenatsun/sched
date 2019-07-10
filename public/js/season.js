@@ -43,3 +43,14 @@ window.onload = function(){
 		})
 	})
 }
+
+function setSeasonFullName() {
+	var name_without_year = document.getElementById("name_without_year").value;
+	var year = document.getElementById("year").value;
+	var separator;
+	if (name_without_year && year) separator = " "; else separator = "";
+	var full_name = name_without_year + separator + year;
+	document.getElementById("full_name").innerHTML = full_name;
+	document.getElementById("name").value = full_name;
+}
+

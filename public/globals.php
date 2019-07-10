@@ -1,15 +1,13 @@
-<?php
+<?php 
 
 define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
-// -------- some page formatting constants ---------
-define('HEADER_COLOR', '#e6e6e6');		// Background color for table headers 
 
 date_default_timezone_set('America/Detroit');
 if (0) deb("globals.php: datetime = " . date("Y-m-d H:i:s") );
 
-require_once('utils.php');
-require_once('config.php');
+// require_once('utils.php');
+// require_once('config.php');
 
 define('NON_RESPONSE_PREF', .5);
 define('PLACEHOLDER', 'XXXXXXXX');

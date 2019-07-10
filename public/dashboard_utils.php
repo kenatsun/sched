@@ -15,42 +15,30 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	$change_request_end_date_f = date_format(date_create($change_request_end_date), "l, F jS");
 	$scheduling_end_date = $season['scheduling_end_date'];
 	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS");
-	// if (0) deb("dashboard.displaySchedule(): change_request_end_date = " . $change_request_end_date . "; scheduling_end_date = " . $scheduling_end_date . "; now = " . $now_f . "");
+
 	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
-	// if ($now_f <= $change_request_end_date) {		// If now is before the change request deadline 
+
 	if ($edition == "first") {		
-	// switch ($edition) {
-		// case "first":
-			// if (0) deb("before change req end date");
-			if (0) deb("first");
-			$adjective = "Tentative ";
-			$subhead = "as of " . date_format($now, "g a F jS");
-			$change_requests_line = "Please send change requests by " . $change_request_end_date_f . " to ";
-			// $break;
-		// } elseif ($now_f <= $scheduling_end_date) {		// If now is before the end of the scheduling period
-		} elseif ($edition == "revised") {		
-		// case "revised":
-			// if (0) deb("before scheduling end date");
-			if (0) deb("revised");
-			$adjective = "Revised ";
-			$subhead = "as of " . date_format($now, "g a F jS");
-			$change_requests_line = "Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
-			// $change_requests_line = "Proposed changes since the last edition are marked with " . ADDED_ICON . " and " . REMOVED_ICON . ".<br>Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
-			// $break; 
-		} elseif ($edition == "final") {		
-		// case "final":
-			if (0) deb("final");
-			// if (0) deb("after end dates");
-			$adjective = "Final ";
-			$subhead = date_format($now, "F j, Y");
-			$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
-			// $break;
+		if (0) deb("first");
+		$adjective = "Tentative ";
+		$subhead = "as of " . date_format($now, "g a F jS");
+		$change_requests_line = "Please send change requests by " . $change_request_end_date_f . " to ";
+	} elseif ($edition == "revised") {		
+		if (0) deb("revised");
+		$adjective = "Revised ";
+		$subhead = "as of " . date_format($now, "g a F jS");
+		$change_requests_line = "Any problems with these changes? <br>Please email them by <u>" . $scheduling_end_date_f . "</u> to ";
+	} elseif ($edition == "final") {		
+		if (0) deb("final");
+		$adjective = "Final ";
+		$subhead = date_format($now, "F j, Y");
+		$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
 	if (0) deb("dashboard.displaySchedule(): adjective = " . $adjective);
 	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
 	$crumbs = $edition ? "" : CRUMBS_QUERY;  // Omit breadcrumbs from printable editions
 	if (0) deb("dashboard.displaySchedule(): crumbs = " . $crumbs);
-	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $crumbs, $subhead, 0);
+	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $subhead, 0);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
 	// if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
@@ -125,7 +113,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				$publish_buttons = '
 					&nbsp;&nbsp;
 					<span name="publish_buttons" style="text-align:left;">
-						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("publish.php", NEXT_CRUMBS_IDS) . '\')" value="Publish changes (after review)"> 
+						<input type="submit" id="publish" name="publish" onclick="setFormAction(\'assignments_form\',\'' . makeURI("publish.php", NEXT_CRUMBS_IDS) . '\')" value="Publish changes (after review)"> 
 						&nbsp;&nbsp;
 						<input type="submit" id="undo" name="undo" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_sets.php", NEXT_CRUMBS_IDS) . '\')" value="Undo changes (after review)"> 
 					</span>
@@ -290,7 +278,13 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					if ($exists_now) {	
 						$id = 'remove_sh_' . $shift_id . '_wkr_' . $assignment['worker_id'];
 						$shift_cell .= '<table>';
-						$shift_cell .= '<tr id="tr_' . $id . '" style="background-color:white"><td style="text-align: right; background-color:rgba(0,0,0,0);">remove</td><td style="background-color:rgba(0,0,0,0);"><input type="checkbox" name="remove[]" id="' . $id . '" onclick="colorChangedControl(' . $id . ')" value="' . $assignment['assignment_id'] . '"></td></span></tr>';
+						$shift_cell .= '
+							<tr id="tr_' . $id . '" style="background-color:white">
+								<td style="text-align: right; background-color:rgba(0,0,0,0);">remove</td>
+								<td style="background-color:rgba(0,0,0,0);">
+									<input type="checkbox" name="remove[]" id="' . $id . '" onclick="colorChangedControl(' . $id . ')" value="' . $assignment['assignment_id'] . '">
+								</td>
+							</tr>';
 
 						// Figure out which shifts this worker could be added to
 						$possible_shifts = getPossibleShiftsForWorker($assignment['worker_id'], $job['job_id'], TRUE);
@@ -377,7 +371,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 	$assignments_form = 
 		$assignments_form_headline . 
-		'<form id="assignments_form" name="assignments_form" action="' . makeURI("dashboard.php", NEXT_CRUMBS_IDS) . '" method="post">' . 
+		'<form id="assignments_form" name="assignments_form" action="' . makeURI("dashboard.php", CRUMBS_IDS) . '" method="post">' . 
 		$assignments_table .
 		'<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 		<input type="hidden" name="change_count" id="change_count" value="0" />

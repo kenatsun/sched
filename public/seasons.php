@@ -1,8 +1,7 @@
 <?php
 require_once 'start.php';
-// require_once 'seasons_utils.php';
+print '<script src="js/seasons.js"></script>';
 
-$dir = BASE_DIR;
 if (0) deb("seasons.php: _COOKIE =", $_COOKIE);
 if (0) deb("season.php: _POST =", $_POST); 
 if (0) deb("season.php: _GET =", $_GET);
@@ -13,7 +12,7 @@ foreach($_POST as $key=>$value) {
 }
 
 $page = "";
-$page .= renderHeadline("Manage Seasons", CRUMBS_QUERY); 
+$page .= renderHeadline("Manage Seasons"); 
 $page .= '<br>';
 $page .= 'The "Global Season" is the season that will be seen by all end users.<br>';
 $page .= 'The "Session Season" is the season that you will see and work on in this session.<br><br>';

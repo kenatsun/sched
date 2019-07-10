@@ -1,7 +1,5 @@
 <?php
 
-//////////////////////////////////////////////////////// FUNCTIONS
-
 // connect to SQLite database
 function create_sqlite_connection() {
 	global $dbh;
@@ -40,8 +38,8 @@ function scheduler_run() {
 
 // ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
 
-function determineUserStatus() {
-	if (0) deb("utils.determineUserStatus: _REQUEST['sign_in_as'] = ", $_REQUEST['sign_in_as']);
+function changeUserStatus() {
+	if (0) deb("utils.changeUserStatus: _REQUEST['sign_in_as'] = ", $_REQUEST['sign_in_as']);
 	if ($_REQUEST['sign_in_as'] === "admin") { 
 		promptForAdminPassword();
 	} elseif ($_REQUEST['password'] === ADMIN_PASSWORD) {
@@ -49,8 +47,8 @@ function determineUserStatus() {
 	} elseif ($_REQUEST['sign_in_as'] === "guest") {
 		$_SESSION['access_type'] = 'guest';
 	}
-	if (0) deb("utils.determineUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
-	if (0) deb("utils.determineUserStatus: _SESSION = ", $_SESSION);
+	if (0) deb("utils.changeUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
+	if (0) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);
 }
 
 function promptForAdminPassword() {
@@ -194,11 +192,8 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 function renderSendEmailControl($name) {
 	if(userIsAdmin()) {
 		$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $name . '?</div><br>';
-		// $finish_widget = '<button class="pill" type="submit" value="Save and Send Email" id="email" name="email">Finish and Send Email</button>';
-		// $finish_widget .= '<button class="pill" type="submit" value="Save but Send No Email" id="noemail" name="noemail">Finish but Send No Email</button>';
 	} else {
 		$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
-		// $finish_widget = '<button class="pill" type="submit" value="Save" id="end">Finish</button>';	
 	}
 	return $send_email; 
 }
@@ -444,26 +439,8 @@ function getSeason($attribute="") {
 	} else {
 		return sqlSelect("*", "seasons", "id = " . SEASON_ID, "", (0), "utils.getSeason('id')")[0];
 	}
-	// if ($attribute) {
-		// return sqlSelect("{$attribute}", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0][$attribute];
-	// } else {
-		// return sqlSelect("*", "seasons", "current_season = 1", "", (0), "utils.getSeason('id')")[0];
-	// }
 }
 
-// // Set the id of the current season in the database
-// function setSeason($id) {
-	// if (0) deb("utils.setSeason(): season_id = " . $id);
-
-	// if (!$id) return;
-	// $season_exists = sqlSelect("*", "seasons", "id = {$id}", "", (0), "utils.setSeason()")[0];
-	// if ($season_exists) {
-		// sqlUpdate(SEASONS_TABLE, "current_season = null", "", (0), "utils.setSeason()");
-		// sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$id}", (0), "utils.setSeason()");
-	// } else {
-		// echo "Error: Season with id " . $id . " doesn't exist.";
-	// }
-// }
 
 /**
  * Get the upcoming season's ID.
@@ -518,13 +495,11 @@ Print debug data to the web page
 
 function deb($label, $data=NULL) {
 	$print_data = ($data ? "<pre> " . print_r($data, TRUE) . "</pre>" : '<p> </p>');
-	echo <<<EOHTML
-<tr>
-	<td colspan="4"> <br>{$label}
-		{$print_data}
-	</td>
-</tr>
-EOHTML;
+	echo '
+	<tr>
+		<td colspan="4"> <br>' . $label . $print_data . '</td>
+	</tr>
+	';
 }
 
 /* 
@@ -548,7 +523,7 @@ function renderLink($text, $href) {
 	return $link;
 }
 
-//
+
 function makeURI($url, $crumbs="", $other_queries="", $anchor="") {
 	$uri = $url . "?";
 	if ($crumbs) $uri .= "breadcrumbs=" . $crumbs;
@@ -635,6 +610,7 @@ function exportSurveyAnnouncementCSV($season, $filename) {
 	fclose($file); 	
 }
 
+
 function getJobs() {
 	$jobs_table = SURVEY_JOB_TABLE;
 	$season_id = SEASON_ID;
@@ -695,6 +671,7 @@ function getJobAssignments($meal_id=NULL, $job_id=NULL, $worker_id=NULL) {
 	return $assignments;
 }
 
+
 function getResponders() {
 	// $responder_ids = array();
 	// $signups_table = OFFERS_TABLE;
@@ -704,43 +681,16 @@ function getResponders() {
 	foreach($responders as $responder) $responder_ids[] = $responder['id'];
 	if (0) deb("utils.getResponders: responder_ids =", $responder_ids); 
 	return $responder_ids; 
-	// // $where = "id IN (select worker_id from {$signups_table} WHERE season_id = {$season_id})";
-	// $where = "id IN (select worker_id from {$season_worker_table} WHERE season_id = {$season_id} and first_response_timestamp is not null)";
-	// $responders =  new PeopleList($where);
-	// $responders_list = $responders->people;
-	// if ($responders_list) {
-		// foreach($responders_list as $index=>$person) {
-			// if (0) deb("utils.getResponders: person[id] =", $person['id']); 
-			// $responder_ids[] = $person['id'];
-		// }
-	// }
-	// if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids); 
-	// return $responder_ids; 
 }
+
 
 function getNonResponders() {
 	$non_responders = sqlSelect("worker_id as id", SEASON_WORKER_TABLE, "season_id = {$season_id} and first_response_timestamp is null", "", (0));
 	foreach($non_responders as $non_responder) $non_responder_ids[] = $non_responder['id'];
 	if (0) deb("utils.getNonResponders: responder_ids =", $non_responder_ids); 
 	return $non_responder_ids; 
-	// $responder_ids = getResponders();
-	// if (0) deb("utils.getNonResponders: responder_ids =", $responder_ids);
-	// $everybody = new PeopleList("");
-	// $everybody_list = $everybody->people;
-	// foreach($everybody_list as $index=>$person) {
-		// if (0) deb("utils.getNonResponders: person[id] =", $person['id']); 
-		// $everybody_ids[] = $person['id'];
-		// if (!(in_array($person['id'], $responder_ids))){
-			// $non_responder_ids[] = $person['id'];
-			// $non_responder_names[] = $person['first_name'] . " " . $person['last_name'];
-		// }
-	// }
-	// if (0) deb("utils.getNonResponders: everybody_ids =", $everybody_ids);
-	// if (0) deb("utils.getNonResponders: non_responder_ids =", $non_responder_ids);
-	// if (0) deb("utils.getNonResponders: non_responder_names =", $non_responder_names);
-	
-	// return $non_responder_names;
 }
+
 
 // Get descriptions of all jobs for the specified season from the database.
 // This function coexists uneasily with the "defines" in constants.inc, which also specify the job ids as global constants.
@@ -754,6 +704,7 @@ function getJobsFromDB($season_id) {
 	if (0) debt("utils.getJobsFromDB: jobs", $out);
 	return $out;
 }
+
 
 function renderJobSignups($headline=NULL, $include_details) {
 	$jobs = getJobs();

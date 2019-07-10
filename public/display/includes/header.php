@@ -5,6 +5,13 @@ if (0) deb("header.php: start");
 $favicon = getFavicon();
 if (0) deb("header.php: favicon = " . $favicon);
 
+// if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
+	// $survey_scripts = '
+	// <script src="js/utils.js"></script>
+	// <script src="js/survey_library.js"></script>
+	// ';
+// }
+
 $head = '
 <!doctype html> 
 <html> 
@@ -16,7 +23,6 @@ $head = '
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	<script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.3/jquery.dataTables.js"></script>
 	<script src="select2/select2.full.min.js"></script>
-	<script src="js/utils2.js"></script>
 	<script>
 		$(document).ready(function() { 
 			$("#per_worker").dataTable({
@@ -42,44 +48,18 @@ $head = '
         }
 		window.onbeforeunload = unloadPage; 
     </script>
+</head>
 ';
  
-
 print $head;
 
-if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
-	echo <<<EOHTML
-	<script src="js/utils.js"></script>
-	<script src="js/survey_library.js"></script>
-EOHTML;
-}
+if (0) deb("header.php: head = ", $head);
 
-	// This script was moved to utils2.js
-	// <script>
-	// function confirmDeleteSeason(id, name) {
-	  // var txt;
-	  // var r = confirm("Permanently delete the " + name + " season?");
-	  // if (r == true) {
-		// let form = document.createElement('form');
-		// form.action = "seasons.php";
-		// form.method = 'POST';
-		// form.innerHTML = '<input name="delete_season" value="' + id + '">';
-		// document.body.append(form);
-		// form.submit();
-		// txt = "Season " + name + " has been deleted!";
-	  // } else {
-		// txt = "Season " + name + " won't be deleted";
-	  // }
-	  // document.getElementById("result").innerHTML = txt;
-	// }
-	// </script>
 
 
 ?>
 
-</head>
 
-<body>
 
 
 

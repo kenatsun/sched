@@ -2,6 +2,7 @@
 require_once "start.php";
 require_once "dashboard_utils.php";
 require_once "change_sets_utils.php";
+print '<script src="js/dashboard.js"></script>';
 
 if (0) deb("dashboard.php: start"); 
 if (0) deb("dashboard.php: _POST = ", $_POST);

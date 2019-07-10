@@ -1,7 +1,5 @@
 <?php
 
-if (0) deb("constants.inc: start");
-
 /*
  * Collection of constant declarations
  */
@@ -12,6 +10,7 @@ define('RESULTS_FILE', 'schedule.txt');
 define('UNCHANGED_BACKGROUND_COLOR', 'white');	// Background for unchanged unsaved field
 define('CHANGED_BACKGROUND_COLOR', 'yellow');	// Background for changed unsaved field
 define('REQUIRED_MARKER', '<span style="color:red;"><strong>!</strong></span>');
+define('HEADER_COLOR', '#e6e6e6');		// Background color for table headers 
 
 
 // -------- sqlite tables --------- 
@@ -21,8 +20,6 @@ define('SURVEY_JOB_TABLE', 'jobs');
 define('OFFERS_TABLE', 'offers'); 
 define('SEASONS_TABLE', 'seasons'); 
 define('SEASON_WORKER_TABLE', 'season_workers');  
-
-// this is altered
 define('AUTH_USER_TABLE', 'workers');  
 
 // tables for survey results

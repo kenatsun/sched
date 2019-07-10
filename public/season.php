@@ -31,7 +31,7 @@ $season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.p
 
 // Display the page
 $page = "";
-$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", CRUMBS_QUERY, "", 0); 
+$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", "", 0); 
 $page .= renderPageBody($season, $parent_process_id);
 print $page;
 

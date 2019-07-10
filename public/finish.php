@@ -46,7 +46,7 @@ function finishSurvey($survey, $person_id) {
 	} else {
 		$insufficient_prefs_msg = '';
 	}
-	$headline = renderHeadline("Thank you, {$person_name}!", CRUMBS_QUERY);
+	$headline = renderHeadline("Thank you, {$person_name}!");
 	
 	$signup_crumb = sqlSelect("*", CRUMBS_TABLE, "url = '/survey_page_1.php'", "when_created desc", (0))[0];
 	$signup_uri = makeURI($signup_crumb['url'], "", $signup_crumb['query_string']);

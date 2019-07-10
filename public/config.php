@@ -17,7 +17,7 @@ define("ADMIN_PASSWORD", "a");
 create_sqlite_connection();
 
 // Determine if user is admin or guest
-determineUserStatus();
+changeUserStatus();
 
 // Configure the session
 setSessionConstants();
@@ -40,7 +40,7 @@ if (COMMUNITY == 'Sunward') {
 
 # Are Sunday meals treated separately from weeknights?
 if (COMMUNITY == 'Sunward') {
-	define('ARE_SUNDAYS_UNIQUE', FALSE);
+	define('ARE_SUNDAYS_UNIQUE', FALSE); 
 } else {
 	define('ARE_SUNDAYS_UNIQUE', TRUE);
 }
@@ -62,10 +62,28 @@ function get_num_shift_overrides() {
 	];
 }
 
-print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
-print '<input type="hidden" id="sign_in_as" value="">';
-print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
-print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
+if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
+	$survey_scripts = '
+	<script src="js/utils.js"></script>
+	<script src="js/survey_library.js"></script>
+	';
+}
+
+$body = '
+<body>
+	<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">
+	<input type="hidden" id="sign_in_as" value="">
+	<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">
+	<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">
+	<script src="js/utils2.js"></script>
+' 		. $survey_scripts 
+;
+
+print $body;
+// print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
+// print '<input type="hidden" id="sign_in_as" value="">';
+// print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
+// print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
 
 //////////////////////////////////////////////////////// FUNCTIONS
 

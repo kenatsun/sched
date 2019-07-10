@@ -4,7 +4,7 @@ require_once 'start.php';
 $season = getSeason(); 
 
 // Display the page
-$page .= renderHeadline("Create the " . $season['name'] . " Teams", CRUMBS_QUERY, "", 0); 
+$page .= renderHeadline("Create the " . $season['name'] . " Teams", "", 0); 
 $page .= renderPageBody($season); 
 print $page;
 

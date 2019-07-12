@@ -92,7 +92,16 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . ';">' . $change['worker_name'] . '</td>'; 
 		if ($show_ok_checkbox) { 		
 			$change_rows .= '
-				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';"><input type="checkbox" name="' . $change['id'] . '" value="' . $ok_change_value . '"checked></td>';
+				<td 
+					style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';"
+				>
+					<input 
+						type="checkbox" 
+						name="' . $change['id'] . '" 
+						value="' . $ok_change_value . '" checked
+					>
+				</td>
+				';
 		} 
 		$change_rows .= '
 			</tr>';

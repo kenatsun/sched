@@ -1,13 +1,11 @@
-// alert("dashboard.js: loaded");
-
-function colorChangedControl(control) {
+function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 	var changed;
-	var tr = document.getElementById("tr_" + control.id);
+	var my_tr = document.getElementById("tr_" + control.id);
 	var change_count = document.getElementById("change_count");
 	var i;
 	var my_form = control.form;
-	// alert("colorChangedControl(): start");
-	// alert("colorChangedControl(): control.id = " + control.id + "  tr.id = " + tr.id);
+	// alert("updateChangeControlDisplay(): start");
+	// alert("updateChangeControlDisplay(): control.id = " + control + "  shift_id = " + shift_id); 
 	
 	
 	// Determine whether this control is set to do a change 
@@ -17,7 +15,7 @@ function colorChangedControl(control) {
 		if (control.selectedIndex == "0") {
 			changed = false;
 		} 
-		// Any other option in a select control means "change"
+		// Any other option in a select control means "change" 
 		else {
 			changed = true;
 		}
@@ -31,28 +29,59 @@ function colorChangedControl(control) {
 			changed = false;
 		}
 	}
-	// alert("colorChangedControl(): changed = " + changed);
+	// alert("updateChangeControlDisplay(): changed = " + changed);
 	
 	
 	// Turn the background of an unsaved change to the "changed color"
 	
 	if (changed) {
-		if (tr.style.backgroundColor == unchanged_color) {
+		if (my_tr.style.backgroundColor == unchanged_color) {
 			change_count.value++;
 		}
 		control.style.backgroundColor = changed_color;
-		tr.style.backgroundColor = changed_color;
+		my_tr.style.backgroundColor = changed_color;
 	} else {
-		if (tr.style.backgroundColor == changed_color) {
+		if (my_tr.style.backgroundColor == changed_color) {
 			change_count.value--;
 		}
 		control.style.backgroundColor = unchanged_color;
-		tr.style.backgroundColor = unchanged_color; 
+		my_tr.style.backgroundColor = unchanged_color; 
 	}
-	// alert("colorChangedControl(): change_count = " + change_count);
+	// alert("updateChangeControlDisplay(): change_count = " + change_count);
+
+	
+	// If change action would remove this person from this shift,
+	// hide the other controls that would do the same thing
+	// alert ("control.name = " + control.name);
+	var remove_control_names = ["remove[]", "move[]", "trade[]"];
+	var my_name = control.name;
+	if (remove_control_names.includes(my_name)) {
+		// alert ("class = " + "shift_control_" + shift_id);
+		var shift_controls = document.getElementsByClassName("shift_control_" + shift_id);
+		// alert ("shift_controls = " + shift_controls);
+		// alert ("shift_controls.length = " + shift_controls.length);
+		var control_names = "";
+		for(i = 0;  i < shift_controls.length; i++) {
+			var other_name = shift_controls[i].name;
+			var other_tr = document.getElementById("tr_" + shift_controls[i].id);
+			if ((other_name != my_name) && (remove_control_names.includes(other_name))) {
+				if (changed == true) {
+					// alert ("gonna hide " + other_name);
+					$("#" + other_tr.id).hide();
+				} else {
+					// alert ("gonna show " + other_name);
+					$("#" + other_tr.id).show();
+				}
+			}
+		}
+	}
+	
+	// When a person is moved from one shift to another, 
+	// show the change on both shifts
 	
 	
-	// Show save changes buttons only when there are unsaved changes
+	
+	// Show save & cancel changes buttons only when there are unsaved changes
 	
 	var save_actions_rows = document.getElementsByName("save_actions_row");
 	for (i = 0;  i < save_actions_rows.length; i++) { 

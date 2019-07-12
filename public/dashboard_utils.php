@@ -143,8 +143,18 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		// Make save row
 		$save_buttons = '
 			&nbsp;&nbsp;<span style="text-align:left;">
-				<input type="submit" id="save" name="save" onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_set.php", NEXT_CRUMBS_IDS) . '\')" value="Save these changes (after review)"> 
-				<input type="submit" id="cancel" name="cancel" onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS_IDS) . '\')" value="Cancel these changes"> 
+				<input 
+					type="submit" 
+					id="save" 
+					name="save" 
+					onclick="setFormAction(\'assignments_form\',\'' . makeURI("change_set.php", NEXT_CRUMBS_IDS) . '\')" 
+					value="Save these changes (after review)"> 
+				<input 
+					type="submit" 
+					id="cancel" 
+					name="cancel" 
+					onclick="setFormAction(\'assignments_form\',\'' . makeURI("dashboard.php", CRUMBS_IDS) . '\')" 
+					value="Cancel these changes"> 
 			</span>&nbsp;&nbsp;
 		';
 		$save_legend = '
@@ -217,7 +227,9 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			if (0) deb("dashboard.php.renderAssignmentsForm(): assignments = ", $assignments);
 			
 			// Make the embedded table listing the workers & controls for this shift cell
-			$shift_cell = '<td><table>';
+			$shift_cell = "";
+			// $shift_cell .= '<div id="shift_' . $shift_id . '">';
+			$shift_cell .= '<td><table>';
 			if (SHOW_IDS) $shift_cell .= '<tr><td>shift #' . $shift_id . '</td></tr>';
 			$slots_to_fill = $job['workers_per_shift'];
 			if (0) deb("dashboard.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 
@@ -274,41 +286,87 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				}
 				
 				if (userIsAdmin() && $controls_display == "show") {
-					// Display controls that would remove worker from shift, unless worker has been removed already
+					// Display controls that would REMOVE worker from shift, unless worker has been removed already
 					if ($exists_now) {	
 						$id = 'remove_sh_' . $shift_id . '_wkr_' . $assignment['worker_id'];
 						$shift_cell .= '<table>';
 						$shift_cell .= '
-							<tr id="tr_' . $id . '" style="background-color:white">
-								<td style="text-align: right; background-color:rgba(0,0,0,0);">remove</td>
+							<tr 
+								id="tr_' . $id . '" 
+								style="background-color:white">
+								<td 
+									style="text-align: right; background-color:rgba(0,0,0,0);">remove
+								</td>
 								<td style="background-color:rgba(0,0,0,0);">
-									<input type="checkbox" name="remove[]" id="' . $id . '" onclick="colorChangedControl(' . $id . ')" value="' . $assignment['assignment_id'] . '">
+									<input 
+										type="checkbox" 
+										id="' . $id . '" 
+										name="remove[]" 
+										class="shift_control_' . $shift_id . '" 
+										value="' . $assignment['assignment_id'] . '"
+										onclick="updateChangeControlDisplay(' . $id . ', ' . $shift_id . ')"
+									>
 								</td>
 							</tr>';
 
-						// Figure out which shifts this worker could be added to
+						// Figure out which shifts this worker could be MOVEd to
 						$possible_shifts = getPossibleShiftsForWorker($assignment['worker_id'], $job['job_id'], TRUE);
 						if (0) deb("dashboard.php.renderAssignmentsForm(): worker = {$assignment['worker_name']} {$assignment['worker_id']}, possible_shifts = ", $possible_shifts); 
 						// Display the possible shifts in a dropdown box 
 						if ($possible_shifts) {
 							$id = 'move_sh_' . $shift_id . '_wkr_' . $assignment['worker_id'];
-							$shift_cell .= '<tr id="tr_' . $id . '" style="background-color:white"><td style="text-align: right; background-color:rgba(0,0,0,0);">move to</td><td style="background-color:rgba(0,0,0,0);"><select class="preference_selection" id="' . $id . '" onchange="colorChangedControl(' . $id . ')" style="font-size: 9pt" name = "move[]">';
+							$shift_cell .= '<tr 
+								id="tr_' . $id . '" 
+								style="background-color:white">
+								<td 
+									style="text-align: right; 
+									background-color:rgba(0,0,0,0);">move to
+								</td>
+								<td 
+									style="background-color:rgba(0,0,0,0);">
+									<select
+										id="' . $id . '" 
+										name = "move[]"
+										class="shift_control_' . $shift_id . '" 
+										onchange="updateChangeControlDisplay(' . $id . ', ' . $shift_id . ')" 
+										style="font-size: 9pt" 
+										>';
+							// $shift_cell .= '<tr id="tr_' . $id . '" style="background-color:white"><td style="text-align: right; background-color:rgba(0,0,0,0);">move to</td><td style="background-color:rgba(0,0,0,0);"><select class="preference_selection" id="' . $id . '" onchange="updateChangeControlDisplay(' . $id . ')" style="font-size: 9pt" name = "move[]">';
 							$shift_cell .= '<option value=""></option>'; 
 							foreach($possible_shifts as $s_index=>$possible_shift) {
 								$meal_date_ob = new DateTime($possible_shift['meal_date']);
 								$dow = $meal_date_ob->format('D');
-								$shift_cell .= '<option style="font-size: 9pt" value="' . $assignment['assignment_id'] . '_to_' . $possible_shift['shift_id'] . '">' . "{$dow} {$possible_shift['meal_date']}</option>";
+								$shift_cell .= '
+									<option 
+										style="font-size: 9pt" 
+										value="' . $assignment['assignment_id'] . '_to_' . $possible_shift['shift_id'] . '"
+										>' . "{$dow} {$possible_shift['meal_date']}</option>";
 							}
 							$shift_cell .= "</select></td></tr>"; 
 						} 
 						
-						// Get possible trades into this shift for this worker
+						// Get possible TRADEs into this shift for this worker
 						$possible_trades = getPossibleTradesForWorkerOnShift($assignment['worker_id'], $shift_id, $job['job_id']);
 						if (0) deb("dashboard.php.renderAssignmentsForm(): worker = {$assignment['worker_name']} {$assignment['worker_id']}, possible_trades = ", $possible_trades); 
 						// Display the possible trades in a dropdown box
 						if ($possible_trades) {
 							$id = 'trade_sh_' . $shift_id . '_wkr_' . $assignment['worker_id'];
-							$shift_cell .= '<tr id="tr_' . $id . '" style="background-color:white"><td style="text-align: right; background-color:rgba(0,0,0,0);">trade to</td><td style="background-color:rgba(0,0,0,0);"><select class="preference_selection" name="trade[]" id="' . $id . '" onchange="colorChangedControl(' . $id . ')" style="font-size: 9pt">';
+							$shift_cell .= '<tr 
+								id="tr_' . $id . '" 
+								style="background-color:white">
+								<td 
+									style="text-align: right; 
+									background-color:rgba(0,0,0,0);">trade to
+								</td>
+								<td 
+									style="background-color:rgba(0,0,0,0);">
+									<select 
+										id="' . $id . '" 
+										name="trade[]" 
+										class="shift_control_' . $shift_id . '" 
+										onchange="updateChangeControlDisplay(' . $id . ', ' . $shift_id . ')" 
+										style="font-size: 9pt">
+										';
 							$shift_cell .= '<option value="' . "" . '">' . "</option>";
 							foreach($possible_trades as $t_index=>$possible_trade) {
 								$meal_date_ob = new DateTime($possible_trade['meal_date']);
@@ -325,14 +383,25 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			}
 			
 			if (userIsAdmin() && $controls_display == "show") { 
-				// Figure out which workers could be added to this shift
+				// Figure out which workers could be ADDed to this shift
 				$available_workers = getAvailableWorkersForShift($shift_id, FALSE, TRUE);
 				if (0) deb("dashboard.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, available_workers = ", $available_workers); 
 				// Display the available workers in a dropdown box
 				if ($available_workers) {
 					$id = 'change_add_sh_' . $shift_id;
 					$shift_cell .= '<hr>';
-					$shift_cell .= '<tr id="tr_' . $id . '" style="background-color:white"><td style="background-color:rgba(0,0,0,0);">add ' . $job['description'] . ' <select class="preference_selection" style="font-size: 9pt" name="add[]" id="' . $id . '" onchange="colorChangedControl(' . $id . ')">';
+					$shift_cell .= '<tr 
+						id="tr_' . $id . '" 
+						style="background-color:white">
+						<td 
+							style="background-color:rgba(0,0,0,0);">add ' . $job['description'] . ' 
+							<select 
+								id="' . $id . '" onchange="updateChangeControlDisplay(' . $id . ', ' . $shift_id . ')"
+								name="add[]" 
+								class="shift_control_' . $shift_id . '" 
+								style="font-size: 9pt" 
+								>';
+					// $shift_cell .= '<tr id="tr_' . $id . '" style="background-color:white"><td style="background-color:rgba(0,0,0,0);">add ' . $job['description'] . ' <select class="preference_selection" style="font-size: 9pt" name="add[]" id="' . $id . '" onchange="updateChangeControlDisplay(' . $id . ')">';
 					$shift_cell .= '<option value="' . "" . '">' . "</option>";
 					foreach($available_workers as $w_index=>$available_worker) {
 						$color = $available_worker['open_offers_count'] > 0 ? "LightGreen" : "LightGray";
@@ -347,7 +416,8 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				$job_name = ($slots_to_fill > 1) ? $job['description'] . "s" : $job['description'];
 				$shift_cell .= '<tr><td style="font-weight:bold; text-transform:uppercase; text-align:center; background:black; color:white;">' . $slots_to_fill . ' ' . $job_name . ' needed!</td></tr>';
 			}
-			$shift_cell .= "</table></td>"; 
+			$shift_cell .= '</table></td>'; 
+			$shift_cell .= '</div>';
 			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_cell = ", $shift_cell);
 			$shift_cells .= $shift_cell;
 		}

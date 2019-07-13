@@ -1,3 +1,4 @@
+
 function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 	var changed;
 	var my_tr = document.getElementById("tr_" + control.id);
@@ -34,7 +35,8 @@ function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 	// alert("updateChangeControlDisplay(): changed = " + changed);
 	
 	
-	// Turn the background of an unsaved change to the "changed color"
+	// Set the background of an unsaved change to the "changed color"
+	// Set the background of an unchanged field to the "unchanged color"
 	
 	if (changed) {
 		if (my_tr.style.backgroundColor == unchanged_color) {
@@ -76,7 +78,7 @@ function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 		}
 	}
 	
-	// When a person is moved from one shift to another, 
+	// When a worker is moved from one shift to another (via "move" or "trade"), 
 	// show the change on both shifts
 	
 	
@@ -114,6 +116,14 @@ function resetFormDisplay() {
 	$("[name*=trade]").css("background-color", unchanged_color);	// Mark "trade" change controls as unchanged
 	$("[name*=add]").css("background-color", unchanged_color);		// Mark "add" change controls as unchanged
 	$("tr[name=save_actions_row]").hide();		// Hide the "save changes" rows 
+}
+
+
+// Prevent blank input fields from being submitted
+// source: https://stackoverflow.com/questions/5904437/jquery-how-to-remove-blank-fields-from-a-form-before-submitting
+function disableValuelessInputs() {
+	$("#assignments_form").find(':input[value=""]').attr("disabled", "disabled"); 
+	return true; // ensure form still submits
 }
 
 

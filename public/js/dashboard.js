@@ -3,7 +3,9 @@ function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 	var my_tr = document.getElementById("tr_" + control.id);
 	var change_count = document.getElementById("change_count");
 	var i;
-	var my_form = control.form;
+	// var my_form = control.form;
+	var remove_control_names = ["remove[]", "move[]", "trade[]"];
+	var my_name = control.name;
 	// alert("updateChangeControlDisplay(): start");
 	// alert("updateChangeControlDisplay(): control.id = " + control + "  shift_id = " + shift_id); 
 	
@@ -53,8 +55,6 @@ function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 	// If change action would remove this person from this shift,
 	// hide the other controls that would do the same thing
 	// alert ("control.name = " + control.name);
-	var remove_control_names = ["remove[]", "move[]", "trade[]"];
-	var my_name = control.name;
 	if (remove_control_names.includes(my_name)) {
 		// alert ("class = " + "shift_control_" + shift_id);
 		var shift_controls = document.getElementsByClassName("shift_control_" + shift_id);
@@ -104,5 +104,16 @@ function updateChangeControlDisplay(control, shift_id="", worker_id="") {
 		}
 	}
 } 
+
+function resetFormDisplay() {
+	// alert ("resetFormDisplay(): start");
+	$("#change_count").attr("value", 0);			// No pending changes
+	$("tr[name=change_control_tr]").show();		// Show all the change control trs
+	$("tr[name=change_control_tr]").css("background-color", unchanged_color);	// Mark all change control trs as unchanged
+	$("[name*=move]").css("background-color", unchanged_color);		// Mark "move" change controls as unchanged
+	$("[name*=trade]").css("background-color", unchanged_color);	// Mark "trade" change controls as unchanged
+	$("[name*=add]").css("background-color", unchanged_color);		// Mark "add" change controls as unchanged
+	$("tr[name=save_actions_row]").hide();		// Hide the "save changes" rows 
+}
 
 

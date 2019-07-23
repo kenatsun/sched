@@ -164,7 +164,7 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 	else {
 		$select_field = '<select name="' . $field_name . '">';
 		$none_selected = (!$selected_month_num && !$selected_year) ? 'selected' : '';	
-		$select_field .= '<option value="" ' . $none_selected . ' ></option>'; 	
+		$select_field .= '<option value="" ' . $none_selected . ' >workeron>'; 	
 		if (0) deb("utils.renderUpcomingMonthsSelectList: select first line =", $select);
 		for($year=$start_year; $year<=$end_year; $year++) {
 			if (0) deb("utils.renderUpcomingMonthsSelectList: year = $year");
@@ -180,7 +180,7 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 				if (0) deb("utils.renderUpcomingMonthsSelectList: selected_month_num = $selected_month_num, month['number_zero_padded'] = {$month['number_zero_padded']}, selected_year = $selected_year, year = $year");
 				$selected = ($month['number_zero_padded'] == $selected_month_num && $year == $selected_year) ? 'selected' : '';
 				if (0) deb("utils.renderMonthsSelectList(): selected = ", $selected);	
-				$select_field .= '<option value="' . $year . '-' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . ' ' . $year . '</option>';
+				$select_field .= '<option value="' . $year . '-' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . ' ' . $year . 'workeron>';
 			}
 		}
 		$select_field .= '</select>';
@@ -204,7 +204,7 @@ function renderYearsSelectList($num_years=3, $field_name="years") {
 	for($year=$first_year; $year<$first_year+$num_years; $year++) {
 		$selected = ($year == $first_year) ? 'selected' : '';
 		if (0) deb("utils.renderYearsSelectList(): year = $year");	
-		$select .= '<option value="' . $year . '" ' . $selected . '>' . $year . '</option>';
+		$select .= '<option value="' . $year . '" ' . $selected . '>' . $year . 'workeron>';
 	}
 	$select .= '</select>';	
 	if (0) deb("utils.renderYearsSelectList(): select = ", $select);	
@@ -217,7 +217,7 @@ function renderMonthsSelectList($selected_month_num=NULL, $field_name="months") 
 	foreach($months as $i=>$month) {
 		$selected = ($month['number_zero_padded'] == $selected_month_num) ? 'selected' : '';
 		if (0) deb("utils.renderMonthsSelectList(): selected = ", $selected);	
-		$select .= '<option value="' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . '</option>';
+		$select .= '<option value="' . $month['number_zero_padded'] . '" ' . $selected . '>' . $month['full_name'] . 'workeron>';
 	}
 	$select .= '</select>';
 	
@@ -490,18 +490,36 @@ function get_first_associative_key($dict) {
 }
 
 /* 
-Print debug data to the web page
+Print debug data to the console
 */
 
 function deb($label, $data=NULL) {
-	$print_data = ($data ? "<pre> " . print_r($data, TRUE) . "</pre>" : '<p> </p>');
-	echo '
-	<tr>
-		<td colspan="4"> <br>' . $label . $print_data . '</td>
-	</tr>
-	';
+	$print_data = $data ? "\n" . print_r($data, TRUE) : "";
+	console_log("*****\n" . $label . $print_data . "\n");
 }
 
+// /* 
+// Print debug data to the web page
+// */
+
+// function deb($label, $data=NULL) {
+	// $print_data = ($data ? "<pre> " . print_r($data, TRUE) . "</pre>" : "<br>");
+	// echo '
+	// <tr>
+		// <td colspan="4"> <br>' . $label . $print_data . '</td>
+	// </tr>
+	// ';
+// }
+
+function console_log($output, $with_script_tags = true) {
+	// From https://stackify.com/how-to-log-to-console-in-php/
+  $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . ');';
+	if ($with_script_tags) {
+		$js_code = '<script>' . $js_code . '</script>';
+	}
+	echo $js_code; 
+}
+		
 /* 
 Print debug data to the terminal
 */

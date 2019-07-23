@@ -2,6 +2,8 @@ var script_url = 	document.getElementById("script_url").value;
 var changed_color = document.getElementById("changed_background_color").value;
 var unchanged_color = document.getElementById("unchanged_background_color").value;
 
+// console.log("utils2.js start");
+
 // Disable 'Enter' key to submit a form
 // Code from https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
 $(document).ready(function() {
@@ -12,6 +14,18 @@ $(document).ready(function() {
 			return false;
 		}
 	});
+});
+
+
+// Save old value of an input field before onchange event
+// Code from https://stackoverflow.com/questions/29118178/input-jquery-get-old-value-before-onchange-and-get-value-after-on-change
+// $(document).on('focus', ':input', function(){
+$(document).on('mousedown', ':input', function(){
+	// alert ("Hi world!");
+	if (0) console.log("utils2.js: Saving value " + $(this).val());
+	$(this).data('val', $(this).val());
+	if (0) console.log("utils2.js: $(this).val() = " + $(this).val());
+	if (0) console.log("utils2.js: $(this).data('val') = " + $(this).data('val'));
 });
 
 

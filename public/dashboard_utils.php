@@ -3,7 +3,6 @@
 require_once "start.php";
 require_once "change_sets_utils.php";
 
-//////////////////////////////////////////////////////////////// FUNCTIONS
 
 function displaySchedule($controls_display="show", $change_markers_display="show", $edition="") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
@@ -41,7 +40,6 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $subhead, 0);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
-	// if (userIsAdmin()) $change_sets_link = '<p><strong><a href="change_sets.php">View Change Sets</a></strong></p>';
 
 	if (!array_key_exists("previewonly", $_GET)) $bullpen = '<br>' . renderBullpen();
 
@@ -231,7 +229,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			
 			// Make the embedded table listing the workers & controls for this shift cell
 			$shift_cell = "";
-			// $shift_cell .= '<div id="shift_' . $shift_id . '">';
 			$shift_cell .= '<td><table>';
 			if (SHOW_IDS) $shift_cell .= '<tr><td>shift #' . $shift_id . '</td></tr>';
 			$slots_to_fill = $job['workers_per_shift'];
@@ -294,7 +291,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					if ($exists_now) {	
 						$action = "remove";
 						$id = 'action:' . $action . ' this_shift:' . $shift_id . ' this_worker:' . $worker_id; 
-						// $id = 'action:' . $action . ' worker:' . $worker_id . ' shift:' . $shift_id; 
 						$shift_cell .= '<table>';
 						$shift_cell .= '
 							<tr 
@@ -320,30 +316,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 									>
 								</td>
 							</tr>';
-						// $shift_cell .= '
-							// <tr 
-								// id="tr_' . $id . '" 
-								// name="change_control_tr"
-								// style="background-color:white">
-								// <td 
-									// style="text-align: right; background-color:rgba(0,0,0,0);">remove
-								// </td>
-								// <td style="background-color:rgba(0,0,0,0);">
-									// <input 
-										// type="checkbox" 
-										// style="margin-left:0px;"
-										// id="' . $id . '" 
-										// name="' . $action . '[]" 
-										// class="shift_control_' . $shift_id . '" 
-										// value=
-											// "action:' . $action . ' ' .
-											// 'worker:' . $worker_id . ' ' . 
-											// 'from:' . $shift_id .  
-											// '"
-										// onclick="updateChangeControlDisplay(\'' . $id . '\')" 
-									// >
-								// </td>
-							// </tr>';
 
 						// Figure out which shifts this worker could be MOVEd OUT to
 						$possible_shifts = getPossibleShiftsForWorker($worker_id, $job['job_id'], TRUE);
@@ -373,9 +345,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 											>';							
 							$shift_cell .= '<option value=""></option>';
 
-							// $shift_cell .= '
-								// <option>
-								// </option>';
 							foreach($possible_shifts as $s_index=>$possible_shift) {
 								$meal_date_ob = new DateTime($possible_shift['meal_date']);
 								$dow = $meal_date_ob->format('D');
@@ -391,18 +360,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 										'to ' . $dow . ' ' . $possible_shift['meal_date'] .
 									'</option>' 
 									;
-								// $shift_cell .= '
-									// <option 
-										// style="font-size: 9pt" 
-										// value=
-											// "action:' . $action . ' ' .
-											// 'worker:' . $worker_id . ' ' . 
-											// 'from:' . $shift_id . ' ' . 
-											// 'to:' . $possible_shift['shift_id'] .  
-											// '">' .
-										// 'to ' . $dow . ' ' . $possible_shift['meal_date'] .
-									// '</option>' 
-									// ;
 							}
 							$shift_cell .= "</select></td></tr>"; 
 						} 
@@ -413,7 +370,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 						// Display the possible trades in a dropdown box
 						if ($possible_trades) {
 							$action = "trade";
-							// $id = 'action:' . $action . ' worker:' . $worker_id . ' shift:' . $shift_id; 
 							$id = 'action:' . $action . ' this_shift:' . $shift_id . ' this_worker:' . $worker_id; 
 							$shift_cell .= '
 								<tr 
@@ -433,14 +389,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 											onchange="updateChangeControlDisplay(\'' . $id . '\')" 
 											style="font-size: 9pt"
 											>';
-							// $shift_cell .= '
-								// <option>
-								// </option>';
-							// $shift_cell .= '
-								// <option value=
-									// "action:' . $action . '"
-									// >
-								// </option>';
 							$shift_cell .= '<option value=""></option>';
 							foreach($possible_trades as $t_index=>$possible_trade) {
 								$meal_date_ob = new DateTime($possible_trade['meal_date']);
@@ -457,18 +405,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 										>' .
 										$dow . ' ' . $possible_trade['meal_date'] . ' for ' . $possible_trade['worker_name'] . '
 									</option>';
-								// $shift_cell .= '
-									// <option 
-										// value=
-											// "action:' . $action . ' ' .
-											// 'worker:' . $worker_id . ' ' . 
-											// 'from:' . $shift_id . ' ' .  
-											// 'to:' . $possible_trade['shift_id'] . ' ' .  
-											// 'for:' . $possible_trade['worker_id'] .  
-											// '"
-										// >' .
-										// $dow . ' ' . $possible_trade['meal_date'] . ' for ' . $possible_trade['worker_name'] . '
-									// </option>';
 							}
 							$shift_cell .= '</select></td></tr>';
 						}
@@ -487,7 +423,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				if ($possible_move_ins) {
 					$action = "movein";
 					$id = 'action:' . $action . ' this_shift:' . $shift_id; 
-					// $id = 'action:' . $action . ' shift:' . $shift_id;
 					$shift_cell .= '<hr>';
 					$shift_cell .= '
 						<tr 
@@ -509,38 +444,20 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 									>';
 
 					$shift_cell .= '<option value=""></option>';
-					// $shift_cell .= '
-						// <option value=
-							// "action:' . $action . '"
-							// >
-						// </option>';
 					foreach($possible_move_ins as $w_index=>$possible_move_in) {
 						if (0) deb("dashboard.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, possible_move_in = ", $possible_move_in); 
-						// $color = $possible_move_in['open_offers_count'] > 0 ? "LightGreen" : "LightGray";
 						$shift_cell .= '
 							<option 
 								style="background-color:' . $color . ';" 
 								value=
 									"action:' . $action . ' ' .
 									'this_shift:' . $shift_id . ' ' . 
-									'this_worker:' . $possible_move_in['worker_id'] . ' ' . 
-									'that_shift:' . $possible_move_in['shift_id'] . 
+									'that_shift:' . $possible_move_in['shift_id'] . ' ' . 
+									'that_worker:' . $possible_move_in['worker_id'] . 
 									'"
 								>'
 								. $possible_move_in['worker_name'] . ' from ' . $dow . ' ' . $possible_move_in['meal_date'] . '
 							</option>';
-						// $shift_cell .= ' 
-							// <option 
-								// style="background-color:' . $color . ';" 
-								// value=
-									// "action:' . $action . ' ' .
-									// 'worker:' . $possible_move_in['worker_id'] . ' ' . 
-									// 'from:' . $possible_move_in['shift_id'] . ' ' . 
-									// 'to:' . $shift_id . 
-									// '"
-								// >'
-								// . $possible_move_in['worker_name'] . ' from ' . $dow . ' ' . $possible_move_in['meal_date'] . '
-							// </option>';
 					}
 					$shift_cell .= '</select></td></tr>';
 				}
@@ -553,7 +470,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				if ($available_workers) {
 					$action = "add";
 					$id = 'action:' . $action . ' this_shift:' . $shift_id; 
-					// $id = 'action:' . $action . ' to:' . $shift_id; 
 					if (!$possible_move_ins) $shift_cell .= '<hr>';
 					$shift_cell .= '
 						<tr 
@@ -574,12 +490,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 									style="font-size: 9pt" 
 									>';
 					$shift_cell .= '<option value=""></option>';
-					// $shift_cell .= '
-						// <option value=
-							// "action:' . $action . '"
-							// >
-						// </option>';
-					// $shift_cell .= '<option value=""></option>';
 					foreach($available_workers as $w_index=>$available_worker) {
 						$color = $available_worker['open_offers_count'] > 0 ? "LightGreen" : "LightGray";
 						$shift_cell .= '
@@ -593,17 +503,6 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 								>'
 								. $available_worker['worker_name'] . ' (' . $available_worker['open_offers_count'] . ')
 							</option>';
-						// $shift_cell .= '
-							// <option 
-								// style="background-color:' . $color . ';" 
-								// value=
-									// "action:' . $action . ' ' .
-									// 'worker:' . $available_worker['worker_id'] . ' ' . 
-									// 'to:' . $shift_id . 
-									// '"
-								// >'
-								// . $available_worker['worker_name'] . ' (' . $available_worker['open_offers_count'] . ')
-							// </option>';
 					}
 					$shift_cell .= '</select></td></tr>';
 				}
@@ -744,17 +643,6 @@ function getPossibleMovesIntoShift($shift_id) {
     and m.id = s.meal_id		
 	";
 	$order_by = "shift_id asc";
-// $select = 
-		// "that_worker_id as worker_id,
-		// that_worker_current_shift_id as shift_id,
-		// that_worker_current_assignment_id as assignment_id, 
-		// job_id as job_id,
-		// that_worker_name as worker_name,
-		// that_worker_current_meal_date as meal_date";
-	// $from = "swaps";
-	// $where = "this_worker_current_shift_id = {$shift_id}";
-		// // and job_id = {$job_id}";
-	// $order_by = "shift_id asc";
 	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForShift()"); 
 	if (0) deb("dashboard.php:getPossibleMovesIntoShift() possible_trades = ", $possible_trades);
 	

@@ -157,13 +157,13 @@ function saveChangeSet($posts) {
 	}
 
 	// Insert MOVEIN requests into changes table 
-	// Request syntax: "action:movein this_shift:<shift_id> this_worker:<worker_id> that_shift:<other_shift_id>"
+	// Request syntax: "action:movein this_shift:<shift_id> that_shift:<other_shift_id> that_worker:<worker_id> "
 	if ($posts['movein']) {
 		foreach ($posts['movein'] as $movein){ 
 			if (0) deb("change_sets_utils.saveChangeSet(): movein = ", $movein);
 			if ($movein) {
 				$request = parseChangeRequest($movein);
-				saveChange('add', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);
+				saveChange('add', $request['that_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);
 				// saveChange('add', $request['worker'], $request['to'], $change_set_id, $scheduler_run_id);		
 			}
 		}

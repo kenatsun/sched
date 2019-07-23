@@ -11,6 +11,13 @@ define('UNCHANGED_BACKGROUND_COLOR', 'white');	// Background for unchanged unsav
 define('CHANGED_BACKGROUND_COLOR', 'yellow');	// Background for changed unsaved field
 define('REQUIRED_MARKER', '<span style="color:red;"><strong>!</strong></span>');
 define('HEADER_COLOR', '#e6e6e6');		// Background color for table headers 
+define('ADDED_COLOR', '');		// Format for worker added to shift
+define('ADDED_DECORATION', ' text-decoration:underline; ');		// Format for worker added to shift
+define('ADDED_ICON', '<img src="/display/images/plusIcon.png" width="18" height="18">');		// Format for worker added to shift
+define('REMOVED_COLOR', ' background:White; ');	// Format for worker removed from shift
+define('REMOVED_DECORATION', ' text-decoration:line-through; ');	// Format for worker removed from shift
+define('REMOVED_ICON', '<img src="/display/images/minusIcon.png" width="18" height="18">');		// Format for worker removed from shift
+
 
 
 // -------- sqlite tables --------- 

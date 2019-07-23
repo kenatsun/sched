@@ -34,8 +34,7 @@ function render_update_admin_tasks_link($text) {
 	return '<p class="summary_report"><a href="/admin.php?update_admin_tasks">' . $text . '</a></p>';
 }
 
-function generateAdminProcessesForSeason($season_id) {
-	
+function generateAdminProcessesForSeason($season_id) {	
 	$process_types = sqlSelect("*", ADMIN_PROCESS_TYPES_TABLE, "", "", (0), "season.generateAdminProcessesForSeason(): process types");
 	foreach ($process_types as $i=>$process_type) {
 		if (!sqlSelect("*", ADMIN_PROCESSES_TABLE, "season_id = " . $season_id . " and process_id = " . $process_type['id'], "")[0]) {

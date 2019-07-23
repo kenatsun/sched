@@ -1,26 +1,11 @@
 <?php
 
-global $relative_dir; 
-if (!strlen($relative_dir)) {
-    $relative_dir = '.';
-}
-require_once "{$relative_dir}/utils.php";
-require_once "{$relative_dir}/constants.inc";
-require_once "{$relative_dir}/config.php";
-require_once "{$relative_dir}/globals.php";
-require_once "{$relative_dir}/change_sets_utils.php";
+require_once "start.php";
 
 if (0) deb("change_set_utils.php: _POST = ", $_POST);
  
 define('OK_CHANGE_VALUE', 'ok_change');
 if (0) deb("change_set_utils.php: OK_CHANGE_VALUE = ", OK_CHANGE_VALUE);
-
-define('ADDED_COLOR', '');		// Format for worker added to shift
-define('ADDED_DECORATION', ' text-decoration:underline; ');		// Format for worker added to shift
-define('ADDED_ICON', '<img src="/display/images/plusIcon.png" width="18" height="18">');		// Format for worker added to shift
-define('REMOVED_COLOR', ' background:White; ');	// Format for worker removed from shift
-define('REMOVED_DECORATION', ' text-decoration:line-through; ');	// Format for worker removed from shift
-define('REMOVED_ICON', '<img src="/display/images/minusIcon.png" width="18" height="18">');		// Format for worker removed from shift
 
 // Show change set from form data, get user confirmation
 // Render one change set
@@ -92,7 +77,16 @@ function renderChangeSet($change_set_id, $show_ok_checkbox=TRUE) {
 				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; ' . $background_color . ';">' . $change['worker_name'] . '</td>'; 
 		if ($show_ok_checkbox) { 		
 			$change_rows .= '
-				<td style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';"><input type="checkbox" name="' . $change['id'] . '" value="' . $ok_change_value . '"checked></td>';
+				<td 
+					style="width:1px; white-space:nowrap; vertical-align:middle; padding:4px; background:' . $background_color . ';"
+				>
+					<input 
+						type="checkbox" 
+						name="' . $change['id'] . '" 
+						value="' . $ok_change_value . '" checked
+					>
+				</td>
+				';
 		} 
 		$change_rows .= '
 			</tr>';
@@ -114,7 +108,7 @@ EOHTML;
 }
 
 
-// Functions to save change sets ...............................
+///////////////////////////////////////////////////////////// DATABASE FUNCTIONS
 
 function saveChangeSet($posts) {
 	if (0) deb("change_sets_utils.saveChangeSet(): POST = ", $posts); 
@@ -126,70 +120,72 @@ function saveChangeSet($posts) {
 	if (0) deb("change_sets_utils.saveChangeSet(): change_set_id = ", $change_set_id);
 	
 	
-	// Insert remove requests into changes table
+	// Insert REMOVE requests into changes table
+	// Request syntax: "action:remove this_shift:<shift_id> this_worker:<worker_id>"
 	if ($posts['remove']) {
-		foreach ($posts['remove'] as $i=>$remove){
+		foreach ($posts['remove'] as $remove){
 			if ($remove) {
-				$assignment_id = $remove;
-				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
-				saveChange('remove', $assignment['worker_id'], $assignment['shift_id'], $change_set_id, $scheduler_run_id);		
+				$request = parseChangeRequest($remove);
+				saveChange('remove', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}
 
-	// Insert add requests into changes table
+	// Insert ADD requests into changes table
+	// Request syntax: "action:add this_shift:<shift_id> this_worker:<worker_id>"
 	if ($posts['add']) {
 		foreach ($posts['add'] as $j=>$add){
-			if (0) deb("change_sets_utils.saveChangeSet(): add = ", $add);
 			if ($add) {
-				$worker_id = explode("_to_",$add)[0];
-				$shift_id = explode("_to_",$add)[1];
-				if (0) deb("change_sets_utils.saveChangeSet(): gonna add worker = $worker_id");
-				saveChange('add', $worker_id, $shift_id, $change_set_id, $scheduler_run_id);		
+				$request = parseChangeRequest($add);
+				if (0) deb("change_sets_utils.saveChangeSet(): args_array = ", $args_array);
+				saveChange('add', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}
 
-	// Insert move requests into changes table 
-	if ($posts['move']) {
-		foreach ($posts['move'] as $k=>$move){ 
-			if (0) deb("change_sets_utils.saveChangeSet(): move = ", $move);
-			if ($move) {
-				// Get data on the existing assignment
-				$assignment_id = explode("_to_",$move)[0];
-				$assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$assignment_id}", "", (0))[0];
-				// Move this worker to that shift
-				$worker_id = $assignment['worker_id'];
-				$from_shift_id = $assignment['shift_id'];
-				$to_shift_id = explode("_to_",$move)[1];
-				if (0) deb("change_sets_utils.saveChangeSet(): gonna move worker = $worker_id");
-				saveChange('remove', $worker_id, $from_shift_id, $change_set_id, $scheduler_run_id);
-				saveChange('add', $worker_id, $to_shift_id, $change_set_id, $scheduler_run_id);		
+	// Insert MOVEOUT requests into changes table 
+	// Request syntax: "action:moveout this_shift:<shift_id> this_worker:<worker_id> that_shift:<other_shift_id>"
+	if ($posts['moveout']) {
+		foreach ($posts['moveout'] as $moveout){ 
+			if (0) deb("change_sets_utils.saveChangeSet(): moveout = ", $moveout);
+			if ($moveout) {
+				$request = parseChangeRequest($moveout);
+				saveChange('remove', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);
+				// saveChange('add', $request['worker'], $request['to'], $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}
 
-	// Insert trade requests into changes table 
-	// $trades = array();
+	// Insert MOVEIN requests into changes table 
+	// Request syntax: "action:movein this_shift:<shift_id> that_shift:<other_shift_id> that_worker:<worker_id> "
+	if ($posts['movein']) {
+		foreach ($posts['movein'] as $movein){ 
+			if (0) deb("change_sets_utils.saveChangeSet(): movein = ", $movein);
+			if ($movein) {
+				$request = parseChangeRequest($movein);
+				saveChange('add', $request['that_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);
+				// saveChange('add', $request['worker'], $request['to'], $change_set_id, $scheduler_run_id);		
+			}
+		}
+	}
+
+	// Insert TRADE requests into changes table 
+	// Request syntax: "action:trade this_shift:<shift_id> this_worker:<worker_id> that_shift:<other_shift_id> that_worker:<other worker_id>"
 	if ($posts['trade']) {
-		foreach ($posts['trade'] as $l=>$trade){ 
+		foreach ($posts['trade'] as $trade){ 
 			if ($trade) {
-				// Get data on this assignment
-				$this_assignment_id = explode("_with_",$trade)[0];
-				$this_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$this_assignment_id}", "", (0))[0];
-				$this_worker_id = $this_assignment['worker_id'];
-				$this_shift_id = $this_assignment['shift_id'];
-				// Get data on that assignment
-				$that_assignment_id = explode("_with_",$trade)[1];
-				$that_assignment = sqlSelect("*", ASSIGNMENTS_TABLE, "id={$that_assignment_id}", "", (0))[0];
-				$that_worker_id = $that_assignment['worker_id'];
-				$that_shift_id = $that_assignment['shift_id']; 
-				// Move this worker to that shift
-				saveChange('remove', $this_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);		
-				saveChange('add', $this_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
-				// Move that worker to this shift
-				saveChange('remove', $that_worker_id, $that_shift_id, $change_set_id, $scheduler_run_id);		
-				saveChange('add', $that_worker_id, $this_shift_id, $change_set_id, $scheduler_run_id);
+				$request = parseChangeRequest($trade);
+				// Add that worker to this shift
+				saveChange('add', $request['that_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
+				// Remove this worker from this shift
+				saveChange('remove', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
+
+				// // Move this worker to that shift
+				// saveChange('add', $request['this_worker'], $request['that_shift'], $change_set_id, $scheduler_run_id);
+				// saveChange('remove', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
+				// // Move that worker to this shift
+				// saveChange('add', $request['that_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
+				// saveChange('remove', $request['that_worker'], $request['that_shift'], $change_set_id, $scheduler_run_id);
 			}
 		}
 	}
@@ -197,6 +193,19 @@ function saveChangeSet($posts) {
 	if (0) deb("change_sets_utils.saveChangeSet(): change_set_id = ", $change_set_id); 
 
 	return $change_set_id;
+}
+
+
+// Parse one assignment change request into an associative array
+function parseChangeRequest($request) {
+	$parts = explode(" ", $request);
+	if (0) deb("change_sets_utils.parseChangeRequest(): parts = ", $parts);
+	foreach($parts as $part) {
+		$arr_elt = explode(":", $part);
+		$request_array[$arr_elt[0]] = $arr_elt[1];
+	}
+	if (0) deb("change_sets_utils.parseChangeRequest(): request_array = ", $request_array);
+	return $request_array;
 }
 
 
@@ -224,13 +233,13 @@ function saveChange($action, $worker_id, $shift_id, $change_set_id, $scheduler_r
 
 function saveAssignmentBasedOnChangeSet($change_set_id, $posts) {
 	
-	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() post = ", $posts);
+	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() posts = ", $posts);
 
 	// Get ids of confirmed changes from $posts into a query string
 	$ok_changes_array = array();
 	$ok_change_value = $posts['ok_change_value'];
 	unset($posts['ok_change_value']);
-	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() post = ", $posts);
+	if (0) deb("change_sets_utils:saveAssignmentBasedOnChangeSet() posts = ", $posts);
 	foreach($posts as $i=>$post) {
 		if ($post == $ok_change_value) {
 			$ok_changes_array[] = $i;
@@ -281,6 +290,7 @@ function saveAssignmentBasedOnChange($change) {
 	
 	// A change is always recorded by inserting a new record into assignment_states
 	$columns = "id, when_last_changed, latest_change_id, shift_id, worker_id, season_id, scheduler_run_id, generated, exists_now";
+	
 	// If assignment record exists, insert a new assignment_state with the existing assignment's id
 	if ($existing_assignment) {
 		$values = "{$existing_assignment['id']}, '{$change_set['when_saved']}', {$change['id']}, {$change['shift_id']}, {$change['worker_id']}, " . SEASON_ID . ", {$change_set['scheduler_run_id']}, {$existing_assignment['generated']}, " . ($change['action'] == "add" ? 1 : 0);

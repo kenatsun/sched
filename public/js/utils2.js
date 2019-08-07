@@ -2,7 +2,7 @@ var script_url = 	document.getElementById("script_url").value;
 var changed_color = document.getElementById("changed_background_color").value;
 var unchanged_color = document.getElementById("unchanged_background_color").value;
 
-// console.log("utils2.js start");
+if (0) console.log("utils2.js start");
 
 // Disable 'Enter' key to submit a form
 // Code from https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
@@ -19,17 +19,17 @@ $(document).ready(function() {
 
 // Save old value of an input field before onchange event
 // Code from https://stackoverflow.com/questions/29118178/input-jquery-get-old-value-before-onchange-and-get-value-after-on-change
-// $(document).on('focus', ':input', function(){
+// jquery .val is documented at https://api.jquery.com/val/
 $(document).on('mousedown', ':input', function(){
-	// alert ("Hi world!");
-	if (0) console.log("utils2.js: Saving value " + $(this).val());
+	if (0) console.log("\n********************* utils2.js:");
+	if (0) console.log("utils2.js: Saving value " + $(this).val()); 
 	$(this).data('val', $(this).val());
 	if (0) console.log("utils2.js: $(this).val() = " + $(this).val());
 	if (0) console.log("utils2.js: $(this).data('val') = " + $(this).data('val'));
 });
 
 
-function modifyInputFieldsOfForm(this_form, field_action, button_action){
+function modifyInputFieldsOfForm(this_form, field_action, button_action){ 	
 	// Enable/disable/show/hide all input fields in a form
 	var my_inputs = $(this_form).find("input");
 	var my_input;
@@ -94,5 +94,25 @@ function nullRadio() {
 			} 
 		})
 	})
+}
+
+function elAtts(label, elt) {
+	if (elt) {
+		var s = label + ":";
+		Array.prototype.slice.call(elt.attributes).forEach(function(item) {
+			s = s + ('\n    ' + item.name + ': "'+ item.value + '"');
+		})
+		return s;	
+	} else {
+		return label + ": " + null;
+	}
+}
+
+function obAtts(label, elt) {
+	if (elt) {
+		return label + ": " + JSON.stringify(elt, null, 4);
+	} else {
+		return label + ": " + null;
+	}
 }
 

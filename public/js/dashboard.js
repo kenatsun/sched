@@ -12,7 +12,7 @@ function updateChangeControlDisplay(control_id) {
 	if (0) console.log("control.id = " + control.id);
 	if (0) console.log("old_value = " + old_value + "\nnew value = " + control.value);
 
-	// Get the static elements of the control
+	// Get the static elements of the control 
 	var this_action = "";
 	var this_shift_id = "";
 	var shift_arr = control.id.split(" ");
@@ -267,14 +267,14 @@ function preventRedundantAddsAndRemoves(control, changed, shift_id) {
 		}
 	}
 	
-	// Prevent a worker already removed from a source shift from being removed again by a movein action
-	if (control.name == "movein") {
-		// Find all moveout options that would move this worker to here
+	// Prevent a worker already added to this shift from being added again
+	if (controls_that_add.includes(control.name)) {
+		// Find all options that would add this worker to this shift		
 	}
 	
-	// Prevent a worker already on this shift from being added again
+	// Prevent a worker already removed from this shift from being removed again
 	if (controls_that_add.includes(control.name)) {
-		
+		// Find all options that would remove this worker from this shift
 	}
 	
 }

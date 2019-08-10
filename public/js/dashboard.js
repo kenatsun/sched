@@ -10,7 +10,7 @@ function updateChangeControlDisplay(this_control_id, request_type="original") {
 		var this_option = this_control;
 	}
 	const this_request = [this_control, this_option];
-
+	
 	if (0) console.log("updateChangeControlDisplay(" + request_type + "): this_request = " + this_request); 
 	if (1) console.log(elAtts("updateChangeControlDisplay(" + request_type + "): this_control", this_control)); 
 	if (0) console.log(obAtts("updateChangeControlDisplay(" + request_type + "): this_control.dataset", this_control.dataset)); 

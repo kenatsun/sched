@@ -53,10 +53,8 @@ function changeUserStatus() {
 
 function promptForAdminPassword() {
 	$_SESSION['access_type'] = 'guest';
-	// print '
-		// <form method="post" target="_blank" action="' . $_SERVER['PHP_SELF'] . '"> 
 	print '<div style="color:red; font-weight:bold; animation:blink;">
-		<form method="post" target="_blank" action="' . makeURI($_SERVER['PHP_SELF'], "", REQUEST_QUERY_STRING) . '">  
+		<form method="post" action="' . makeURI($_SERVER['PHP_SELF'], "", REQUEST_QUERY_STRING) . '">  
 			<p>For administrator access, enter password:</p>
 			<input type="password" name="password">
 			<input type="submit" value="go">

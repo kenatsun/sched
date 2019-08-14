@@ -138,7 +138,8 @@ function saveChangeSet($posts) {
 			if ($add) {
 				$request = parseChangeRequest($add);
 				if (0) deb("change_sets_utils.saveChangeSet(): args_array = ", $args_array);
-				saveChange('add', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
+				saveChange('add', $request['that_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
+				// saveChange('add', $request['this_worker'], $request['this_shift'], $change_set_id, $scheduler_run_id);		
 			}
 		}
 	}

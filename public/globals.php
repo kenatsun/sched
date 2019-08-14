@@ -1,6 +1,6 @@
 <?php 
 
-define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
+// define ('SHOW_IDS', showIds());  // set to 1 to display object ids for debugging
 
 
 date_default_timezone_set('America/Detroit');

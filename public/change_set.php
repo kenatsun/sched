@@ -16,7 +16,7 @@ $headline = renderHeadline("Pending Changes");
 $changes_table = renderChangeSet($change_set_id, TRUE);
 $ok_change_value = OK_CHANGE_VALUE;
 $changes_form = '
-	<form action="' . makeURI("dashboard.php", PREVIOUS_CRUMBS_IDS) . '" method="post">'
+	<form action="' . makeURI("teams.php", PREVIOUS_CRUMBS_IDS) . '" method="post">'
 		. $changes_table . '
 		<tr>
 			<td colspan={$ncols}>

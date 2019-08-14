@@ -47,7 +47,7 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= render_footer();
 		$page .= render_job_signups("<h3><em>What we've signed up for so far</em></h3>", FALSE);
 		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));	
-		if (scheduler_run()['id']) $page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS_IDS));			
+		if (scheduler_run()['id']) $page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS));			
 	} else {
 		if (0) deb("index.php: gonna display first survey page");
 	}
@@ -57,7 +57,7 @@ else {
 	$formatted_date = date('r', DEADLINE);
 	$page .= render_countdown();
 	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));		
-	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/dashboard.php', NEXT_CRUMBS_IDS));	
+	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS));	
 }
 
 print $page;

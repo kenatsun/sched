@@ -1,31 +1,31 @@
 <?php
 require_once "start.php";
-require_once "dashboard_utils.php";
+require_once "teams_utils.php";
 require_once "change_sets_utils.php";
-print '<script src="js/dashboard.js"></script>';
+print '<script src="js/teams.js"></script>';
 
-if (0) deb("dashboard.php: start"); 
-if (0) deb("dashboard.php: _POST = ", $_POST);
-if (0) deb("dashboard.php: _GET = ", $_GET);
+if (0) deb("teams.php: start"); 
+if (0) deb("teams.php: _POST = ", $_POST);
+if (0) deb("teams.php: _GET = ", $_GET);
 $controls_display = $_GET['controls_display'] ? $_GET['controls_display'] : "show";
 $change_markers_display = $_GET['change_markers_display'] ? $_GET['change_markers_display'] : "show";
 $edition = $_GET['edition'] ? $_GET['edition'] : "";
 
 if ($_POST) {
-	if (0) deb("dashboard.php: _POST = ", $_POST);
+	if (0) deb("teams.php: _POST = ", $_POST);
 	$change_set_id = $_POST['change_set_id'];
 
 	// Processing changes from change_set.php 
 
 		// Update assignments table with the changes that user has confirmed 
 		if (isset($_POST['confirm'])) {
-			if (0) deb("dashboard.php: gonna confirm change_set_id = {$change_set_id}");
+			if (0) deb("teams.php: gonna confirm change_set_id = {$change_set_id}");
 			saveAssignmentBasedOnChangeSet($change_set_id, $_POST);
 		}
 
 		// Delete change set that user wants to discard
 		if (isset($_POST['discard'])) {
-			if (0) deb("dashboard.php: gonna discard change_set_id = {$change_set_id}");
+			if (0) deb("teams.php: gonna discard change_set_id = {$change_set_id}");
 			sqlDelete(CHANGE_SETS_TABLE, "id = {$change_set_id}", (0)); 
 		}
 	
@@ -34,7 +34,7 @@ if ($_POST) {
 		// Undo changes from all change sets including and after the one specified
 		if (isset($_POST['undo_back_to_change_set_id'])) {
 			$undo_back_to_change_set_id = $_POST['undo_back_to_change_set_id'];
-			if (0) deb("dashboard.php: undo_back_to_change_set_id = {$undo_back_to_change_set_id}");
+			if (0) deb("teams.php: undo_back_to_change_set_id = {$undo_back_to_change_set_id}");
 			undoChangeSets($undo_back_to_change_set_id, $_POST);
 		}	
 

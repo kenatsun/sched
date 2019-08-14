@@ -3,7 +3,6 @@
 /*
 Render a headline for a page
 */
-// function renderHeadline($text, $crumbs_str="", $subhead="", $show_admin_dashboard_link=1) {
 function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 	if (0) deb ("headline.renderHeadline(): text =", $text);
 	if (0) deb ("headline.renderHeadline(): crumbs_str = '" . $crumbs_str . "'");

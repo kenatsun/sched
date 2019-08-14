@@ -59,7 +59,7 @@ foreach($change_sets as $i=>$change_set) {
 $change_sets_table .= '</table>';
 
 $change_sets_form = '
-	<form action="' . makeURI("dashboard.php", PREVIOUS_CRUMBS_IDS) . '" method="post">' .
+	<form action="' . makeURI("teams.php", PREVIOUS_CRUMBS_IDS) . '" method="post">' .
 		$change_sets_table . '
 	</form>';
 

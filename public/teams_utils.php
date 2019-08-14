@@ -6,8 +6,8 @@ require_once "change_sets_utils.php";
 
 function displaySchedule($controls_display="show", $change_markers_display="show", $edition="") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
-	if (0) deb("dashboard.displaySchedule(): CRUMBS_QUERY = " . CRUMBS_QUERY);
-	if (0) deb("dashboard.displaySchedule(): NEXT_CRUMBS_IDS = {NEXT_CRUMBS_IDS}"); 
+	if (0) deb("teams_utils.phpdisplaySchedule(): CRUMBS_QUERY = " . CRUMBS_QUERY);
+	if (0) deb("teams_utils.phpdisplaySchedule(): NEXT_CRUMBS_IDS = {NEXT_CRUMBS_IDS}"); 
 	$now = date_create();
 	$now_f = date_format($now, "Y-m-d");
 	$change_request_end_date = $season['change_request_end_date'];
@@ -15,7 +15,7 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	$scheduling_end_date = $season['scheduling_end_date'];
 	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS"); 
 
-	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
+	if (0) deb("teams_utils.phpdisplaySchedule(): edition = " . $edition);
 
 	if ($edition == "first") {		
 		if (0) deb("first");
@@ -33,10 +33,10 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 		$subhead = date_format($now, "F j, Y");
 		$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
-	if (0) deb("dashboard.displaySchedule(): adjective = " . $adjective);
-	if (0) deb("dashboard.displaySchedule(): edition = " . $edition);
+	if (0) deb("teams_utils.phpdisplaySchedule(): adjective = " . $adjective);
+	if (0) deb("teams_utils.phpdisplaySchedule(): edition = " . $edition);
 	$crumbs = $edition ? "" : CRUMBS_QUERY;  // Omit breadcrumbs from printable editions
-	if (0) deb("dashboard.displaySchedule(): crumbs = " . $crumbs);
+	if (0) deb("teams_utils.phpdisplaySchedule(): crumbs = " . $crumbs);
 	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $subhead, 0);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
@@ -61,14 +61,14 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 	$meals_table = MEALS_TABLE;
 	$season_id = SEASON_ID;
 	
-	if (0) deb("dashboard.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
+	if (0) deb("teams.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
 	$jobs = getJobs();
-	if (0) deb("dashboard.php.renderAssignmentsForm(): jobs = ", $jobs);
-	if (0) deb("dashboard.php.renderAssignmentsForm(): controls_display = ", $controls_display);
+	if (0) deb("teams.php.renderAssignmentsForm(): jobs = ", $jobs);
+	if (0) deb("teams.php.renderAssignmentsForm(): controls_display = ", $controls_display);
 
 	// Get id of the most recent scheduler run
 	$scheduler_run_id = scheduler_run()['id'];
-	if (0) deb("dashboard.php.renderAssignmentsForm(): scheduler_run_id = ", $scheduler_run_id); 
+	if (0) deb("teams.php.renderAssignmentsForm(): scheduler_run_id = ", $scheduler_run_id); 
 	if (!$scheduler_run_id) {
 		return "
 			<p>The Scheduler hasn't been run for this season yet,<br>
@@ -82,8 +82,8 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		and j.season_id = {$season_id}
 		and (m.skip_indicator = 0 or m.skip_indicator is null)";
 	$order_by = "m.date asc";
-	$meals = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm(): get assignments for season");
-	if (0) deb("dashboard.php.renderAssignmentsForm(): meals = ", $meals); 
+	$meals = sqlSelect($select, $from, $where, $order_by, (0), "teams_utils.phprenderAssignmentsForm(): get assignments for season");
+	if (0) deb("teams.php.renderAssignmentsForm(): meals = ", $meals); 
 	
 	// Make the table header row
 	$ncols = 1;
@@ -94,11 +94,11 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		++$ncols;
 	}
 	$header_row .= "</tr>";
-	if (0) deb("dashboard.php.renderAssignmentsForm(): header_row =", $header_row);
+	if (0) deb("teams.php.renderAssignmentsForm(): header_row =", $header_row);
 
 	// Make the actions rows
 	if (userIsAdmin()) {
-		if (0) deb("dashboard.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
+		if (0) deb("teams.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
 
 		// Make publish row, if there are any saved changes
 		$change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $scheduler_run_id . " and published = 0", "", (0))[0];
@@ -113,8 +113,8 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					</span>
 				'; 
 			}
-			if (0) deb("dashboard.php: NEXT_CRUMBS_IDS = ", NEXT_CRUMBS_IDS); 
-			if (0) deb("dashboard.php: publish_buttons = ", $publish_buttons); 
+			if (0) deb("teams.php: NEXT_CRUMBS_IDS = ", NEXT_CRUMBS_IDS); 
+			if (0) deb("teams.php: publish_buttons = ", $publish_buttons); 
 			$publish_legend = '
 				&nbsp;&nbsp;
 				<span style="font-size:11pt; text-align:right;">
@@ -129,7 +129,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 						&nbsp;&nbsp;
 					</span>
 				</span>';		
-			if (0) deb("dashboard.php.renderAssignmentsForm(): publish_legend =", $publish_legend);
+			if (0) deb("teams.php.renderAssignmentsForm(): publish_legend =", $publish_legend);
 
 			if ($publish_legend || $publish_buttons) $publish_actions_row = '<tr><td style="background-color:White; padding:2px 0px 2px 0px; text-align:center" colspan=' . $ncols . '>' . $publish_buttons . $publish_legend . '</td></tr>';
 		} 
@@ -158,13 +158,13 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			&nbsp;&nbsp;<span style="font-size:11pt; text-align:right;">
 				<span style="color:black; background-color:' . CHANGED_BACKGROUND_COLOR . ';">unsaved changes have ' . CHANGED_BACKGROUND_COLOR . ' background</span>
 			&nbsp;&nbsp;</span></span>';
-		if (0) deb("dashboard.php.renderAssignmentsForm(): save_legend =", $save_legend);
+		if (0) deb("teams.php.renderAssignmentsForm(): save_legend =", $save_legend);
 
 		if ($save_legend || $save_buttons) $save_actions_row = '<tr name="save_actions_row" style="display:none"><td style="background-color:' . CHANGED_BACKGROUND_COLOR . '; padding:2px 0px 2px 0px; text-align:center;" colspan=' . $ncols . '>' . $save_buttons . $save_legend . '</td></tr>'; 
 
 		}		
 	$previous_meal_month = 0;	
-	if (0) deb("dashboard.renderAssignmentsForm(): publish_actions_row (first time) = ", $publish_actions_row);
+	if (0) deb("teams_utils.phprenderAssignmentsForm(): publish_actions_row (first time) = ", $publish_actions_row);
 	$headings_rowset .= $publish_actions_row . $save_actions_row . $header_row;
 	
 	// Make the table row for each meal
@@ -172,16 +172,16 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 	$save_button_interval = 3;
 	$assignments_rows = '';
 	foreach($meals as $i=>$meal) {
-		if (0) deb("dashboard.renderAssignmentsForm() meal['meal_date'] = {$meal['meal_date']}");
+		if (0) deb("teams_utils.phprenderAssignmentsForm() meal['meal_date'] = {$meal['meal_date']}");
 		$date_ob = new DateTime($meal['meal_date']);
 		$meal['meal_day_name'] = $date_ob->format('l');
 		$meal_month = $date_ob->format('m');
 		$meal_date = $date_ob->format('F j'); 
-		if (0) deb("dashboard.renderAssignmentsForm() meal_month = {$meal_month}");
-		if (0) deb("dashboard.php.renderAssignmentsForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
+		if (0) deb("teams_utils.phprenderAssignmentsForm() meal_month = {$meal_month}");
+		if (0) deb("teams.php.renderAssignmentsForm(): day name = {$meal['meal_day_name']}, date = {$meal['meal_date']}");
 
 		if (($nrows == $save_button_interval) && userIsAdmin() && ($controls_display == "show")) {
-			if (0) deb("dashboard.renderAssignmentsForm(): publish_actions_row (repeat) = ", $publish_actions_row);
+			if (0) deb("teams_utils.phprenderAssignmentsForm(): publish_actions_row (repeat) = ", $publish_actions_row);
 			$assignments_rows .= $headings_rowset;
 			$nrows = 1;
 		} else {
@@ -202,7 +202,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		$shift_td = "";
 		foreach($jobs as $i=>$job){
 			
-			if (0) deb("dashboard.php.renderAssignmentsForm(): job_id = {$job['job_id']}, meal_id = {$meal['id']}");
+			if (0) deb("teams.php.renderAssignmentsForm(): job_id = {$job['job_id']}, meal_id = {$meal['id']}");
 			
 			// Get the id of this shift (i.e. this job for this meal)
 			$select = "s.id as id";
@@ -212,9 +212,9 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				and s.meal_id = m.id
 				and m.id = {$meal['id']}"; 
 			$order_by = "";
-			$shifts = sqlSelect($select, $from, $where, $order_by, (0), "dashboard.renderAssignmentsForm()"); 
+			$shifts = sqlSelect($select, $from, $where, $order_by, (0), "teams_utils.phprenderAssignmentsForm()"); 
 			$shift_id = $shifts[0]['id'];
-			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = {$shift_id}");
+			if (0) deb("teams.php.renderAssignmentsForm(): shift_id = {$shift_id}");
 
 			// Find the worker(s) assigned to this shift
 			$select = "w.username as worker_name, 
@@ -231,14 +231,14 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				and (a.exists_now = 1 or a.generated = 1)";
 			$order_by = "worker_name";
 			$assignments = sqlSelect($select, $from, $where, $order_by, (0), "renderAssignmentsForm(): assignments in shift");
-			if (0) deb("dashboard.php.renderAssignmentsForm(): assignments = ", $assignments);
+			if (0) deb("teams.php.renderAssignmentsForm(): assignments = ", $assignments);
 			
 			// Make table in this shift cell showing assigned workers, and controls for removing / adding them
 			
 			if (showIds()) $shift_id_row = '<tr><td colspan="2">shift #' . $shift_id . '</td></tr>';
 			
 			$slots_to_fill = $job['workers_per_shift'];
-			if (0) deb("dashboard.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 
+			if (0) deb("teams.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 
 
 			// Display the workers assigned to this shift
 			$worker_rows = '';
@@ -246,10 +246,10 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				$worker_id = $assignment['worker_id'];
 				if (showIds()) $wkr_id = ' (#' . $worker_id . '), assmt #' . $assignment['assignment_id']; 
 
-				if (0) deb("dashboard.php.renderAssignmentsForm(): assignment = ", $assignment);
+				if (0) deb("teams.php.renderAssignmentsForm(): assignment = ", $assignment);
 				$exists_now = $assignment['exists_now']; 
 				$has_changed = ($assignment['generated'] != $exists_now ? 1 : 0);
-				if (0) deb("dashboard.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assmt_id = {$assignment['assignment_id']}, shift_id = {$shift_id}");		
+				if (0) deb("teams.php.renderAssignmentsForm(): exists_now = {$exists_now}, has_changed = {$has_changed}, assmt_id = {$assignment['assignment_id']}, shift_id = {$shift_id}");		
 				
 				// If assignment's status changed since generation, make a change marker
 				if ($has_changed && $change_markers_display == "show") {
@@ -259,11 +259,11 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					$where = "c.id = {$assignment['latest_change_id']}
 						and s.id = c.change_set_id";
 					$latest_change_set = sqlSelect($select, $from, $where, "", (0), "latest change set")[0];
-					if (0) deb("dashboard.php.renderAssignmentsForm(): latest_change_set = ", $latest_change_set); 
+					if (0) deb("teams.php.renderAssignmentsForm(): latest_change_set = ", $latest_change_set); 
 					
 					if (showIds()) $chg_id = '<br>(chg set #' . $latest_change_set['id'] . ')';
 					$change_marker = formatted_date($latest_change_set['when_saved'], "M j g:ia") . $chg_id;
-					if (0) deb("dashboard.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
+					if (0) deb("teams.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
 					
 					// If assignment exists now, make an "added" marker	 
 					if ($exists_now) {
@@ -290,7 +290,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				
 				// Render the assignment if it exists and/or has been removed since generation
 				// Don't show an assignment that was not generated and doesn't currently exist
-				if ((0) && in_array($shift_id, array(436, 437))) deb("dashboard.php.renderAssignmentsForm(): shift_id = $shift_id, worker = $worker_id, exists_now = $exists_now");
+				if ((0) && in_array($shift_id, array(436, 437))) deb("teams.php.renderAssignmentsForm(): shift_id = $shift_id, worker = $worker_id, exists_now = $exists_now");
 				$name_row = '';
 				if ($exists_now || ($has_changed && $change_markers_display == "show")) {
 					$name_row = '
@@ -307,7 +307,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					if ($exists_now) --$slots_to_fill;
 					
 					// Display controls that would REMOVE this worker from this shift, unless worker has been removed already
-					if (0) deb("dashboard.php.renderAssignmentsForm(): shift_id = $shift_id, worker = $worker_id, exists_now = ", $exists_now);
+					if (0) deb("teams.php.renderAssignmentsForm(): shift_id = $shift_id, worker = $worker_id, exists_now = ", $exists_now);
 					$remove_row = '';
 					$moveout_row = '';
 					$trade_row = '';
@@ -333,12 +333,12 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 						// Figure out which shifts this worker could be MOVEd OUT to
 						$possible_shifts = getPossibleShiftsForWorker($worker_id, $job['job_id'], TRUE);
-						if (0) deb("dashboard.php.renderAssignmentsForm(): worker = {$assignment['worker_name']} {$worker_id}, possible_shifts = ", $possible_shifts); 
+						if (0) deb("teams.php.renderAssignmentsForm(): worker = {$assignment['worker_name']} {$worker_id}, possible_shifts = ", $possible_shifts); 
 						
 						// Display the possible move-out-to shifts in a dropdown box 
 						if ($possible_shifts) {
 							$action = "moveout";
-							if (0) deb("dashboard.php.renderAssignmentsForm(): 'remove' id = " . $id); 
+							if (0) deb("teams.php.renderAssignmentsForm(): 'remove' id = " . $id); 
 
 							$moveout_row = '
 								<tr 
@@ -376,7 +376,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 						
 						// Get possible TRADEs into this shift for this worker
 						$possible_trades = getPossibleTradesForShift($worker_id, $shift_id, $job['job_id']);
-						if (0) deb("dashboard.php.renderAssignmentsForm(): worker = {$assignment['worker_name']} {$worker_id}, possible_trades = ", $possible_trades); 
+						if (0) deb("teams.php.renderAssignmentsForm(): worker = {$assignment['worker_name']} {$worker_id}, possible_trades = ", $possible_trades); 
 
 						// Display the possible trades in a dropdown box
 						if ($possible_trades) {
@@ -442,7 +442,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				
 			}	// foreach($assignments as $assignment)
 			
-			if (0) deb("dashboard.php.renderAssignmentsForm(): job = {$job['description']}, shift = $shift_id, slots_to_fill = $slots_to_fill"); 
+			if (0) deb("teams.php.renderAssignmentsForm(): job = {$job['description']}, shift = $shift_id, slots_to_fill = $slots_to_fill"); 
 			if ($slots_to_fill > 0) {
 				$job_name = ($slots_to_fill > 1) ? $job['description'] . "s" : $job['description'];
 				$needed_row = '
@@ -462,7 +462,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 				// Figure out which workers could be MOVEd INto this shift from another shift
 				$possible_move_ins = getPossibleMovesIntoShift($shift_id);
-				if (0) deb("dashboard.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, possible_move_ins = ", $possible_move_ins);
+				if (0) deb("teams.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, possible_move_ins = ", $possible_move_ins);
 
 				// Display the MOVE-IN-able  workers in a dropdown box
 				if ($possible_move_ins) {
@@ -487,7 +487,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 								inputAtts("no_change_option", $action, $shift_id) . '> 
 							</option>';
 					foreach($possible_move_ins as $possible_move_in) {
-						if (0) deb("dashboard.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, possible_move_in = ", $possible_move_in);
+						if (0) deb("teams.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, possible_move_in = ", $possible_move_in);
 						$movein_row .= '
 							<option 
 								style="background-color:' . $color . ';" ' .
@@ -506,7 +506,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 				// Figure out which workers could be ADDed to this shift
 				$available_workers = getAvailableWorkersForShift($shift_id, FALSE, TRUE);
-				if (0) deb("dashboard.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, available_workers = ", $available_workers); 
+				if (0) deb("teams.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, available_workers = ", $available_workers); 
 
 				// Display the available workers to ADD to this shift in a dropdown box 
 				if ($available_workers) {
@@ -571,8 +571,8 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				';
 			}	// if (userIsAdmin() && $controls_display == "show") 
 
-			if (0) deb("dashboard.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 		
-			if (0) deb("dashboard.php.renderAssignmentsForm(): shift_table = ", $shift_table);
+			if (0) deb("teams.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 		
+			if (0) deb("teams.php.renderAssignmentsForm(): shift_table = ", $shift_table);
 
 			$shift_table = '
 				<!-- Start of TABLE for shift #' . $shift_id . ' -->
@@ -596,7 +596,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			$date_td .
 			$shift_td .
 		'</tr>';
-		if (0) deb("dashboard.php.renderAssignmentsForm(): meal date = {$meal['date']}"); 
+		if (0) deb("teams.php.renderAssignmentsForm(): meal date = {$meal['date']}"); 
 		$assignments_rows .= $meal_row; 
 	}	// foreach($meals as $i=>$meal)
 
@@ -613,7 +613,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 	$assignments_form = 
 		$assignments_form_headline . 
-		'<form id="assignments_form" name="assignments_form" action="' . makeURI("dashboard.php", CRUMBS_IDS) . '" method="post">' . 
+		'<form id="assignments_form" name="assignments_form" action="' . makeURI("teams.php", CRUMBS_IDS) . '" method="post">' . 
 		$assignments_table .
 		'<input type="hidden" name="scheduler_run_id" id="scheduler_run_id" value="{$scheduler_run_id}" />
 		<input type="hidden" name="change_count" id="change_count" value="0" />
@@ -693,7 +693,7 @@ function inputId($action="", $this_shift_id="", $this_worker_id="", $that_shift_
 	if ($this_worker_id) $id .= '.' . $this_worker_id;
 	if ($that_shift_id) $id .= '.' . $that_shift_id;
 	if ($that_worker_id) $id .= '.' . $that_worker_id;
-	if (0) deb("dashboard_utils.php.trId(): tr_id = $id");
+	if (0) deb("teams_utils.php.trId(): tr_id = $id");
 	return $id; 
 }
 
@@ -722,7 +722,7 @@ function getAvailableWorkersForShift($shift_id, $addable_only=FALSE, $omit_avoid
 		)";
 	$order_by = "open_offers_count desc, pref desc, worker asc";
 	$available_workers = sqlSelect($select, $from, $where, $order_by, (0), "available_workers");
-	if (0) deb("dashboard.php:getPossibleShiftsForWorker() available_workers for shift {$shift_id} (from view) = ", $available_workers);
+	if (0) deb("teams.php:getPossibleShiftsForWorker() available_workers for shift {$shift_id} (from view) = ", $available_workers);
 
 	return $available_workers;
 }
@@ -740,7 +740,7 @@ function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 			and job_id = {$job_id}        -- This job type.";
 	$order_by = "shift_id asc";
 	$possible_shifts = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleShiftsForWorker()");
-	if (0) deb("dashboard.php:getPossibleShiftsForWorker() possible_shifts = ", $possible_shifts);
+	if (0) deb("teams.php:getPossibleShiftsForWorker() possible_shifts = ", $possible_shifts);
 
 	return $possible_shifts;
 }
@@ -759,7 +759,7 @@ function getPossibleTradesForShift($worker_id, $shift_id, $job_id) {
 		and job_id = {$job_id}";
 	$order_by = "shift_id asc";
 	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForShift()"); 
-	if (0) deb("dashboard.php:getPossibleTradesForShift() possible_trades = ", $possible_trades);
+	if (0) deb("teams.php:getPossibleTradesForShift() possible_trades = ", $possible_trades);
 	
 	return $possible_trades;  
 }
@@ -789,7 +789,7 @@ function getPossibleMovesIntoShift($shift_id) {
 	";
 	$order_by = "shift_id asc";
 	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForShift()"); 
-	if (0) deb("dashboard.php:getPossibleMovesIntoShift() possible_trades = ", $possible_trades);
+	if (0) deb("teams.php:getPossibleMovesIntoShift() possible_trades = ", $possible_trades);
 	
 	return $possible_trades;
 }

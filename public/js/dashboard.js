@@ -1,6 +1,6 @@
 function updateChangeControlDisplay(this_control_id, request_type="original") {
 
-	if (1) console.log("\n\nupdateChangeControlDisplay(" + request_type + ") ************************************");
+	if (0) console.log("\n\nupdateChangeControlDisplay(" + request_type + ") ************************************");
 	if (0) console.log("updateChangeControlDisplay(" + request_type + "): this_control_id = " + this_control_id); 
 
 	const this_control = document.getElementById(this_control_id);
@@ -12,10 +12,10 @@ function updateChangeControlDisplay(this_control_id, request_type="original") {
 	const this_request = [this_control, this_option];
 	
 	if (0) console.log("updateChangeControlDisplay(" + request_type + "): this_request = " + this_request); 
-	if (1) console.log(elAtts("updateChangeControlDisplay(" + request_type + "): this_control", this_control)); 
+	if (0) console.log(elAtts("updateChangeControlDisplay(" + request_type + "): this_control", this_control)); 
 	if (0) console.log(obAtts("updateChangeControlDisplay(" + request_type + "): this_control.dataset", this_control.dataset)); 
 	if (0) console.log("updateChangeControlDisplay(" + request_type + "): this_control.selectedIndex = " + this_control.selectedIndex); 
-	if (1) console.log(elAtts("updateChangeControlDisplay(" + request_type + "): this_option", this_option)); 
+	if (0) console.log(elAtts("updateChangeControlDisplay(" + request_type + "): this_option", this_option)); 
 	if (0) console.log(obAtts("updateChangeControlDisplay(" + request_type + "): this_option.dataset", this_option.dataset)); 
 
 	// Determine whether this request is for a change 
@@ -105,7 +105,7 @@ function updateChangeControlDisplay(this_control_id, request_type="original") {
 	if (0) console.log(obAtts("updateChangeControlDisplay(" + request_type + "): this_control.dataset after", this_control.dataset)); 
 
 	
-	if (1) console.log("\n************************************ updateChangeControlDisplay(" + request_type + ")\n\n"); 
+	if (0) console.log("\n************************************ updateChangeControlDisplay(" + request_type + ")\n\n"); 
 } 
 
 
@@ -193,7 +193,7 @@ function changeRequested(control) {
 	
 function preventInvalidChanges(this_control, this_option, changed, request_type) {
 
-	if (1) console.log("\npreventInvalidChanges(" + request_type + ") :::::::::::::::::::::::::::::::::::::\n ");
+	if (0) console.log("\npreventInvalidChanges(" + request_type + ") :::::::::::::::::::::::::::::::::::::\n ");
 	if (changed) {
 		var dataset = this_option.dataset;
 	} else {
@@ -202,9 +202,9 @@ function preventInvalidChanges(this_control, this_option, changed, request_type)
 	if (0) console.log("preventInvalidChanges(" + request_type + "): actions_that_remove = " + actions_that_remove);
 	if (0) console.log("preventInvalidChanges(" + request_type + "): this_control.id = " + this_control.id);
 	if (0) console.log(obAtts("preventInvalidChanges(" + request_type + "): this_control.dataset", this_control.dataset));
-	if (1) console.log(obAtts("preventInvalidChanges(" + request_type + "): dataset", dataset));
+	if (0) console.log(obAtts("preventInvalidChanges(" + request_type + "): dataset", dataset));
 	if (0) console.log("preventInvalidChanges(" + request_type + "): this_control.name = " + this_control.name);
-	if (1) console.log("preventInvalidChanges(" + request_type + "): changed?: " + changed);
+	if (0) console.log("preventInvalidChanges(" + request_type + "): changed?: " + changed);
 	
 	// If this action would remove this worker from this shift...
 	const actions_that_remove = ["remove", "moveout", "trade"];
@@ -234,7 +234,7 @@ function preventInvalidChanges(this_control, this_option, changed, request_type)
 		if (0) console.log ("preventInvalidChanges(" + request_type + "): remover_selector = " + remover_selector);
 		const options_that_remove = document.querySelectorAll(remover_selector);
 		if (0) console.log("preventInvalidChanges(" + request_type + "): options_that_remove.length = " + options_that_remove.length);
-		if (1) console.log("preventInvalidChanges(" + request_type + "): options_that_remove", options_that_remove);
+		if (0) console.log("preventInvalidChanges(" + request_type + "): options_that_remove", options_that_remove);
 		for(let option_that_removes of options_that_remove) { 
 			if (0) console.log(elAtts("preventInvalidChanges(" + request_type + "): option_that_removes", option_that_removes));
 			if (changed == true) {
@@ -256,7 +256,7 @@ function preventInvalidChanges(this_control, this_option, changed, request_type)
 		if (0) console.log ("preventInvalidChanges(" + request_type + "): adder_selector = " + adder_selector);
 		const options_that_add = document.querySelectorAll(adder_selector);
 		if (0) console.log("preventInvalidChanges(" + request_type + "): options_that_add.length = " + options_that_add.length);
-		if (1) console.log("preventInvalidChanges(" + request_type + "): options_that_add", options_that_add);
+		if (0) console.log("preventInvalidChanges(" + request_type + "): options_that_add", options_that_add);
 		for(let option_that_adds of options_that_add) { 
 			if (0) console.log(elAtts("preventInvalidChanges(" + request_type + "): option_that_adds", option_that_adds));
 			if (changed == true) {
@@ -268,7 +268,7 @@ function preventInvalidChanges(this_control, this_option, changed, request_type)
 			}
 		}
 	}
-	if (1) console.log("\n:::::::::::::::::::::::::::::::::::::: preventInvalidChanges(" + request_type + ")\n ");	
+	if (0) console.log("\n:::::::::::::::::::::::::::::::::::::: preventInvalidChanges(" + request_type + ")\n ");	
 }
 
 

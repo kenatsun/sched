@@ -15,7 +15,7 @@ $(document).ready(function() {
 		}
 	});
 });
-
+ 
 
 // Save old value of an input field before onchange event
 // Code from https://stackoverflow.com/questions/29118178/input-jquery-get-old-value-before-onchange-and-get-value-after-on-change

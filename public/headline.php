@@ -14,7 +14,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 	if (0) deb ("headline.renderHeadline(): REQUEST_QUERY_STRING = " . REQUEST_QUERY_STRING);
 	$community_logo_form = '
 		<form name="community_logo_form" id="community_logo_form" action="' . makeURI(SCRIPT_URL, "", REQUEST_QUERY_STRING) . '" method="post">
-			<input type="image" name="submit" src="' . $community_logo . '"  >
+			<input type="image" name="submit" src="' . $community_logo . '" alt="Sunward icon" >
 			<input type="hidden" id="sign_in_as" name="sign_in_as" value="' . $new_status . '"  >
 		</form>';
 	
@@ -45,19 +45,19 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 	// Render breadcrumbs display
 	if (CRUMBS_QUERY) {
 		$crumbs_display = '
-			<tr style="font-size:10pt; font-style:italic">
-				<td colspan="2" style="text-align:right; ' . $td_style . '"><<<<< &nbsp;&nbsp;go back to:' . CRUMBS_QUERY . '</td>
+			<tr style="font-size:10pt; font-style:italic;">
+				<td colspan="2" style="text-align:right; ' . $td_style . '">&lt;&lt;&lt;&lt;&lt; &nbsp;&nbsp;go back to:' . CRUMBS_QUERY . '</td>
 			</tr>';
 	}
 	if (0) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);
 
 	// Render headline
 	if ($subhead) {
-		$headline = '<td style="$td_style" class="headline">' . $text;
+		$headline = '<td style="' . $td_style. '" class="headline">' . $text; 
 		$headline .= '<br><span style="font-size:18px">' . $subhead . '</span>';
 	} 
 	else {
-		$headline = '<td style="$td_style" class="headline">' . $text . '</td>';
+		$headline = '<td style="' . $td_style. '" class="headline">' . $text . '</td>';
 	}
 
 	if (0) deb ("headline.renderHeadline(): userIsAdmin() =", userIsAdmin()); 

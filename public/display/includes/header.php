@@ -14,7 +14,7 @@ if (0) deb("header.php: favicon = " . $favicon);
 
 $head = '
 <!doctype html> 
-<html> 
+<html lang="en"> 
 <head>
 	<title>' . $html_title . '</title>
 	<link rel="icon" type="image/ico" href="display/images/' . $favicon . '">
@@ -52,11 +52,6 @@ $head = '
 ';
  
 print $head;
-
-if (0) deb("header.php: head = ", $head);
-
-
-
 ?>
 
 

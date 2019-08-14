@@ -16,7 +16,7 @@ define("ADMIN_PASSWORD", "a");
 // Open the database
 create_sqlite_connection();
 
-// Determine if user is admin or guest
+// Determine if user is admin or guest 
 changeUserStatus();
 
 // Configure the session
@@ -46,6 +46,39 @@ if (COMMUNITY == 'Sunward') {
 }
 
 
+if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
+	$survey_scripts = '
+	<script src="js/utils.js"></script>
+	<script src="js/survey_library.js"></script>
+	';
+}
+
+$body = '
+<body>
+	<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">
+	<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">
+	<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">
+	<script src="js/utils2.js"></script>
+' 		. $survey_scripts 
+;
+// $body = '
+// <body>
+	// <input type="hidden" id="script_url" value="' . SCRIPT_URL . '">
+	// <input type="hidden" id="sign_in_as" value="">
+	// <input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">
+	// <input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">
+	// <script src="js/utils2.js"></script>
+// ' 		. $survey_scripts 
+// ;
+
+print $body;
+// print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
+// print '<input type="hidden" id="sign_in_as" value="">';
+// print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
+// print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
+
+//////////////////////////////////////////////////////// FUNCTIONS
+
 /**
  * Get the number of shift overrides.
  * Note: this is formatted like this:
@@ -62,30 +95,6 @@ function get_num_shift_overrides() {
 	];
 }
 
-if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
-	$survey_scripts = '
-	<script src="js/utils.js"></script>
-	<script src="js/survey_library.js"></script>
-	';
-}
-
-$body = '
-<body>
-	<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">
-	<input type="hidden" id="sign_in_as" value="">
-	<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">
-	<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">
-	<script src="js/utils2.js"></script>
-' 		. $survey_scripts 
-;
-
-print $body;
-// print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
-// print '<input type="hidden" id="sign_in_as" value="">';
-// print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
-// print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
-
-//////////////////////////////////////////////////////// FUNCTIONS
 
 function setSessionConstants() {
 	

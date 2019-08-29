@@ -116,3 +116,22 @@ function obAtts(label, elt) {
 	}
 }
 
+// From https://stackoverflow.com/questions/4672984/how-to-change-toggle-text-on-show-hide-using-javascript
+function showHide(divid, linkid) { 
+	if (0) console.log("divid = " + divid + " linkid = " + linkid);
+	var divid = document.getElementById(divid);
+	var toggleLink = document.getElementById(linkid);
+	if (divid.style.display == 'block') {
+			// toggleLink.innerHTML = 'click to hide';
+			toggleLink.innerHTML = '<img src="display/images/triangle_pointing_right.png" alt="" height="16" width="16"></img><span style="font-size: 9pt; "> click to show </span>';
+			// toggleLink.innerHTML = '<img src="display/images/triangle_pointing_right.png" alt="click to show" height="16" width="16">';
+			divid.style.display = 'none';
+	}
+	else {
+			// toggleLink.innerHTML = '<img src="display/images/triangle_pointing_down.png" alt="click to hide" height="16" width="16">'; 
+			// toggleLink.innerHTML = 'click to show'; 
+			toggleLink.innerHTML = '<img src="display/images/triangle_pointing_down.png" alt="click to hide" height="16" width="16"></img><span style="font-size: 9pt; "> click to hide </span>'; 
+			divid.style.display = 'block';
+	}
+	return false;
+}

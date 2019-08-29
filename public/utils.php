@@ -362,6 +362,56 @@ function get_holidays() {
 // DATE-RELATED FUNCTIONS - end ----------------------------------------------------
 
 
+function renderBlockInShowHideWrapper($block, $section_title, $html_before="", $html_after="", $display="none") {
+$id = str_replace(' ', '_', $section_title);
+$id = str_replace("'", "", $id);
+$link_id = $id . "_link";
+$div_id = $id . "_div";
+$tooltip_id = $id . "_tooltip";
+$show_hide = ($display == "none") ? "show" : "hide";
+$link = '
+		<a 
+			style="text-decoration: none; color: black;"
+			id="' . $link_id . '" 
+			onclick="showHide(\'' . $div_id . '\', \'' . $link_id . '\');" 
+			href="#' . $link_id . '"
+			>
+				<img 
+					src="display/images/triangle_pointing_right.png" 
+					alt="click to show" 
+					height="16" 
+					width="16"
+				>
+				<span style="font-size: 9pt; ">click to ' . $show_hide . '</span>
+		</a>'
+;
+// This version of the above includes a tooltip:
+// $link = '
+	// <div class="tooltip">
+		// <a 
+			// id="' . $link_id . '" 
+			// onclick="showHide(\'' . $div_id . '\', \'' . $link_id . '\');" 
+			// href="#' . $link_id . '"
+			// >
+				// <img 
+					// src="display/images/triangle_pointing_right.png" 
+					// alt="click to show" 
+					// height="16" 
+					// width="16"
+				// >
+				// <span class="tooltiptext" id="' . $tooltip_id . '">Show ' . $section_title . '</span>
+		// </a>
+	// </div>'
+// ;
+
+$div = '
+	<div id="' . $div_id . '" style="display:' . $display . ';">' . 
+		$block . '
+	</div>';
+	
+return $html_before . $link . $html_after . $div;
+}
+
 function renderBullpen() {
 	$td_style = ' style="border:1px shadow;"'; 
 	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc");
@@ -655,6 +705,16 @@ function getJobSignups() {
 }
 
 
+function seasonWorkerId($worker_id, $season_id) {
+	return sqlSelect("*", SEASON_WORKER_TABLE, "worker_id = " . $worker_id . " and season_id = " . $season_id, "", (0))[0]['id'];
+}
+
+
+function seasonLiaisonId($worker_id, $season_id) {
+	return sqlSelect("*", SEASON_LIAISONS_TABLE, "worker_id = " . $worker_id . " and season_id = " . $season_id)[0]['id'];
+}
+
+
 function getJobAssignments($meal_id=NULL, $job_id=NULL, $worker_id=NULL) {
 	// list the assignments for the current season, optionally scoped by meal, job, and/or worker
 	$season_id = SEASON_ID;
@@ -708,42 +768,44 @@ function getNonResponders() {
 }
 
 
-// Get descriptions of all jobs for the specified season from the database.
-// This function coexists uneasily with the "defines" in constants.inc, which also specify the job ids as global constants.
-function getJobsFromDB($season_id) {
-	$jobs_table = SURVEY_JOB_TABLE;
-	$select = "*";
-	$from = $jobs_table;
-	$where = "season_id = " . $season_id;
-	$order_by = "display_order";
-	$out = sqlSelect($select, $from, $where, $order_by);
-	if (0) debt("utils.getJobsFromDB: jobs", $out);
-	return $out;
-}
-
-
-function renderJobSignups($headline=NULL, $include_details) {
+function renderScoreboard($section_title=NULL) {
 	$jobs = getJobs();
-	if (0) deb("report.php: renderJobSignups(): getJobs():", $jobs);
-	$signups = getJobSignups();
-	if (0) deb("report.php: renderJobSignups(): getJobSignups() returns:", $signups);
+	if (0) deb("index.php: renderScoreboard(): getJobs():", $jobs);
+
+	$person_table = AUTH_USER_TABLE;
+	$offers_table = OFFERS_TABLE;
+	$jobs_table = SURVEY_JOB_TABLE;
+	$season_id = SEASON_ID;
+	$select = "p.id as person_id, 
+		p.first_name, 
+		p.last_name, 
+		o.instances, 
+		j.id as job_id, 
+		j.description";
+	$from = "{$person_table} as p, 
+		{$offers_table} as o, 
+		{$jobs_table} as j";
+	$where = "p.id = o.worker_id 
+		and o.job_id = j.id 
+		and j.season_id = {$season_id}";
+	$order_by = "p.first_name, p.last_name, j.display_order";
+	$signups = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb ("index.renderScoreboard(): signups =", $signups);
+
+	// $signups = getJobSignups();
+	// if (0) deb("report.renderScoreboard(): getJobSignups() returns:", $signups);
 
 	// Make header rows for the table
 	$job_names_header = '<tr style="text-align:center;"><th></th>';
 	$data_types_header = '<tr style="text-align:center;"><th></th>';
 	foreach($jobs as $index=>$job) {		
-		if (0) deb ("report.renderJobSignups(): job['description']) = {$job['description']}");
-		$job_names_header .= '<th colspan="' . (UserIsAdmin() && $include_details ? 3 : 1) . '" style="text-align:center;">' . $job['description'] . "</th>";
+		if (0) deb ("report.renderScoreboard(): job['description']) = {$job['description']}");
+		$job_names_header .= '<th colspan="1" style="text-align:center;">' . $job['description'] . "</th>";
 		$data_types_header .= '<th style="text-align:center;">signups</th>';
-		if (userIsAdmin() && $include_details) {
-				$data_types_header .= '<th style="text-align:center;">assigned</th>';
-				$data_types_header .= '<th style="text-align:center;">available</th>';
-			}
 	}
 	$job_names_header .= "</tr>";
 	$data_types_header .= "</tr>";
-	if ($include_details==FALSE) $data_types_header = NULL;
-	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header); 
+	if (0) deb ("index.renderScoreboard(): job_names_header =", $job_names_header); 
 	
 	// Make data rows
 	$responders_count = 0;
@@ -760,64 +822,43 @@ function renderJobSignups($headline=NULL, $include_details) {
 			$responders_count++;
 		}
 		
-		if (0) deb ("report.renderJobSignups(): signup['job_id']) = {$signup['job_id']}");
-		if (0) deb ("report.renderJobSignups(): signup) =", $signup);
-		if (0) deb ("report.renderJobSignups(): availability_index) = $availability_index");
+		if (0) deb ("index.renderScoreboard(): signup['job_id']) = {$signup['job_id']}");
+		if (0) deb ("index.renderScoreboard(): signup) =", $signup);
+		if (0) deb ("index.renderScoreboard(): availability_index) = $availability_index");
 			
 		// Render the number of times this person will do this job
-		if (0) deb("report.renderJobSignups(): signup['person_id'] =? prev_person_id) AFTER =", $signup['person_id'] . "=?" . $prev_person_id);
+		if (0) deb("index.renderScoreboard(): signup['person_id'] =? prev_person_id) AFTER =", $signup['person_id'] . "=?" . $prev_person_id);
 		$person_signups_for_job = ($signup['instances'] > 0 ? $signup['instances'] : '');
 		$signup_rows .= "
 			<td>{$person_signups_for_job}</td>";
 
 		// Increment the total number of signups for this job
-		if (0) deb ("report.renderJobSignups(): signup['job_id']) =", $signup['job_id']);
+		if (0) deb ("index.renderScoreboard(): signup['job_id']) =", $signup['job_id']);
 		$job = array_search($signup['job_id'], array_column($jobs, 'job_id'));
 		$jobs[$job]['signups'] += $signup['instances'];
-		if (0) deb ("report.renderJobSignups(): jobs[job]['signups'] =", $jobs[$job]['signups']);
+		if (0) deb ("index.renderScoreboard(): jobs[job]['signups'] =", $jobs[$job]['signups']);
 
-		if (userIsAdmin() && $include_details) {
-			// Render the number of times this person is available for this job (signups - assignments)
-			$assignments = getJobAssignments(NULL, $signup['job_id'], $signup['person_id']);
-			$assignments_count = count($assignments);
-			$available_count = $signup['instances'] - $assignments_count;
-			$available_count = ($available_count > 0 ? $available_count : '');
-			$assignments_count = ($assignments_count > 0 ? $assignments_count : '');
-			$available_background = ($available_count != '' ? 'style="background:lightpink;" ' : '');
-			$signup_rows .= "
-				<td>{$assignments_count}</td>";
-			$signup_rows .= "
-				<td {$available_background}>{$available_count}</td>";
-		}
 	}
 	$signup_rows .= "</tr>";
 
-	if ($include_details==FALSE) {
-		$signup_rows = "";
-	}
-
 	$meals_in_season = sqlSelect("count(id) as id", MEALS_TABLE, "skip_indicator = 0 and season_id = " . SEASON_ID, (0))[0]['id'];
 	// Render a row showing total jobs to fill for each job
-	if (0) deb("utils.renderJobSignups(): meals_in_season = ", $meals_in_season);
+	if (0) deb("utils.renderScoreboard(): meals_in_season = ", $meals_in_season);
 	$needed_row = "<tr>
 		<td {$background}><strong>jobs to fill</strong></td>";
-	// if (0) deb("utils.renderJobSignups(): jobs = ", $jobs);
 	foreach($jobs as $index=>$job) {
-		if (0) deb("utils.renderJobSignups(): job['instances'] = ", $job['instances']);
+		if (0) deb("utils.renderScoreboard(): job['instances'] = ", $job['instances']);
 		$shifts_count = $meals_in_season * $job['workers_per_shift'];
 		$needed_row .= "<td {$background}><strong>" . $shifts_count . "</strong></td>";
-		// $needed_row .= "<td {$background}><strong>{$job['instances']}</strong></td>";
-		if (userIsAdmin() && $include_details) $needed_row .= "<td {$background}></td><td {$background}></td>";
 	}
 	$needed_row .= "</tr>";
 
 	// Render a row showing total signups for each job
-	$background = ($include_details ? ' style="background:lightgreen;" ' : ' style="background:white;" ');
+	$background = ' style="background:white;" ';
 	$totals_row = "<tr>
 		<td {$background}><strong>signups so far</strong></td>";
 	foreach($jobs as $index=>$job) {
 		$totals_row .= "<td {$background}><strong>{$job['signups']}</strong></td>";
-		if (userIsAdmin() && $include_details) $totals_row .= "<td {$background}></td><td {$background}></td>";
 	}
 	$totals_row .= "</tr>";
 	
@@ -825,36 +866,49 @@ function renderJobSignups($headline=NULL, $include_details) {
 	$shortfall_row = "<tr>
 		<td {$background}><strong>signups still needed</strong></td>";
 	foreach($jobs as $index=>$job) {
-		// $shortfall = $job['instances'] - $job['signups'];
 		$shifts_count = $meals_in_season * $job['workers_per_shift'];
 		$shortfall = $shifts_count - $job['signups'];
 		if ($shortfall == 0) $shortfall = '';
 		$shortfall_row .= "<td {$background}><strong>{$shortfall}</strong></td>";
-		if (userIsAdmin() && $include_details) $shortfall_row .= "<td {$background}></td><td {$background}></td>";
 	}
 	$shortfall_row .= "</tr>";
 
-	$out = <<<EOHTML
-	<h2>{$headline}</h2>
-	<table><tr><td style="background:Yellow">
-		<table border="1" cellspacing="3">
-			<tr>
-				{$job_names_header}
-				{$data_types_header}
-				{$needed_row}
-				{$totals_row}
-				{$shortfall_row}
-				{$signup_rows} 
-			</tr>
-		</table>
-	</td></tr></table>
-	{$responders_count} people have responded.
-EOHTML;
-	if (0) deb ("report.renderJobSignups(): out =", $out);
+	$out = 
+		$section_title . '	
+		<div>
+			<table><tr><td style="background:Yellow">
+				<table border="1" cellspacing="3">
+					<tr>' .
+						$job_names_header .
+						$needed_row .
+						$totals_row .
+						$shortfall_row . '
+					</tr>
+				</table>
+			</td></tr></table> ' .
+			$responders_count . ' people have responded.
+		</div>'
+	;
+	if (0) deb ("index.renderScoreboard(): out =", $out);
 	return $out;
 }
 
-// SQL FUNCTIONS
+
+// Get descriptions of all jobs for the specified season from the database.
+// This function coexists uneasily with the "defines" in constants.inc, which also specify the job ids as global constants.
+function getJobsFromDB($season_id) {
+	$jobs_table = SURVEY_JOB_TABLE;
+	$select = "*";
+	$from = $jobs_table;
+	$where = "season_id = " . $season_id;
+	$order_by = "display_order";
+	$out = sqlSelect($select, $from, $where, $order_by);
+	if (0) debt("utils.getJobsFromDB: jobs", $out);
+	return $out;
+}
+
+
+///////////////////////////// SQL FUNCTIONS
 
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where=NULL, $order_by=NULL, $debs=0, $tag="") {

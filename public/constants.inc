@@ -54,6 +54,12 @@ define('PAGES_TABLE', 'pages');
 define('CRUMBS_TABLE', 'crumbs');
 define('SESSIONS_TABLE', 'sessions');
 
+// liaison tables
+define('SEASON_LIAISONS_TABLE', 'season_liaisons');
+define('LIAISONS_OF_WORKERS_TABLE', 'liaisons_of_workers');
+define('LIAISON_REPORTS_TABLE', 'liaison_reports');
+
+
 
 // -------- admin process ids ---------
 define('SET_UP_SEASON_ID', 1);

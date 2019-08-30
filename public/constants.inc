@@ -56,7 +56,7 @@ define('SESSIONS_TABLE', 'sessions');
 
 // liaison tables
 define('SEASON_LIAISONS_TABLE', 'season_liaisons');
-define('LIAISONS_OF_WORKERS_TABLE', 'liaisons_of_workers');
+{ define('LIAISONS_OF_WORKERS_TABLE', 'liaisons_of_workers'); }
 define('LIAISON_REPORTS_TABLE', 'liaison_reports');
 define('LIAISON_ACTIONS_LOV', 'liaison_actions_lov');
 

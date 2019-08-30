@@ -56,7 +56,28 @@ print
 //////////////// DATABASE FUNCTIONS
 
 function saveLiaisonData($post) {
-	if (1) deb("report.saveLiaisonData(): post = ", $post);
+	if (0) deb("report.saveLiaisonData(): post = ", $post);
+
+	$season_liaisons = $post['liaisons'];
+	if ($season_liaisons) {
+		foreach($season_liaisons as $season_liaison) {
+			$season_worker_id = explode(".", $season_liaison)[0];
+			$liaison_id = explode(".", $season_liaison)[1];
+			if (!$liaison_id) $liaison_id = "NULL";
+			sqlUpdate(SEASON_WORKERS_TABLE, "liaison_id = " . $liaison_id, "season_id = " . SEASON_ID . " AND id = " . $season_worker_id, (0));
+		}	
+	}
+
+	$liaison_actions = $post['liaison_actions'];	
+	if ($liaison_actions) {
+		foreach($liaison_actions as $liaison_action) {
+			$season_worker_id = explode(".", $liaison_action)[0];
+			$liaison_action = explode(".", $liaison_action)[1];
+			// if ($liaison_action) $liaison_action = "'" . $liaison_action . "'"; else $liaison_action = "NULL";
+			if (!$liaison_action) $liaison_action = "";
+			sqlUpdate(SEASON_WORKERS_TABLE, "liaison_action = '" . $liaison_action . "'"	, " season_id = " . SEASON_ID . " AND id = " . $season_worker_id, (1));
+		}
+	}	
 }
 
 
@@ -80,7 +101,7 @@ function renderOffersCalendar($calendar) {
 function renderNonResponders() {
 	// $non_responders = getNonResponders();
 	$select = "first_name || ' ' || last_name as name";
-	$from = SEASON_WORKER_TABLE . " as sw, " . AUTH_USER_TABLE . " as w";
+	$from = SEASON_WORKERS_TABLE . " as sw, " . AUTH_USER_TABLE . " as w";
 	$where = "sw.worker_id = w.id and season_id = " . SEASON_ID . " and sw.first_response_timestamp is null";
 	// $where = "sw.worker_id = w.id and season_id = " . SEASON_ID . " and (sw.first_response_timestamp is null or sw.first_response_timestamp = '')";
 	$order_by = "first_name, last_name";
@@ -182,14 +203,16 @@ function renderOtherPreferences() {
 }
 
 
-function renderJobSignups($section_title=NULL, $include_details) {
+function renderJobSignups($section_title=NULL, $include_details=true) {
+	$include_details = false;  // TEMPORARY
 	$jobs = getJobs();
 	if (0) deb("report.renderJobSignups(): renderJobSignups(): getJobs():", $jobs);
 
 	$person_table = AUTH_USER_TABLE;
 	$offers_table = OFFERS_TABLE;
 	$jobs_table = SURVEY_JOB_TABLE;
-	$season_worker_table = SEASON_WORKER_TABLE;
+	$season_workers_table = SEASON_WORKERS_TABLE;
+	$season_liaisons_table = SEASON_LIAISONS_TABLE;
 	$season_id = SEASON_ID;
 	$select = "p.id as person_id, 
 		p.first_name, 
@@ -200,11 +223,12 @@ function renderJobSignups($section_title=NULL, $include_details) {
 		j.season_id as season_id,
 		sw.id as season_worker_id,
 		sw.last_response_timestamp,
-		sw.liaison_action
+		sw.liaison_action,
+		sw.liaison_id
 		";
 	$from = "{$person_table} as p, 
 		{$jobs_table} as j,
-		{$season_worker_table} as sw
+		{$season_workers_table} as sw
 		LEFT JOIN {$offers_table} as o
 			ON p.id = o.worker_id AND j.id = o.job_id AND j.season_id = o.season_id
 		";
@@ -220,28 +244,35 @@ function renderJobSignups($section_title=NULL, $include_details) {
 	
 	foreach($signups as $index=>$signup) {
 		$select = "*";
-		$from = LIAISONS_OF_WORKERS_TABLE;
-		$where = "season_worker_id = " . seasonWorkerId($signup['person_id'], SEASON_ID);
+		$from = AUTH_USER_TABLE;
+		$where = "id = " . $signup['liaison_id'];
 		$liaison = sqlSelect($select, $from, $where, "", (0))[0];
 		
-		// Add elements to the $signups array for the liaison
-		$signups[$index]['liaison_of_worker_id'] = $liaison['id'];
-		$signups[$index]['season_liaison_id'] = $liaison['season_liaison_id'];
+		// Add liaison_name element to the signups array for the liaison
 		$signups[$index]['liaison_name'] = ($liaison ? $liaison['liaison_first_name'] . " " . $liaison['liaison_last_name'] : "");
 		if (0) deb ("report.renderJobSignups(): signup =", $signup);
 	}
 	if (0) deb ("report.renderJobSignups(): signups =", $signups);
 	
 	// Get the available liaisons for this season
-	$select = "l.id as l_id,
-		sl.id as sl_id,
-		l.first_name || ' ' || l.last_name as l_name";
-	$from = SEASON_LIAISONS_TABLE . " as sl, " .
+	$select = 
+		"l.id as id,
+		l.first_name || ' ' || l.last_name as name";
+	$from = 
+		SEASON_LIAISONS_TABLE . " as sl, " .
 		AUTH_USER_TABLE . " as l";
-	$where = "sl.season_id = " . SEASON_ID . 
+	$where = 
+		"sl.season_id = " . SEASON_ID . 
 		" AND l.id = sl.worker_id";
 	$order_by = "l.first_name, l.last_name";
 	$season_liaisons = sqlSelect($select, $from, $where, $order_by, (0));
+
+	// Get the available liaison actions for this season
+	$select = "action, display_order";
+	$from = LIAISON_ACTIONS_LOV;
+	$where = "active = 1";
+	$order_by = "display_order";
+	$liaison_actions = sqlSelect($select, $from, $where, $order_by, (0));
 
 	// Make header rows for the table
 	$job_names_header = '<tr style="text-align:center;"><th rowspan="2"></th>';
@@ -258,17 +289,18 @@ function renderJobSignups($section_title=NULL, $include_details) {
 	}
 	$job_names_header .= '
 		<th style="text-align:center; background:white;" colspan="3">
-			<input type="button" value="Edit Liaison Info" onclick="toggleMode(\'edit\')"> 
+			<input type="button" name="view_control" value="Edit Liaison Info" onclick="toggleMode(\'edit\')">  
 			<input type="submit" name="edit_control" value="Save Changes" onclick="toggleMode(\'view\')" style="display:none"> 
 			<input type="reset" name="edit_control" value="Cancel Changes" onclick="toggleMode(\'view\')" style="display:none">
 		</th>';
 	$data_types_header .= '<th style="text-align:center;">liaison</th>';
-	$data_types_header .= '<th style="text-align:center;">liaison action</th>';
+	$data_types_header .= '<th style="text-align:center;">right action</th>';
 	$data_types_header .= '<th style="text-align:center;">liaison reports</th>'; 
 
 	$job_names_header .= "</tr>";
 	$data_types_header .= "</tr>";
-	// if ($include_details==FALSE) $data_types_header = NULL;
+	$header = $job_names_header . $data_types_header;
+
 	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header); 
 	
 	// Render data rows
@@ -277,6 +309,8 @@ function renderJobSignups($section_title=NULL, $include_details) {
 	$signup_rows = '';
 	$n_jobs = sqlSelect("count(*) as n_jobs", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "", (0))[0]['n_jobs'];
 	$job_n = 1;
+	$header_interval = 24;
+	$row_n = 1;
 	foreach($signups as $signup) {
 		if (0) deb ("report.renderJobSignups(): signup['job_id']) = {$signup['job_id']}");
 		if (0) deb ("report.renderJobSignups(): signup) =", $signup);
@@ -284,6 +318,15 @@ function renderJobSignups($section_title=NULL, $include_details) {
 		
 		// If this is a new person, start a new row
 		if ($signup['person_id'] != $prev_person_id) {
+			
+			// Render another header every header_interval rows
+			if ($row_n == $header_interval) {
+				$signup_rows .= $header;
+				$row_n = 1;
+			} else {
+				$row_n++;
+			}
+			
 			if ($prev_person_id != "") $signup_rows .= "</tr>";
 			$signup_rows .= '<tr>';
 
@@ -325,39 +368,56 @@ function renderJobSignups($section_title=NULL, $include_details) {
 				<td {$available_background}>{$available_count}</td>";
 		}		
 
-		// If all jobs have been rendered, render the remaining columns
+		// If all jobs have been rendered, render the remaining columns (including edit controls)
 		if ($job_n == $n_jobs) {		
 			
-			// $view_or_edit = "view";
-			// $signup_rows .= '<input type="hidden" id="view_or_edit" value="' . $view_or_edit . '">;
-
-			// Render the liaison's name
+			// Render the liaison
 			$signup_rows .= '<td>';
-			$signup_rows .= $signup['liaison_name'];
+			$current_liaison = sqlSelect("id, first_name || ' ' || last_name as name", AUTH_USER_TABLE, "id = " . $signup['liaison_id'], "", (0))[0];			
+			$signup_rows .= $current_liaison['name'];
 			$signup_rows .= '<span name="edit_control"  style="display:none">';
 			if (userIsAdmin()) {
-				if ($signup['liaison_name']) $signup_rows .= '<br>';
-				$signup_rows .= '<select style="font-size:9pt;" name="sw_sl[]">';
-				$current_sl_id = $signup['season_liaison_id'];
-				$none_selected = (!$current_sl_id) ? ' selected ' : '';
-				$signup_rows .= '<option value="" ' . $none_selected . '></option>';
+				if (0) deb ("report.renderJobSignups(): signup['season_worker_id'] =" . $signup['season_worker_id']);
+				if ($current_liaison) $signup_rows .= '<br>';
+				$signup_rows .= '<select style="font-size:9pt;" name="liaisons[]">';
+				$none_selected = (!$current_liaison) ? ' selected ' : '';
+				$signup_rows .= '<option value="' . $signup['season_worker_id'] . '.' . '" ' . $none_selected . '></option>';
 				foreach($season_liaisons as $season_liaison) {
-					$this_selected = ($current_sl_id == $season_liaison['sl_id']) ? ' selected ' : '';
-					$signup_rows .= '<option value="' . $signup['season_worker_id'] . '.' . $season_liaison['sl_id'] . '" ' . $this_selected . '>' . $season_liaison['l_name'] . '</option>';
+					$liaison = sqlSelect("first_name || ' ' || last_name as name", AUTH_USER_TABLE, "id = " . $season_liaison['id'], "", (0))[0];			
+					if (0) deb ("report.renderJobSignups(): liaison['name'] =" . $liaison['name']);
+					$this_selected = ($current_liaison['id'] == $season_liaison['id']) ? ' selected ' : '';
+					$signup_rows .= '<option value="' . $signup['season_worker_id'] . '.' . $season_liaison['id'] . '" ' . $this_selected . '>' . $liaison['name'] . '</option>';
 				}  
 				$signup_rows .= '</select>';
-			$signup_rows .= '</span>';
-
-				
+				$signup_rows .= '</span>';	
 			}
 			$signup_rows .= '</td>';
 
 			
 			// Render the liaison action
-			$signup_rows .= '<td>' . $signup['liaison_action'] . '</td>';
+			$signup_rows .= '<td>';
+			// $current_action = sqlSelect("action", SEASON_WORKERS_TABLE, "id = " . $signup['sw_id'], "", (0))[0];			
+			$current_action = $signup['liaison_action'];			
+			$signup_rows .= $current_action;
+			$signup_rows .= '<span name="edit_control"  style="display:none">';
+			if (userIsAdmin()) {
+				if (0) deb ("report.renderJobSignups(): signup['season_worker_id'] =" . $signup['season_worker_id']);
+				if ($current_action) $signup_rows .= '<br>';
+				$signup_rows .= '<select style="font-size:9pt;" name="liaison_actions[]">';
+				$none_selected = (!$current_action) ? ' selected ' : '';
+				$signup_rows .= '<option value="' . $signup['season_worker_id'] . '.' . '" ' . $none_selected . '></option>';
+				foreach($liaison_actions as $liaison_action) {
+					if (0) deb ("report.renderJobSignups(): liaison_action['name'] =" . $liaison_action['name']);
+					$this_selected = ($current_action == $liaison_action['action']) ? ' selected ' : '';
+					$signup_rows .= '<option value="' . $signup['season_worker_id'] . '.' . $liaison_action['action'] . '" ' . $this_selected . '>' . $liaison_action['action'] . '</option>';
+				}  
+				$signup_rows .= '</select>';
+				$signup_rows .= '</span>';	
+			}
+			$signup_rows .= '</td>';
 			
-			// Render the liaison contacts
-			$reports = sqlSelect("*", LIAISON_REPORTS_TABLE, "liaison_of_worker_id = " . $signup['liaison_of_worker_id'], "timestamp asc", (0));
+			// Render the liaison reports
+			$reports = sqlSelect("*", LIAISON_REPORTS_TABLE, "season_worker_id = " . $signup['season_worker_id'], "timestamp asc", (0));
 			if ($reports) { 
 				$report_table = '<table>';
 				$report_rows = '';
@@ -389,11 +449,7 @@ function renderJobSignups($section_title=NULL, $include_details) {
 		<table><tr><td style="background:Yellow">
 			<table border="1" cellspacing="3">
 				<tr>' .
-					$job_names_header .
-					$data_types_header .
-					$needed_row .
-					$totals_row .
-					$shortfall_row .
+					$header .
 					$signup_rows . ' 
 				</tr>
 			</table>

@@ -650,7 +650,7 @@ function exportSurveyAnnouncementCSV($season, $filename) {
 		}
 		$fputcsv_header[] = $column['colname'];
 	} 	
-	$from = AUTH_USER_TABLE . " as w, " . SEASONS_TABLE . " as s, " . SEASON_WORKER_TABLE . " as sw";
+	$from = AUTH_USER_TABLE . " as w, " . SEASONS_TABLE . " as s, " . SEASON_WORKERS_TABLE . " as sw";
 	$where = "w.id = sw.worker_id and sw.season_id = s.id and s.id = " . $season['id'];
 	$order_by = "cast(unit as integer), first_name, last_name";
 	$workers = sqlSelect($select, $from, $where, $order_by, (0), "season_utils.exportSurveyAnnouncementCSV()");
@@ -706,7 +706,7 @@ function getJobSignups() {
 
 
 function seasonWorkerId($worker_id, $season_id) {
-	return sqlSelect("*", SEASON_WORKER_TABLE, "worker_id = " . $worker_id . " and season_id = " . $season_id, "", (0))[0]['id'];
+	return sqlSelect("*", SEASON_WORKERS_TABLE, "worker_id = " . $worker_id . " and season_id = " . $season_id, "", (0))[0]['id'];
 }
 
 
@@ -752,8 +752,8 @@ function getResponders() {
 	// $responder_ids = array();
 	// $signups_table = OFFERS_TABLE;
 	$season_id = SEASON_ID;
-	$season_worker_table = SEASON_WORKER_TABLE;
-	$responders = sqlSelect("worker_id as id", SEASON_WORKER_TABLE, "season_id = {$season_id} and first_response_timestamp is not null", "", (0));
+	$season_workers_table = SEASON_WORKERS_TABLE;
+	$responders = sqlSelect("worker_id as id", SEASON_WORKERS_TABLE, "season_id = {$season_id} and first_response_timestamp is not null", "", (0));
 	foreach($responders as $responder) $responder_ids[] = $responder['id'];
 	if (0) deb("utils.getResponders: responder_ids =", $responder_ids); 
 	return $responder_ids; 
@@ -761,7 +761,7 @@ function getResponders() {
 
 
 function getNonResponders() {
-	$non_responders = sqlSelect("worker_id as id", SEASON_WORKER_TABLE, "season_id = {$season_id} and first_response_timestamp is null", "", (0));
+	$non_responders = sqlSelect("worker_id as id", SEASON_WORKERS_TABLE, "season_id = {$season_id} and first_response_timestamp is null", "", (0));
 	foreach($non_responders as $non_responder) $non_responder_ids[] = $non_responder['id'];
 	if (0) deb("utils.getNonResponders: responder_ids =", $non_responder_ids); 
 	return $non_responder_ids; 

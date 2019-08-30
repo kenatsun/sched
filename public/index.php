@@ -116,7 +116,7 @@ EOHTML;
  */
 function renderPeopleListAsLinks() {
 	$workers_table = AUTH_USER_TABLE;
-	$season_workers_table = SEASON_WORKER_TABLE;
+	$season_workers_table = SEASON_WORKERS_TABLE;
 	$season_id = SEASON_ID;
 	$from = "{$workers_table} as w, {$season_workers_table} as sw";
 	$where = "sw.worker_id = w.id and sw.season_id = {$season_id}";
@@ -133,7 +133,7 @@ function renderPeopleListAsLinks() {
 		if ($worker['first_name'] && $worker['last_name']) $space = " ";
 		$worker['name'] = $worker['first_name'] . $space . $worker['last_name'];
 		$where = "season_id = {$season_id} and worker_id = " . $worker['id'];
-		$responded = sqlSelect("worker_id", SEASON_WORKER_TABLE, $where . " and first_response_timestamp is not null", "", (0))[0];
+		$responded = sqlSelect("worker_id", SEASON_WORKERS_TABLE, $where . " and first_response_timestamp is not null", "", (0))[0];
 		if (0) deb("index.getPeopleAsLinks: responded", $responded); 
 
 		// Count the number of jobs the worker has offered to do		

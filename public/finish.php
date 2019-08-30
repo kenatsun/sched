@@ -20,8 +20,8 @@ function finishSurvey($survey, $person_id) {
 	
 	// Update the timestamps for when the person took the survey
 	$where = "season_id = " . SEASON_ID . " and worker_id = " . $person_id;
-	sqlUpdate(SEASON_WORKER_TABLE, "first_response_timestamp = '" . $response_timestamp . "'", $where . " and first_response_timestamp is null", (0), "finish.finishSurvey(): first_response_timestamp SQL");
-	sqlUpdate(SEASON_WORKER_TABLE, "last_response_timestamp = '" . $response_timestamp . "'", $where, (0), "finish.finishSurvey(): last_response_timestamp SQL");
+	sqlUpdate(SEASON_WORKERS_TABLE, "first_response_timestamp = '" . $response_timestamp . "'", $where . " and first_response_timestamp is null", (0), "finish.finishSurvey(): first_response_timestamp SQL");
+	sqlUpdate(SEASON_WORKERS_TABLE, "last_response_timestamp = '" . $response_timestamp . "'", $where, (0), "finish.finishSurvey(): last_response_timestamp SQL");
 	
 	$prefs_line = ($survey) ? 
 		'<p>The preferences you have expressed (as of ' . $timestamp . ') are shown below.' :

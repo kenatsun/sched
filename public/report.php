@@ -73,9 +73,10 @@ function saveLiaisonData($post) {
 		foreach($liaison_actions as $liaison_action) {
 			$season_worker_id = explode(".", $liaison_action)[0];
 			$liaison_action = explode(".", $liaison_action)[1];
-			// if ($liaison_action) $liaison_action = "'" . $liaison_action . "'"; else $liaison_action = "NULL";
-			if (!$liaison_action) $liaison_action = "";
-			sqlUpdate(SEASON_WORKERS_TABLE, "liaison_action = '" . $liaison_action . "'"	, " season_id = " . SEASON_ID . " AND id = " . $season_worker_id, (1));
+			if ($liaison_action) $liaison_action = "'" . $liaison_action . "'"; else $liaison_action = "NULL";
+			// if (!$liaison_action) $liaison_action = "";
+			// sqlUpdate(SEASON_WORKERS_TABLE, "liaison_action = '" . $liaison_action . "'"	, " season_id = " . SEASON_ID . " AND id = " . $season_worker_id, (1));
+			sqlUpdate(SEASON_WORKERS_TABLE, "liaison_action = " . $liaison_action . ""	, " season_id = " . SEASON_ID . " AND id = " . $season_worker_id, (1));
 		}
 	}	
 }
@@ -240,7 +241,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 		p.last_name, 
 		j.display_order";
 	$signups = sqlSelect($select, $from, $where, $order_by, (0));
-	if (0) deb ("report.renderJobSignups(): signups =", $signups);
+	if (0) deb ("report.renderJobSignups(): signups =", $signups); 
 	
 	foreach($signups as $index=>$signup) {
 		$select = "*";

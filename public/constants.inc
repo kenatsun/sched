@@ -26,7 +26,7 @@ define('REMOVED_ICON', '<img src="/display/images/minusIcon.png" width="18" heig
 define('SURVEY_JOB_TABLE', 'jobs'); 
 define('OFFERS_TABLE', 'offers'); 
 define('SEASONS_TABLE', 'seasons'); 
-define('SEASON_WORKER_TABLE', 'season_workers');  
+define('SEASON_WORKERS_TABLE', 'season_workers');  
 define('AUTH_USER_TABLE', 'workers');  
 
 // tables for survey results
@@ -53,6 +53,12 @@ define('JOB_TYPES_TABLE', 'job_types');
 define('PAGES_TABLE', 'pages');
 define('CRUMBS_TABLE', 'crumbs');
 define('SESSIONS_TABLE', 'sessions');
+
+// liaison tables
+define('SEASON_LIAISONS_TABLE', 'season_liaisons');
+define('LIAISONS_OF_WORKERS_TABLE', 'liaisons_of_workers');
+define('LIAISON_REPORTS_TABLE', 'liaison_reports');
+define('LIAISON_ACTIONS_LOV', 'liaison_actions_lov');
 
 
 // -------- admin process ids ---------

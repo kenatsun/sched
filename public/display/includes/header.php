@@ -32,7 +32,7 @@ $head = '
 	</script>
 	<script>
         var unsaved = false;
-        $(document).on("submit", "form", function () {
+        $(document).on("submit", "form", function () { 
             unsaved = false;
         });
         $(document).on("change", "form", function () {
@@ -47,8 +47,9 @@ $head = '
             }
         }
 		window.onbeforeunload = unloadPage; 
-    </script>
-</head>
+	</script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script></head>
 ';
  
 print $head;

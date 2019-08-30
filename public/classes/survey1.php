@@ -69,7 +69,8 @@ EOHTML;
 		}
 		if (0) deb("survey1.renderOffersList(): CRUMBS_QUERY:", CRUMBS_QUERY);
 		if (0) deb("survey1.renderOffersList(): NEXT_CRUMBS_IDS:", NEXT_CRUMBS_IDS);
-		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", CRUMBS_QUERY); 
+		$headline = renderHeadline("Step 1: Sign Up for Dinner Jobs"); 
+		// $headline = renderHeadline("Step 1: Sign Up for Dinner Jobs", CRUMBS_QUERY); 
 		$send_email = renderSendEmailControl($this->person->name); 
 		return 
 		$headline . '

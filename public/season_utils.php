@@ -181,7 +181,7 @@ function renderWorkerImportForm($season, $parent_process_id) {
 
 function renderWorkerEditForm($season, $parent_process_id) {
 	if (!$season) return;
-	if (!sqlSelect("id", SEASON_WORKER_TABLE, "season_id = {$season['id']}", "", (0), "renderWorkerEditForm(): season_workers")) return;
+	if (!sqlSelect("id", SEASON_WORKERS_TABLE, "season_id = {$season['id']}", "", (0), "renderWorkerEditForm(): season_workers")) return;
 	$form = '';
 	if (0) deb("season.renderWorkerEditForm() season from arg = ", $season);
 	$form .= '<form enctype="multipart/form-data" action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_WORKERS_ID) . '" method="POST" name="edit_workers_form">';
@@ -647,7 +647,7 @@ function updateSeasonWorkers($season_id) {
 
 	if (0) deb("season.updateSeasonWorkers(): season_id = $season_id");
 	$workers_table = AUTH_USER_TABLE;
-	$season_workers_table = SEASON_WORKER_TABLE;
+	$season_workers_table = SEASON_WORKERS_TABLE;
 	
 	// Add to season_workers for this season all workers who are current
 	$from = $workers_table . " as w";

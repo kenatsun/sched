@@ -23,6 +23,9 @@ function renderPageBody($season, $parent_process_id) {
 			case EDIT_SEASON_ID:
 				$body .= renderEditSeasonForm($season, $parent_process_id); 
 				break;
+			case EDIT_LIAISONS_ID:
+				$body .= renderLiaisonEditForm($season, $parent_process_id);
+				break;
 			case EDIT_MEALS_CALENDAR_ID:
 				$body .= renderEditMealsCalendarForm($season, $parent_process_id);
 				break;
@@ -34,7 +37,7 @@ function renderPageBody($season, $parent_process_id) {
 				break;
 			case SET_SURVEY_DATES_ID:
 				$body .= renderSurveySetupForm($season, "season.php", $parent_process_id);
-				break; 
+				break;  
 		}
 	}
 	return $body;
@@ -251,6 +254,89 @@ function renderWorkerTable($season) {
 	$row .= '<td>' . '<input type="text" name=" new_email">' . '</td>';
 	$row .= '</tr>';
 	$table .= $row;
+	$table .= '</table>';
+	return $table;
+}
+
+
+function renderLiaisonEditForm($season, $parent_process_id) {
+	if (!$season) return;
+	if (!sqlSelect("id", SEASON_LIAISONS_TABLE, "season_id = {$season['id']}", "", (0), "renderLiaisonEditForm(): season_liaisons")) return;
+	$form = '';
+	if (0) deb("season.renderLiaisonEditForm() season from arg = ", $season);
+	$form .= '<form enctype="multipart/form-data" action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_WORKERS_ID) . '" method="POST" name="edit_liaisons_form">';
+	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
+	$form .= '<input type="hidden" name="update_liaisons">';
+	$form .= renderLiaisonTable($season);
+  $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
+	$form .= '</form>';
+	return $form;	
+}
+
+function renderLiaisonTable($season) { 
+	$select = "w.*";
+	$from = AUTH_USER_TABLE . " as w, " . SEASON_LIAISONS_TABLE . " as l";
+	$where = "season_id = " . SEASON_ID .
+		" AND l.worker_id = w.id";
+	$order_by = "first_name asc, last_name asc";
+	$liaisons = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): liaisons");
+	$table = '<table style="table-layout:auto; width:1px; vertical-align:middle;" border="1" >';
+	$table .= '<tr><th colspan="50"><i>Liaisons:</i></th></tr>';
+	$table .= '
+		<tr>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Liaison</th>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Delete?</th>
+		</tr>'
+	;
+	foreach($liaisons as $liaison) {
+		// $from_gather = ($liaison['gid']) ? 1 : 0;  // Was the liaison imported from Gather or manually entered into MO?
+		// if ($from_gather) {
+			// $first_name_field = $liaison['first_name'];
+			// $last_name_field = $liaison['last_name'];
+			// $unit_field = '<input type="text" name="' . $liaison['id'] . '_unit" value="' . $liaison['unit'] . '">';
+			// $delete_field = '';
+		// } else {
+			// $first_name_field = '<input type="text" name="' . $liaison['id'] . '_first_name" value="' . $liaison['first_name'] . '">';
+			// $last_name_field = '<input type="text" name="' . $liaison['id'] . '_last_name" value="' . $liaison['last_name'] . '">';
+			// $unit_field = '';
+			// $delete_field = '<input type="checkbox" name="' . $liaison['id'] . '_delete">';
+		// }
+		$row = '<tr>';
+		$row .= '<td>' . $liaison['first_name'] . " " . $liaison['last_name'] . '</td>';
+		// $row .= '<td style="text-align:center">' . $delete_field . '</td> ';
+		$row .= '<td style="text-align:center"><input type="checkbox" name="' . $liaison['id'] . '_delete"></td> ';
+		$row .= '</tr>';
+		$table .= $row;
+	}
+
+	$select = "w.*";
+	$from = AUTH_USER_TABLE . " as w, " . SEASON_WORKERS_TABLE . " as sw";
+	$where = "sw.season_id = " . SEASON_ID . " " .
+		"AND sw.worker_id = w.id " .
+		"AND NOT (w.id IN (SELECT worker_id FROM " . SEASON_LIAISONS_TABLE . " WHERE season_id = " . SEASON_ID . "))";
+	$order_by = "first_name asc, last_name asc";
+	$workers = sqlSelect($select, $from, $where, $order_by, (1), "renderLiaisonTable(): workers");
+	$table .= '<tr><th colspan="50"><i>Add a Liaison:</i></th></tr>';
+	$table .= '
+		<tr>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Name</th>
+		</tr>';
+	$table .= '
+		<tr>
+			<td>' . '
+				<select name="new_name">';
+				// id="new_worker" 
+	foreach($workers as $worker) {
+		$table .= '
+			<option value="' . $worker['id'] . '"> ' .
+				$worker['first_name'] . ' ' . $worker['last_name'] . ' 
+			</option>'
+		;
+	}
+	$table .= '
+			</td>
+		</tr>'
+	;
 	$table .= '</table>';
 	return $table;
 }

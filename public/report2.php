@@ -321,6 +321,11 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 		} else {
 			$job_names_header .= '<th rowspan="2" style="text-align:center;">' . $job['description'] . ' signups</th>';			
 		}
+		// $data_types_header .= '<th style="text-align:center;">signups</th>';
+		// if (userIsAdmin() && $include_details) {
+			// $data_types_header .= '<th style="text-align:center;">assigned</th>';
+			// $data_types_header .= '<th style="text-align:center;">available</th>'; 
+		// }
 	}
 	if (userIsAdmin()) {
 		$job_names_header .= '
@@ -331,7 +336,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 			</th>';
 		$data_types_header .= '<th style="text-align:center;">liaison</th>';
 		$data_types_header .= '<th style="text-align:center;">suggested action</th>';
-		$data_types_header .= '<th style="text-align:center; width:300px;">liaison reports</th>'; 
+		$data_types_header .= '<th style="text-align:center;">liaison reports</th>'; 
 	} else {
 		$job_names_header .= '<th style="text-align:center;" rowspan="2">liaison</th>';
 	}
@@ -479,150 +484,96 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 					<!-- liaison_reports_cell_td -->
 					<td> ';
 				if ($reports) { 
-					// $report_table = '<table> 
-					// <!-- liaison_report_table -->';
+					$report_table = '<table> 
+					<!-- liaison_report_table -->';
 					$report_rows = '';
 					foreach($reports as $report) {
 						$when = date_format(date_create($report['timestamp']), "D n/j ga");
 						
 						// Render the report
-						// if ($report_rows) $report_rows .= '<tr><td><hr></td></tr>';
-						if ($report_rows) $report_rows .= '<hr>';
+						if ($report_rows) $report_rows .= '<tr><td><hr></td></tr>';
 						$report_rows .= '
 							<div name="view_element">';
 						$report_rows .= '
-								<span style="font-style: italic;">' . $when . ':</span> ' . $report['report'];
+								<tr>
+									<td>
+										<span style="font-style: italic;">' . $when . ':</span> ' . $report['report'];
+						// $report_rows .= '
+								// <tr>
+									// <td>
+										// <span style="font-style: italic;">' . $when . ':</span> ' . $report['report'] . '
+									// </td>
+								// </tr>';
 	
 						// Render control to delete this report
+						$report_rows .= '<input type="checkbox" name="delete_report:' . $report['id'] . '" >delete me';
 						$report_rows .= '
+									</td>
+								</tr>						
 							</div>';
 							
 						// Render report update field
 						$report_rows .= '
-							<!-- liaison report update delete div -->
+							<!-- liaison report update delete span -->
 							<div name="edit_element" id="liaison_report_' . $report['id'] . '_span" style="display:none">';
 						$report_rows .= '
-							<input type="checkbox" name="delete_report:' . $report['id'] . '" >delete me';
-						$report_rows .= '
-							<!-- liaison_report_input -->
-							<input 
-								type="textarea"
-								style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
-								name="update_report:' . $report['id']	. '"									
-								value="' . $report['report'] . '"> 
-								<!-- liaison_report_input / -->'
+								<!-- liaison_report_input_tr -->
+								<tr> 
+									<!-- liaison_report_input_td -->
+									<td> 
+										<!-- liaison_report_input -->
+										<input 
+											type="textarea"
+											style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
+											name="update_report:' . $report['id']	. '"									
+											value="' . $report['report'] . '"> 
+											<!-- liaison_report_input / -->
+									</td> 
+									<!-- liaison_report_input_td / -->
+								</tr> 
+								<!-- liaison_report_input_tr / -->'
 						;
 
 						$report_rows .= '
 							</div> 
-							<!-- liaison report update delete div / -->';
+							<!-- liaison report update delete span / -->';
 					} 
 
 					// Render field to add a new report
 					$report_rows .= '
-						<!-- liaison report add div -->
-						<div name="edit_element" id="liaison_report_' . $report['id'] . '_add_span" style="display:none">';
+						<!-- liaison_report_add_span -->
+						<span name="edit_element" id="liaison_report_' . $report['id'] . '_add_span" style="display:none">';
 					$report_rows .= '
-							<!-- liaison_report_add_input -->
-							<input 
-								type="textarea"
-								style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
-								name="create_report:' . $signup['season_worker_id']	. '"									
-								value=""> 
-							<!-- liaison_report_add_input / -->'
-					;
+							<!-- liaison_report_input_add_tr -->
+							<tr> 
+								<!-- liaison_report_input_add_td -->
+								<td> 
+									<!-- liaison_report_add_input -->
+									<input 
+										type="textarea"
+										style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
+										name="create_report:' . $signup['season_worker_id']	. '"									
+										value=""> 
+									<!-- liaison_report_add_input / -->
+								</td> 
+								<!-- liaison_report_input_add_td / -->
+							</tr> 
+							<!-- liaison_report_input_add_tr / -->';
 					$report_rows .= '
-						</div> 
-						<!-- liaison report add div / -->'; 
+						</span> 
+						<!-- liaison_report_add_span / -->'; 
+						
 					
-					// Assign report_rows to signup_rows
-					$signup_rows .= $report_rows;
+					
+					// Assign rows to the table
+					$report_table .= $report_rows;
+					$report_table .= '
+						</table> 
+						<!-- liaison_report_table / -->';
+					
+					// Assign table to rows (could do this w/o a $report_table variable)
+					$signup_rows .= $report_table;
 				}
-				// if ($reports) { 
-					// $report_table = '<table> 
-					// <!-- liaison_report_table -->';
-					// $report_rows = '';
-					// foreach($reports as $report) {
-						// $when = date_format(date_create($report['timestamp']), "D n/j ga");
-						
-						// // Render the report
-						// if ($report_rows) $report_rows .= '<tr><td><hr></td></tr>';
-						// $report_rows .= '
-							// <div name="view_element">';
-						// $report_rows .= '
-								// <tr>
-									// <td>
-										// <span style="font-style: italic;">' . $when . ':</span> ' . $report['report'];
-	
-						// // Render control to delete this report
-						// $report_rows .= '<input type="checkbox" name="delete_report:' . $report['id'] . '" >delete me';
-						// $report_rows .= '
-									// </td>
-								// </tr>						
-							// </div>';
-							
-						// // Render report update field
-						// $report_rows .= '
-							// <!-- liaison report update delete span -->
-							// <div name="edit_element" id="liaison_report_' . $report['id'] . '_span" style="display:none">';
-						// $report_rows .= '
-								// <!-- liaison_report_input_tr -->
-								// <tr> 
-									// <!-- liaison_report_input_td -->
-									// <td> 
-										// <!-- liaison_report_input -->
-										// <input 
-											// type="textarea"
-											// style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
-											// name="update_report:' . $report['id']	. '"									
-											// value="' . $report['report'] . '"> 
-											// <!-- liaison_report_input / -->
-									// </td> 
-									// <!-- liaison_report_input_td / -->
-								// </tr> 
-								// <!-- liaison_report_input_tr / -->'
-						// ;
-
-						// $report_rows .= '
-							// </div> 
-							// <!-- liaison report update delete span / -->';
-					// } 
-
-					// // Render field to add a new report
-					// $report_rows .= '
-						// <!-- liaison_report_add_span -->
-						// <span name="edit_element" id="liaison_report_' . $report['id'] . '_add_span" style="display:none">';
-					// $report_rows .= '
-							// <!-- liaison_report_input_add_tr -->
-							// <tr> 
-								// <!-- liaison_report_input_add_td -->
-								// <td> 
-									// <!-- liaison_report_add_input -->
-									// <input 
-										// type="textarea"
-										// style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
-										// name="create_report:' . $signup['season_worker_id']	. '"									
-										// value=""> 
-									// <!-- liaison_report_add_input / -->
-								// </td> 
-								// <!-- liaison_report_input_add_td / -->
-							// </tr> 
-							// <!-- liaison_report_input_add_tr / -->';
-					// $report_rows .= '
-						// </span> 
-						// <!-- liaison_report_add_span / -->'; 
-						
-					
-					
-					// // Assign rows to the table
-					// $report_table .= $report_rows;
-					// $report_table .= '
-						// </table> 
-						// <!-- liaison_report_table / -->';
-					
-					// // Assign table to rows (could do this w/o a $report_table variable)
-					// $signup_rows .= $report_table;
-				// }
 				$signup_rows .= '</td> 
 				<!-- liaison_reports_cell_td / -->';
 			} 			

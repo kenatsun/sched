@@ -5,13 +5,6 @@ if (0) deb("header.php: start");
 $favicon = getFavicon();
 if (0) deb("header.php: favicon = " . $favicon);
 
-// if (isset($_REQUEST['worker']) || isset($_REQUEST['person'])) {
-	// $survey_scripts = '
-	// <script src="js/utils.js"></script>
-	// <script src="js/survey_library.js"></script>
-	// ';
-// }
-
 $head = '
 <!doctype html> 
 <html lang="en"> 
@@ -48,11 +41,15 @@ $head = '
         }
 		window.onbeforeunload = unloadPage; 
 	</script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script></head>
 ';
  
-print $head;
+print $head; 
+
+//////////////// JUNK
+	// <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	// <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script></head>
+
+
 ?>
 
 

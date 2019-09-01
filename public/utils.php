@@ -546,19 +546,6 @@ function deb($label, $data=NULL) {
 	console_log("*****\n" . $label . $print_data . "\n");
 }
 
-// /* 
-// Print debug data to the web page
-// */
-
-// function deb($label, $data=NULL) {
-	// $print_data = ($data ? "<pre> " . print_r($data, TRUE) . "</pre>" : "<br>");
-	// echo '
-	// <tr>
-		// <td colspan="4"> <br>' . $label . $print_data . '</td>
-	// </tr>
-	// ';
-// }
-
 function console_log($output, $with_script_tags = true) {
 	// From https://stackify.com/how-to-log-to-console-in-php/
   $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . ');';

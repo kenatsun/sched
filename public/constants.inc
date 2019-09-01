@@ -77,5 +77,7 @@ define('ANNOUNCE_SURVEY_ID', 12);
 define('MONITOR_MANAGE_SURVEY_ID', 13);
 define('RUN_SCHEDULER_ID', 15);
 define('REFINE_ASSIGNMENTS_ID', 16);
+define('EDIT_LIAISONS_ID', 17);
+
 
 ?>

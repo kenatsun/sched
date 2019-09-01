@@ -42,6 +42,13 @@ window.onload = function(){
 			// }
 		})
 	})
+
+		// $('#new_liaison').select2({
+			// placeholder: 'Select a new liaison'
+		// })
+		// .on('change', Survey.workerPrefChange);
+	
+	
 }
 
 function setSeasonFullName() {

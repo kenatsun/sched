@@ -7,7 +7,7 @@ if (0) deb("run_scheduler_from_web.php: _GET = ", $_GET);
 if (0) deb("run_scheduler_from_web.php: array_key_exists(previewonly, _GET?: )" . array_key_exists("previewonly", $_GET));
 if (array_key_exists("previewonly", $_GET)) $preview_only = "previewonly=";
 // if (0) deb("run_scheduler_from_web.php: !array_key_exists(previewonly=, _GET?: )" . !array_key_exists("previewonly=", $_GET));
-$page .= renderHeadline('Run the Scheduler', "", 0);
+$page .= renderHeadline('Run the Scheduler', "", 1);
 $page .= renderParametersForm($preview_only);
 if ($_POST) $page .= renderSchedule($_POST); 
 print $page;

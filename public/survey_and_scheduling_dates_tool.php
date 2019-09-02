@@ -19,7 +19,7 @@ if (0) deb("survey_and_scheduling_dates_tool.php: season =", $season);
 
 // Display the page
 $page = "";
-$page .= renderHeadline("Adjust Survey & Scheduling Dates", "", 0); 
+$page .= renderHeadline("Adjust Survey & Scheduling Dates", "", 1); 
 $page .= "<br>";
 $page .= renderSurveySetupForm($season, "survey_and_scheduling_dates_tool.php"); 
 print $page;

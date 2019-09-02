@@ -16,7 +16,9 @@ if ($_POST) saveLiaisonData($_POST);
 
 //////////////// DISPLAY THE PAGE
 
-$headline = renderHeadline("Our Responses So Far");
+$season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
+
+$headline = renderHeadline("Our Responses So Far", "to the {$season_name} survey");
 if (0) deb("report.php: headline = ", $headline);
 
 $scoreboard_body = renderScoreboard("");
@@ -25,7 +27,6 @@ $scoreboard = renderBlockInShowHideWrapper($scoreboard_body, $scoreboard_title, 
 
 $workers = renderJobSignups("Job sign-ups", TRUE);
 
-// $non_responders = (!surveyIsClosed() ? renderNonResponders() : "");
 $non_responders = renderNonResponders(); 
 if (0) deb("report.php: non_responders = ", $non_responders);
 
@@ -87,7 +88,7 @@ function saveLiaisonData($posts) {
 			if (0) deb("report.php: post = ", $post);
 			$report_cud = explode (":" , $key)[0];
 			if ($report_cud == "create_report" && $text) {
-				$columns = "season_worker_id, report, timestamp";
+				$columns = "worker_id, report, timestamp";
 				$values = explode (":" , $key)[1] . ", '" . $text . "', '" . date_format(date_create(), "Y-m-d H:i:s") . "'";
 				sqlInsert(LIAISON_REPORTS_TABLE, $columns, $values, (0));
 			} elseif ($report_cud == "update_report") {
@@ -95,7 +96,6 @@ function saveLiaisonData($posts) {
 				$where = "id = " . explode (":" , $key)[1];
 				sqlUpdate(LIAISON_REPORTS_TABLE, $set, $where, (0));
 			} elseif ($report_cud == "delete_report") {
-				// $where = "id = " . $post;
 				$where = "id = " . explode (":" , $key)[1];
 				sqlDelete(LIAISON_REPORTS_TABLE, $where, (0));
 			}
@@ -474,7 +474,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 					<!-- liaison_actions_cell_td / -->';
 			
 				// Render the liaison reports
-				$reports = sqlSelect("*", LIAISON_REPORTS_TABLE, "season_worker_id = " . $signup['season_worker_id'], "timestamp asc", (0));
+				$reports = sqlSelect("*", LIAISON_REPORTS_TABLE, "worker_id = " . $signup['person_id'], "timestamp asc", (0));
 				$signup_rows .= '
 					<!-- liaison_reports_cell_td -->
 					<td> ';
@@ -527,7 +527,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 							<input 
 								type="textarea"
 								style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
-								name="create_report:' . $signup['season_worker_id']	. '"									
+								name="create_report:' . $signup['person_id']	. '"									
 								value=""> 
 							<!-- liaison_report_add_input / -->'
 					;

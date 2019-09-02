@@ -7,11 +7,9 @@ window.onload = function(){
 		modifyInputFieldsOfForm(this_form, "", "hide");
 	})
 
-	// alert ("season.js: point 2");
-
 	// When an input value is changed, enable all inputs and buttons in its form, 
 	// and disable all inputs and buttons in other forms in the document
-	document.querySelectorAll("INPUT").forEach(function(this_input){
+	document.querySelectorAll("INPUT,SELECT").forEach(function(this_input){
 		this_input.addEventListener("input", function(){
 			// var my_form;
 			// alert("Input " + this_input.name + " just got poked ");

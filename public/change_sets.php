@@ -13,7 +13,7 @@ purgeUnsavedChangeSets();
 
 if (0) deb("change_sets.php: PREVIOUS_CRUMBS_IDS = " . PREVIOUS_CRUMBS_IDS); 
 
-$headline = renderHeadline("Undo Changes?", "Latest changes shown first; undoing a change undoes all later changes too.", 0); 
+$headline = renderHeadline("Undo Changes?", "Latest changes shown first; undoing a change undoes all later changes too.", 1); 
 $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $scheduler_run_id . " and published = 0", "when_saved desc", (0));
 
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 

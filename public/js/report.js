@@ -1,21 +1,24 @@
 function toggleMode(mode) {
-	if (0) console.log("toggleMode(): mode= " + mode);
-	const edit_controls = document.getElementsByName("edit_control");
-	edit_controls.forEach(control => {
+	if (0) console.log("toggleMode(): mode = " + mode);
+	const edit_elements = document.getElementsByName("edit_element");
+	edit_elements.forEach(element => {
+		if (0) console.log("toggleMode(): " + mode + " element id = " + element.id);		
 		if (mode == "edit") {
-				control.style.display = 'inline';
+				element.style.display = 'inline';
 		}
 		else {
-				control.style.display = 'none';
+				element.style.display = 'none';
 		}	
+		if (0) console.log("toggleMode(): " + mode + " " + element.type + " id '" + element.id + "' set to " + element.style.display);
 	});
-	const view_controls = document.getElementsByName("view_control");
-	view_controls.forEach(control => {
+	const view_elements = document.getElementsByName("view_element");
+	view_elements.forEach(element => {
 		if (mode == "view") {
-				control.style.display = 'inline';
+				element.style.display = 'inline';
 		}
 		else {
-				control.style.display = 'none';
+				element.style.display = 'none';
 		}	
+		if (0) console.log("toggleMode(): " + mode + " " + element.type + " id '" + element.id + "' set to " + element.style.display);
 	});
 }

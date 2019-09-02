@@ -25,13 +25,14 @@ if (array_key_exists('season_status', $_POST) || array_key_exists('survey_setup'
 if (array_key_exists('edit_meals', $_POST)) saveChangesToMealsCalendar($_POST, $season_id);
 if (array_key_exists('import_workers', $_POST)) importWorkersFromGather($_FILES, $season_id); 
 if (array_key_exists('update_workers', $_POST)) saveChangesToWorkers($_POST, $season_id);
+if (array_key_exists('update_liaisons', $_POST)) updateSeasonLiaisons($_POST, $season_id);
 
 // Get the season (if any) to display
 $season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.php: season")[0];
 
 // Display the page
 $page = "";
-$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", "", 0); 
+$page .= renderHeadline("Set Up " . (($season) ? "the " . $season['name'] : "a New") . " Season", "", 1); 
 $page .= renderPageBody($season, $parent_process_id);
 print $page;
 

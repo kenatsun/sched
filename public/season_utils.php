@@ -32,9 +32,12 @@ function renderPageBody($season, $parent_process_id) {
 			case EDIT_WORKERS_ID:
 				$body .= renderWorkerEditForm($season, $parent_process_id);
 				break;
+			case EDIT_LIAISONS_ID:
+				$body .= renderLiaisonEditForm($season, $parent_process_id);
+				break;
 			case SET_SURVEY_DATES_ID:
 				$body .= renderSurveySetupForm($season, "season.php", $parent_process_id);
-				break; 
+				break;  
 		}
 	}
 	return $body;
@@ -256,6 +259,73 @@ function renderWorkerTable($season) {
 }
 
 
+function renderLiaisonEditForm($season, $parent_process_id) {
+	if (!$season) return;
+	if (!sqlSelect("id", SEASON_LIAISONS_TABLE, "season_id = {$season['id']}", "", (0), "renderLiaisonEditForm(): season_liaisons")) return;
+	$form = '';
+	if (0) deb("season.renderLiaisonEditForm() season from arg = ", $season);
+	$form .= '<form enctype="multipart/form-data" action="' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_WORKERS_ID) . '" method="POST" name="edit_liaisons_form">';
+	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
+	$form .= '<input type="hidden" name="update_liaisons">';
+	$form .= renderLiaisonTable($season);
+  $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
+	$form .= '</form>';
+	return $form;	
+}
+
+function renderLiaisonTable($season) { 
+	$select = "w.*";
+	$from = AUTH_USER_TABLE . " as w, " . SEASON_LIAISONS_TABLE . " as l";
+	$where = "season_id = " . SEASON_ID .
+		" AND l.worker_id = w.id";
+	$order_by = "first_name asc, last_name asc";
+	$liaisons = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): liaisons");
+	$table = '<table style="table-layout:auto; width:1px; vertical-align:middle;" border="1" >';
+	$table .= '<tr><th colspan="50"><i>Liaisons:</i></th></tr>';
+	$table .= '
+		<tr>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Name</th>
+			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Delete?</th>
+		</tr>'
+	;
+	foreach($liaisons as $liaison) {
+		$row = '<tr>';
+		$row .= '<td>' . $liaison['first_name'] . " " . $liaison['last_name'] . '</td>';
+		$row .= '<td style="text-align:center"><input type="checkbox" name="delete_liaisons[]" value="' . $liaison['id'] . '"></td> ';
+		$row .= '</tr>';
+		$table .= $row;
+	}
+
+	$select = "w.*";
+	$from = AUTH_USER_TABLE . " as w, " . SEASON_WORKERS_TABLE . " as sw";
+	$where = "sw.season_id = " . SEASON_ID . " " .
+		"AND sw.worker_id = w.id " .
+		"AND NOT (w.id IN (SELECT worker_id FROM " . SEASON_LIAISONS_TABLE . " WHERE season_id = " . SEASON_ID . "))";
+	$order_by = "first_name asc, last_name asc";
+	$workers = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): workers");
+	$table .= '<tr><th colspan="50"><i>Add a Liaison:</i></th></tr>';
+	$table .= '
+		<tr>
+			<td>' . '
+				<select name="add_liaison">
+					<option value=""> '
+	;
+	foreach($workers as $worker) {
+		$table .= '
+			<option value="' . $worker['id'] . '"> ' .
+				$worker['first_name'] . ' ' . $worker['last_name'] . ' 
+			</option>'
+		;
+	}
+	$table .= '
+			</td>
+		</tr>'
+	;
+	$table .= '</table>';
+	return $table;
+}
+
+
 function renderSurveySetupForm($season, $next, $parent_process_id=null) {
 	if (!$season) return;
 
@@ -370,7 +440,8 @@ function saveChangesToSeason($post) {
 	if ($post['season_status'] == 'new' && !$required_fields_missing) {
 		if (0) deb("season.saveChangesToSeason(): columns =", $columns);
 		if (0) deb("season.saveChangesToSeason(): values =", $values);
-		sqlInsert(SEASONS_TABLE, $columns, $values, (0), "seasons.saveChangesToSeason()");
+		$new_id = sqlSelect("max(id) as max_id", SEASONS_TABLE, "", "", (0))[0]['max_id'] + 1;
+		sqlInsert(SEASONS_TABLE, "id, " . $columns, $new_id . ", " . $values, (0), "seasons.saveChangesToSeason()");
 		$season_id = sqlSelect("max(id) as id", SEASONS_TABLE, "", "")[0]['id'];
 		sqlUpdate(SESSIONS_TABLE, "season_id = " . $season_id, "session_id = '" . SESSION_ID . "'");
 		// setSeason($season_id);
@@ -384,6 +455,9 @@ function saveChangesToSeason($post) {
 		
 		// Generate the meals and shifts for this new season
 		generateMealsForSeason($season_id);
+		
+		// Generate the liaisons for this new season (can't do till after workers are imported)
+		// generateLiaisonsForSeason($season_id);
 		
 		// Record the number of shifts this season for each job
 		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
@@ -586,6 +660,7 @@ function importWorkersFromGather($files, $season_id) {
 	}
 	
 	updateSeasonWorkers($season_id);
+	generateLiaisonsForSeason($season_id);
 	
 	// Drop workers_temp table
 	$sql = "drop table if exists " . $workers_temp_table;
@@ -677,6 +752,63 @@ function updateSeasonWorkers($season_id) {
 			$where = "worker_id = {$not_season_worker['worker_id']} and season_id = {$season_id}";
 			sqlDelete($season_workers_table, $where, (0), "importWorkersFromGather(): deleting workers from season_workers", TRUE);
 		}
+	}
+}
+
+
+function generateLiaisonsForSeason($season_id) {
+	// Get id of the previous season
+	$last_season_id = sqlSelect("id", SEASONS_TABLE, "NOT id = " . $season_id, "start_date desc", (0))[0]['id'];
+
+	// Get the liaisons from the previous season
+	$liaisons = sqlSelect("*", SEASON_LIAISONS_TABLE, "season_id = " . $last_season_id, "", (0));
+	// Clean out any pre-existing liaisons for this season (there shouldn't be any)
+	sqlDelete(SEASON_LIAISONS_TABLE, "season_id = " . $season_id);
+	// Create last season's liaisons as this season's starter set
+	foreach ($liaisons as $liaison) {
+		sqlInsert(SEASON_LIAISONS_TABLE, "season_id, worker_id", $season_id . ", " . $liaison['worker_id'], (0), "", true);	
+	}
+	
+	// Get the worker liaisons from the previous season
+	$season_workers = sqlSelect("*", SEASON_WORKERS_TABLE, "season_id = " . $last_season_id, "", (0));
+	// Null out any pre-existing worker liaisons for this season (there shouldn't be any)
+	sqlUpdate(SEASON_WORKERS_TABLE, "liaison_id = NULL", "season_id = " . $season_id, (0), "", true);	
+	// Create last season's liaisons as this season's starter set
+	if ($season_workers) {
+		foreach ($season_workers as $season_worker) {
+			$liaison_id = ($season_worker['liaison_id']) ? $season_worker['liaison_id'] : "NULL";
+			$set = "liaison_id = " . $liaison_id . ", liaison_action = '" . $season_worker['liaison_action'] . "'";
+			$where = "season_id = " . $season_id . " AND worker_id = " . $season_worker['worker_id'];
+			sqlUpdate(SEASON_WORKERS_TABLE, $set, $where, (0), "", true);	
+		}
+	}
+}
+
+function updateSeasonLiaisons($post, $season_id) {
+	// Insert into and delete from season_liaisons table.
+
+	if (0) deb("season.updateSeasonLiaisons(): post = ", $post);
+	// $workers_table = AUTH_USER_TABLE;
+	$season_liaisons_table = SEASON_LIAISONS_TABLE;
+	 
+	// Delete season liaisons in the delete_liaisons POST array
+	$liaisons_to_delete = $post['delete_liaisons'];
+	if (0) deb("season.updateSeasonLiaisons(): liaisons_to_delete = ", $liaisons_to_delete);
+	if ($liaisons_to_delete) {
+		foreach($liaisons_to_delete as $liaison) {
+			$where = "season_id = " . $season_id . " 
+				AND worker_id = " . $liaison;
+			sqlDelete(SEASON_LIAISONS_TABLE, $where, (0), "", true);
+		}	
+	}
+
+	// Add season liaisons in the add_liaisons POST array
+	$liaison_to_add = $post['add_liaison'];
+	if (0) deb("season.updateSeasonLiaisons(): liaison_to_add = ", $liaison_to_add);
+	if ($liaison_to_add) {
+		$columns = "season_id, worker_id";
+		$values = $season_id . ", " . $liaison_to_add;
+		sqlInsert(SEASON_LIAISONS_TABLE, $columns, $values, (0), "", true);
 	}
 }
 

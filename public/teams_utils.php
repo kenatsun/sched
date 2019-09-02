@@ -37,7 +37,7 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	if (0) deb("teams_utils.phpdisplaySchedule(): edition = " . $edition);
 	$crumbs = $edition ? "" : CRUMBS_QUERY;  // Omit breadcrumbs from printable editions
 	if (0) deb("teams_utils.phpdisplaySchedule(): crumbs = " . $crumbs);
-	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $subhead, 0);
+	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $subhead, 1);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
 

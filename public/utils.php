@@ -39,7 +39,7 @@ function scheduler_run() {
 // ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
 
 function changeUserStatus() {
-	if (1) deb("utils.changeUserStatus: _REQUEST = ", $_REQUEST);
+	if (0) deb("utils.changeUserStatus: _REQUEST = ", $_REQUEST);
 	if (0) deb("utils.changeUserStatus: _REQUEST['sign_in_as'] = ", $_REQUEST['sign_in_as']);
 	// If request is to change status to admin
 	if ($_REQUEST['sign_in_as'] === "admin") { 
@@ -60,11 +60,11 @@ function changeUserStatus() {
 		$_SESSION['admin_name'] = "";
 	}
 	if (0) deb("utils.changeUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
-	if (1) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);
+	if (0) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);
 }
 
 function promptForAdminCredentials() {
-	if (1) deb("utils.promptForAdminCredentials: _SESSION = ", $_SESSION);
+	if (0) deb("utils.promptForAdminCredentials: _SESSION = ", $_SESSION);
 	$_SESSION['access_type'] = 'guest';
 	$from = AUTH_USER_TABLE . " as l, " . SEASON_LIAISONS_TABLE . " as sl"; 
 	$where = "sl.season_id = " . SEASON_ID . " AND l.id = sl.worker_id";

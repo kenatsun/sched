@@ -10,7 +10,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
 	$new_status .= userIsAdmin() ? "guest" : "admin";
-	if (1) deb ("headline.renderHeadline(): REQUEST_QUERY_STRING = " . REQUEST_QUERY_STRING);
+	if (0) deb ("headline.renderHeadline(): REQUEST_QUERY_STRING = " . REQUEST_QUERY_STRING);
 	$community_logo_form = '
 		<form name="community_logo_form" id="community_logo_form" action="' . makeURI(SCRIPT_URL, "", REQUEST_QUERY_STRING) . '" method="post">
 			<input type="image" name="submit" src="' . $community_logo . '" alt="Sunward icon" >

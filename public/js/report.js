@@ -9,7 +9,7 @@ function toggleMode(mode) {
 		else {
 				element.style.display = 'none';
 		}	
-		if (1) console.log("toggleMode(): " + mode + " " + element.type + " id '" + element.id + "' set to " + element.style.display);
+		if (0) console.log("toggleMode(): " + mode + " " + element.type + " id '" + element.id + "' set to " + element.style.display);
 	});
 	const view_elements = document.getElementsByName("view_element");
 	view_elements.forEach(element => {
@@ -19,6 +19,6 @@ function toggleMode(mode) {
 		else {
 				element.style.display = 'none';
 		}	
-		if (1) console.log("toggleMode(): " + mode + " " + element.type + " id '" + element.id + "' set to " + element.style.display);
+		if (0) console.log("toggleMode(): " + mode + " " + element.type + " id '" + element.id + "' set to " + element.style.display);
 	});
 }

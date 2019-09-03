@@ -23,11 +23,18 @@ $special_case = $_GET['special'];
 
 if ($special_case == 'one_liaison') {
 	$admin = currentAdmin();
-	$page_title = "Liaison Report for " . $admin['name'];
-	$page_subtitle = "in the {$season_name} survey";
+	$page_title = 'Liaison Report for ' . $admin['name'];
+	$page_subtitle = 'in the ' . $season_name . ' survey ';
+	if (userIsAdmin()) {
+		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "") . '">view all responses to the survey</a>';
+	}
 } else {
-	$page_title = "Our Responses So Far";
-	$page_subtitle = "to the {$season_name} survey";
+	$page_title = 'Our Responses So Far';
+	$page_subtitle = 'to the ' . $season_name . ' survey';
+	if (userIsAdmin()) {
+		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "special=one_liaison") . '">view my contacts\' responses only</a><br>';
+		// $toggle = ' <a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "special=one_liaison") . '">view ' . currentAdmin()['name'] . '\'s contacts only</a><br>'; 
+	}
 
 	$scoreboard_body = renderScoreboard("");
 	$scoreboard_title = "Scoreboard";
@@ -51,6 +58,8 @@ $workers = renderJobSignups("Job sign-ups", TRUE, $special_case);
 
 print 
 	$headline .
+	$toggle . '
+	<br>' .
 	$scoreboard . '
 	<br>' .
 	$workers . '

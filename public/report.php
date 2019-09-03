@@ -4,6 +4,7 @@ require_once "classes/PeopleList.php";
 print '<script src="js/report.js"></script>';
 
 if (0) deb("report: _SESSION = ", $_SESSION);
+if (1) deb("report: _GET = ", $_GET);
 if (0) deb("report: userIsAdmin() = " . userIsAdmin());
 
 require_once('classes/calendar.php');
@@ -18,25 +19,35 @@ if ($_POST) saveLiaisonData($_POST);
 
 $season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
 
-$headline = renderHeadline("Our Responses So Far", "to the {$season_name} survey");
-if (0) deb("report.php: headline = ", $headline);
+$special_case = $_GET['special'];
 
-$scoreboard_body = renderScoreboard("");
-$scoreboard_title = "Scoreboard";
-$scoreboard = renderBlockInShowHideWrapper($scoreboard_body, $scoreboard_title, '<h2>', $scoreboard_title . '</h2>');
+if ($special_case == 'one_liaison') {
+	$admin = currentAdmin();
+	$page_title = "Liaison Report for " . $admin['name'];
+	$page_subtitle = "in the {$season_name} survey";
+} else {
+	$page_title = "Our Responses So Far";
+	$page_subtitle = "to the {$season_name} survey";
 
-$workers = renderJobSignups("Job sign-ups", TRUE);
+	$scoreboard_body = renderScoreboard("");
+	$scoreboard_title = "Scoreboard";
+	$scoreboard = renderBlockInShowHideWrapper($scoreboard_body, $scoreboard_title, '<h2>', $scoreboard_title . '</h2>');
 
-$non_responders = renderNonResponders(); 
-if (0) deb("report.php: non_responders = ", $non_responders);
+	$non_responders = renderNonResponders(); 
+	if (0) deb("report.php: non_responders = ", $non_responders);
 
-$calendar = new Calendar();
-$calendar->job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ? intval($_GET['key']) : 'all';
-$calendar->data_key = (isset($_GET['show'])) ? $_GET['show'] : 'all';
-$calendar->setIsReport(TRUE);
-$cal_string = renderOffersCalendar($calendar);
+	$calendar = new Calendar();
+	$calendar->job_key = (isset($_GET['key']) && is_numeric($_GET['key'])) ? intval($_GET['key']) : 'all';
+	$calendar->data_key = (isset($_GET['show'])) ? $_GET['show'] : 'all';
+	$calendar->setIsReport(TRUE);
+	$cal_string = renderOffersCalendar($calendar);
 
-$comments = (userIsAdmin() ? renderOtherPreferences() : "");
+	$comments = (userIsAdmin() ? renderOtherPreferences() : "");
+}	
+
+$headline = renderHeadline($page_title, $page_subtitle);
+
+$workers = renderJobSignups("Job sign-ups", TRUE, $special_case);
 
 print 
 	$headline .
@@ -230,8 +241,8 @@ function renderOtherPreferences() {
 }
 
 
-function renderJobSignups($section_title=NULL, $include_details=true) {
-	$include_details = false;  // TEMPORARY
+function renderJobSignups($section_title=NULL, $include_assignments=true, $special_case="") {
+	$include_assignments = false;  // TEMPORARY
 	$jobs = getJobs();
 	if (0) deb("report.renderJobSignups(): renderJobSignups(): getJobs():", $jobs);
 
@@ -263,6 +274,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 		AND sw.worker_id = p.id
 		AND sw.season_id = {$season_id}
 		";
+	if ($special_case == "one_liaison") $where .= " AND sw.liaison_id = " . currentAdmin()['id'];
 	$order_by = "p.first_name, 
 		p.last_name, 
 		j.display_order";
@@ -282,8 +294,8 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 	if (0) deb ("report.renderJobSignups(): signups =", $signups);
 	
 	// Get the available liaisons for this season
-	$select = 
-		"l.id as id,
+	$select = "
+		l.id as id,
 		l.first_name || ' ' || l.last_name as name";
 	$from = 
 		SEASON_LIAISONS_TABLE . " as sl, " .
@@ -300,52 +312,59 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 	$where = "active = 1";
 	$order_by = "display_order";
 	$liaison_actions = sqlSelect($select, $from, $where, $order_by, (0));
+	
+	// Set special case variables
+	if ($special_case == "one_liaison") {
+		$liaison_column_display = "none";
+	} else {
+		$liaison_column_display = "table_cell";		
+	}
 
 	// Make header rows for the table
-	$job_names_header = '
+	$header_row_1 = '
 		<!-- jobnames header tr -->
 		<tr style="text-align:center;"> 
 			<th style="text-align:center;" rowspan="2">
 				worker
 			</th>';
-	$data_types_header = '
+	$header_row_2 = '
 		<tr style="text-align:center;"> 
 		<!-- datatypes header tr -->';	
-	$job_names_header .= '<th style="text-align:center;" rowspan="2">when took survey</th>';
+	$header_row_1 .= '<th style="text-align:center;" rowspan="2">when took survey</th>';
 	foreach($jobs as $index=>$job) {		
 		if (0) deb ("report.renderJobSignups(): job['description']) = {$job['description']}");
-		if (UserIsAdmin() && $include_details) {
-			$job_names_header .= '<th colspan="3" style="text-align:center;">' . $job['description'] . '</th>';
-			$data_types_header .= '<th style="text-align:center;">assigned</th>';
-			$data_types_header .= '<th style="text-align:center;">available</th>'; 
+		if (UserIsAdmin() && $include_assignments) {
+			$header_row_1 .= '<th colspan="3" style="text-align:center;">' . $job['description'] . '</th>';
+			$header_row_2 .= '<th style="text-align:center;">assigned</th>';
+			$header_row_2 .= '<th style="text-align:center;">available</th>'; 
 		} else {
-			$job_names_header .= '<th rowspan="2" style="text-align:center;">' . $job['description'] . ' signups</th>';			
+			$header_row_1 .= '<th rowspan="2" style="text-align:center;">' . $job['description'] . ' signups</th>';			
 		}
 	}
 	if (userIsAdmin()) {
-		$job_names_header .= '
+		$header_row_1 .= '
 			<th style="text-align:center;" colspan="3">
 				<input type="button" name="view_element" id="edit_liaisons_th" value="Edit Liaison Info" onclick="toggleMode(\'edit\')">  
 				<input type="submit" name="edit_element" id="save_changes_th" value="Save Changes" onclick="toggleMode(\'view\')" style="display:none"> 
 				<input type="reset" name="edit_element" id="cancel_changes_th" value="Cancel Changes" onclick="toggleMode(\'view\')" style="display:none">
 			</th>';
-		$data_types_header .= '<th style="text-align:center;">liaison</th>';
-		$data_types_header .= '<th style="text-align:center;">suggested action</th>';
-		$data_types_header .= '<th style="text-align:center; width:300px;">liaison reports</th>'; 
+		$header_row_2 .= '<th style="text-align:center; display:' . $liaison_column_display . '">liaison</th>';
+		$header_row_2 .= '<th style="text-align:center;">suggested action</th>';
+		$header_row_2 .= '<th style="text-align:center; width:300px;">liaison reports</th>'; 
 	} else {
-		$job_names_header .= '<th style="text-align:center;" rowspan="2">liaison</th>';
+		$header_row_1 .= '<th style="text-align:center;" rowspan="2">liaison</th>';
 	}
 	
 
-	$job_names_header .= "
+	$header_row_1 .= "
 		</tr> 
 		<!-- jobnames header tr / -->";
-	$data_types_header .= "
+	$header_row_2 .= "
 		</tr> 
 		<!-- datatypes header tr / -->";
-	$header = $job_names_header . $data_types_header;
+	$header = $header_row_1 . $header_row_2;
 
-	if (0) deb ("report.renderJobSignups(): job_names_header =", $job_names_header); 
+	if (0) deb ("report.renderJobSignups(): header_row_1 =", $header_row_1); 
 	
 	// Render data rows
 	$responders_count = 0;
@@ -402,7 +421,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 		$jobs[$job]['signups'] += $signup['instances'];
 		if (0) deb ("report.renderJobSignups(): jobs[job]['signups'] =", $jobs[$job]['signups']);
 
-		if (userIsAdmin() && $include_details) {
+		if (userIsAdmin() && $include_assignments) {
 			// Render the number of times this person is available for this job (= signups-assignments)
 			$assignments = getJobAssignments(NULL, $signup['job_id'], $signup['person_id']);
 			$assignments_count = count($assignments);
@@ -420,7 +439,7 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 		if ($job_n == $n_jobs) {		
 			
 			// Render the liaison
-			$signup_rows .= '<td>';
+			$signup_rows .= '<td  style="display:' . $liaison_column_display . '">';
 			$current_liaison = sqlSelect("id, first_name || ' ' || last_name as name", AUTH_USER_TABLE, "id = " . $signup['liaison_id'], "", (0))[0];			
 			$signup_rows .= $current_liaison['name'];
 			$signup_rows .= '
@@ -478,31 +497,30 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 				$signup_rows .= '
 					<!-- liaison_reports_cell_td -->
 					<td> ';
-				if ($reports) { 
-					// $report_table = '<table> 
-					// <!-- liaison_report_table -->';
-					$report_rows = '';
+				$report_rows = '';
+				if ($reports) {
 					foreach($reports as $report) {
 						$when = date_format(date_create($report['timestamp']), "D n/j ga");
 						
 						// Render the report
-						// if ($report_rows) $report_rows .= '<tr><td><hr></td></tr>';
 						if ($report_rows) $report_rows .= '<hr>';
 						$report_rows .= '
 							<div name="view_element">';
 						$report_rows .= '
 								<span style="font-style: italic;">' . $when . ':</span> ' . $report['report'];
-	
-						// Render control to delete this report
 						$report_rows .= '
 							</div>';
 							
-						// Render report update field
+						// Render report edit fields
 						$report_rows .= '
-							<!-- liaison report update delete div -->
+							<!-- liaison report update edit div -->
 							<div name="edit_element" id="liaison_report_' . $report['id'] . '_span" style="display:none">';
+
+						// Render control to delete this report
 						$report_rows .= '
-							<input type="checkbox" name="delete_report:' . $report['id'] . '" >delete me';
+							<input type="checkbox" name="delete_report:' . $report['id'] . '" >delete this report:';
+							
+						// Render report update field
 						$report_rows .= '
 							<!-- liaison_report_input -->
 							<input 
@@ -515,29 +533,69 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 
 						$report_rows .= '
 							</div> 
-							<!-- liaison report update delete div / -->';
+							<!-- liaison report update edit div / -->';
 					} 
-
-					// Render field to add a new report
-					$report_rows .= '
-						<!-- liaison report add div -->
-						<div name="edit_element" id="liaison_report_' . $report['id'] . '_add_span" style="display:none">';
-					$report_rows .= '
-							<!-- liaison_report_add_input -->
-							<input 
-								type="textarea"
-								style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
-								name="create_report:' . $signup['person_id']	. '"									
-								value=""> 
-							<!-- liaison_report_add_input / -->'
-					;
-					$report_rows .= '
-						</div> 
-						<!-- liaison report add div / -->'; 
-					
-					// Assign report_rows to signup_rows
-					$signup_rows .= $report_rows;
 				}
+				
+				// Render field to add a new report
+				$report_rows .= '
+					<!-- liaison report add div -->
+					<div name="edit_element" id="liaison_report_' . $report['id'] . '_add_span" style="display:none">';
+				$report_rows .= '
+						<p>add a report:</p>
+						<!-- liaison_report_add_input -->
+						<input 
+							type="textarea"
+							style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
+							name="create_report:' . $signup['person_id']	. '"									
+							value=""> 
+						<!-- liaison_report_add_input / -->'
+				;
+				$report_rows .= '
+					</div> 
+					<!-- liaison report add div / -->'; 
+				
+				// Assign report_rows to signup_rows
+				$signup_rows .= $report_rows;
+				$signup_rows .= '</td> 
+				<!-- liaison_reports_cell_td / -->';
+			} 			
+			$job_n = 1;
+		} else {
+			$job_n++;
+		} 
+	} // signups loop
+	$signup_rows .= '</tr>'; 
+
+	if ($special_case == "one_liaison") $query_string = "special=one_liaison";
+	$block = '
+	<form id="liaisons_form" name="liaisons_form" action="' . makeURI("report.php", CRUMBS_IDS, $query_string) . '" method="post">
+		<!-- signup rows table 1 -->
+		<table><tr><td style="background:Yellow"> 
+			<!-- signup rows table 2 -->
+			<table border="1" cellspacing="3"> 
+				<!-- signup rows tr -->
+				<tr>  ' .
+					$header .
+					$signup_rows . ' 
+				</tr> 
+				<!-- signup rows tr / -->
+			</table> 
+			<!-- signup rows table 2 / -->
+		</td></tr></table> 
+		<!-- signup rows table 1 / -->
+	</form>' .
+	$responders_count . ' people have responded.'
+	;
+	
+	$out = renderBlockInShowHideWrapper($block, $section_title, '<h2>', $section_title . '</h2>', "block");
+	
+	if (0) deb ("report.renderJobSignups(): out =", $out);
+	return $out;
+}
+
+/////////////////// JUNK
+
 				// if ($reports) { 
 					// $report_table = '<table> 
 					// <!-- liaison_report_table -->';
@@ -623,39 +681,5 @@ function renderJobSignups($section_title=NULL, $include_details=true) {
 					// // Assign table to rows (could do this w/o a $report_table variable)
 					// $signup_rows .= $report_table;
 				// }
-				$signup_rows .= '</td> 
-				<!-- liaison_reports_cell_td / -->';
-			} 			
-			$job_n = 1;
-		} else {
-			$job_n++;
-		} 
-	} // signups loop
-	$signup_rows .= '</tr>'; 
 
-	$block = '
-	<form id="liaisons_form" name="liaisons_form" action="' . makeURI("report.php", CRUMBS_IDS) . '" method="post">
-		<!-- signup rows table 1 -->
-		<table><tr><td style="background:Yellow"> 
-			<!-- signup rows table 2 -->
-			<table border="1" cellspacing="3"> 
-				<!-- signup rows tr -->
-				<tr>  ' .
-					$header .
-					$signup_rows . ' 
-				</tr> 
-				<!-- signup rows tr / -->
-			</table> 
-			<!-- signup rows table 2 / -->
-		</td></tr></table> 
-		<!-- signup rows table 1 / -->
-	</form>' .
-	$responders_count . ' people have responded.'
-	;
-	
-	$out = renderBlockInShowHideWrapper($block, $section_title, '<h2>', $section_title . '</h2>', "block");
-	
-	if (0) deb ("report.renderJobSignups(): out =", $out);
-	return $out;
-}
 ?>

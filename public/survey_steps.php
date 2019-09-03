@@ -12,7 +12,6 @@ print $page;
 
 //////////////////////////////////////////////////////////////// DISPLAY FUNCTIONS
 
-// function renderPageBody($season, $parent_process_id) {
 function renderPageBody($season) {
 	
 	if (0) deb("survey_steps.renderPageBody(): season = ", $season);

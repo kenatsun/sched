@@ -10,7 +10,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
 	$new_status .= userIsAdmin() ? "guest" : "admin";
-	if (0) deb ("headline.renderHeadline(): REQUEST_QUERY_STRING = " . REQUEST_QUERY_STRING);
+	if (1) deb ("headline.renderHeadline(): REQUEST_QUERY_STRING = " . REQUEST_QUERY_STRING);
 	$community_logo_form = '
 		<form name="community_logo_form" id="community_logo_form" action="' . makeURI(SCRIPT_URL, "", REQUEST_QUERY_STRING) . '" method="post">
 			<input type="image" name="submit" src="' . $community_logo . '" alt="Sunward icon" >
@@ -19,27 +19,43 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 	
 	$td_style = 'background-color:white;'; 
 
-	// Render admin notice (shown iff user is admin)
-	$color = '"color:red"'; 
-	if (userIsAdmin() && !$_GET['printable'] == 1) $admin_notice =  
-		'
-		<div style=' . $color . '><p>
-		<p><strong>You are signed into this session as an admin.&nbsp;&nbsp;Click the ' . COMMUNITY . ' icon to sign in as a plain old user.</strong>
-		</p></div>';
-	if (0) deb ("headline.renderHeadline(): NEXT_CRUMBS_IDS = " . NEXT_CRUMBS_IDS);
-	if (userIsAdmin() && $show_admin_dashboard_link) $admin_dashboard_link =  
-		'<br>
-		<div style=' . $color . '>
-			<a style=' . $color . ' href="'. makeURI("/admin.php", NEXT_CRUMBS_IDS) . '"><strong>Open the Admin Dashboard</strong></a>
-		</div>
-		';
-
+	$color = 'color:red;';
+	
 	// Render instance notice (for development instance only)
 	$instance = INSTANCE;
 	$database = DATABASE;
-	$instance_notice = $instance && !$_GET['printable'] == 1 ? "<p style={$color}><strong>You're looking at the {$instance} instance.  Database is {$database}.</strong></p>" : "";
+	$instance_notice = $instance && !$_GET['printable'] == 1 ? '<p style="' . $color . '"><strong>You\'re looking at the '. $instance . ' instance.&nbsp;&nbsp;Database is ' . $database . '.</strong></p>' : '';
 
-	// if ($instance_notice && $admin_notice) $instance_notice .= "<br>";
+	// Render admin notice (shown iff user is admin)
+	if (userIsAdmin() && !$_GET['printable'] == 1) {
+		$admin_notice = '<form method="post" action="' . makeURI(SCRIPT_URL, "", REQUEST_QUERY_STRING) . '">';
+		$admin_notice .= ' 
+			<div style="' . $color . '">
+				<p>
+					<strong>
+						You\'re signed into this session as admin ' . currentAdmin()['name'] . '.&nbsp;&nbsp;<input type="submit" value="sign out">
+					</strong>
+				</p>
+			</div>
+			<input type="hidden" id="sign_out_admin" name="sign_out_admin">';
+		// $admin_notice .= ' 
+			// <div style="' . $color . '">
+				// <p>
+					// <strong>
+						// You\'re signed into this session as admin ' . currentAdmin()['name'] . '.&nbsp;&nbsp;Click the ' . COMMUNITY . ' icon for the plain old user\'s view.
+					// </strong>
+				// </p>
+			// </div>';
+		$admin_notice .= '</form>'; 
+	}
+	if (0) deb ("headline.renderHeadline(): NEXT_CRUMBS_IDS = " . NEXT_CRUMBS_IDS);
+	if (userIsAdmin() && $show_admin_dashboard_link) $admin_dashboard_link =  
+		'<br>
+		<div style="' . $color . '">
+			<a style="' . $color . '" href="'. makeURI("/admin.php", NEXT_CRUMBS_IDS) . '"><strong>Open the Admin Dashboard</strong></a>
+		</div>
+		';
+
 
 	// Render breadcrumbs display
 	if (CRUMBS_QUERY) {
@@ -63,8 +79,8 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 	if (0) deb ("headline.renderHeadline(): admin_notice =", $admin_notice);
 		
 	$headline = 
-		$admin_notice .
 		$instance_notice .
+		$admin_notice .
 		$admin_dashboard_link .
 		'<br>
 		<table>' .

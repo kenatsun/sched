@@ -39,28 +39,66 @@ function scheduler_run() {
 // ADMIN LOGIN & DASHBOARD FUNCTIONS ---------------------------------------------------------------
 
 function changeUserStatus() {
+	if (1) deb("utils.changeUserStatus: _REQUEST = ", $_REQUEST);
 	if (0) deb("utils.changeUserStatus: _REQUEST['sign_in_as'] = ", $_REQUEST['sign_in_as']);
+	// If request is to change status to admin
 	if ($_REQUEST['sign_in_as'] === "admin") { 
-		promptForAdminPassword();
+		if ($_SESSION['admin_id']) {	// If a user is already signed in as admin, change status
+			$_SESSION['access_type'] = "admin";	
+		} else {										// If no user is already signed in as admin, prompt for creds
+			promptForAdminCredentials();
+		}
 	} elseif ($_REQUEST['password'] === ADMIN_PASSWORD) {
-		$_SESSION['access_type'] = 'admin';
+		$_SESSION['access_type'] = "admin";
+		$_SESSION['admin_id'] = explode(":", $_REQUEST['admin'])[0];
+		$_SESSION['admin_name'] = explode(":", $_REQUEST['admin'])[1];
 	} elseif ($_REQUEST['sign_in_as'] === "guest") {
-		$_SESSION['access_type'] = 'guest';
+		$_SESSION['access_type'] = "guest";
+	} elseif (array_key_exists('sign_out_admin', $_REQUEST)) { 
+		$_SESSION['access_type'] = "guest";
+		$_SESSION['admin_id'] = "";
+		$_SESSION['admin_name'] = "";
 	}
 	if (0) deb("utils.changeUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
-	if (0) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);
+	if (1) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);
 }
 
-function promptForAdminPassword() {
+function promptForAdminCredentials() {
+	if (1) deb("utils.promptForAdminCredentials: _SESSION = ", $_SESSION);
 	$_SESSION['access_type'] = 'guest';
-	print '<div style="color:red; font-weight:bold; animation:blink;">
-		<form method="post" action="' . makeURI($_SERVER['PHP_SELF'], "", REQUEST_QUERY_STRING) . '">  
-			<p>For administrator access, enter password:</p>
-			<input type="password" name="password">
-			<input type="submit" value="go">
-		</form>
+	$from = AUTH_USER_TABLE . " as l, " . SEASON_LIAISONS_TABLE . " as sl"; 
+	$where = "sl.season_id = " . SEASON_ID . " AND l.id = sl.worker_id";
+	$order_by = "first_name, last_name";
+	$admins = sqlSelect("l.*", $from, $where, $order_by, (0));
+	$form = '<table style="border: 1px solid black;"><tr><td style="padding:10px;">';
+	$form .= '
+		<div name="get_creds" style="color:red; font-weight:bold">
+			<form method="post" action="' . makeURI($_SERVER['PHP_SELF'], "", REQUEST_QUERY_STRING) . '">  
+				Administrator sign-in:&nbsp;&nbsp who are you? 
+					<select name="admin">';
+	$form .= '
+						<option value=""></option>';
+	foreach($admins as $admin) { 
+		$name = $admin['first_name'] . ' ' . $admin['last_name'];
+		$form .= '
+						<option value="' . $admin['id'] . ':' . $name . '">' . $name . '</option>';
+	}		
+	$form .= '
+					</select>&nbsp;&nbsp';
+	$form .= '
+				what\'s the password? <input type="password" name="password">&nbsp;&nbsp';
+	$form .= '
+				<input type="submit" value="sign in">
+			</form>
 		</div>
-';
+	';
+	$form .= '</td></tr></table>';
+	print $form;
+}
+
+function currentAdmin() {
+	if ($_SESSION['admin_id']) $admin = array('id'=>$_SESSION['admin_id'], 'name'=>$_SESSION['admin_name']);	
+	return $admin;
 }
 
 function userIsAdmin() {

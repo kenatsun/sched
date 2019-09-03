@@ -16,11 +16,11 @@ define("ADMIN_PASSWORD", "a");
 // Open the database
 create_sqlite_connection();
 
-// Determine if user is admin or guest 
-changeUserStatus();
-
 // Configure the session
 setSessionConstants();
+
+// Determine if user is admin or guest 
+changeUserStatus();
 
 // Define jobs and categories of jobs
 defineJobCategories();

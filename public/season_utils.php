@@ -707,8 +707,8 @@ function saveChangesToWorkers($post, $season_id) {
 	// Add a new worker, if all required columns have been filled out in the new worker form
 	if ($post['new_first_name'] && $post['new_last_name'] && $post['new_email']) {
 		$current = (array_key_exists('new_current', $post)) ? 1 : 0;
-		$columns = "current, first_name, last_name, email";
-		$values = "{$current}, '{$post['new_first_name']}', '{$post['new_last_name']}', '{$post['new_email']}'";
+		$columns = "current, first_name, last_name, username, email";
+		$values = "{$current}, '{$post['new_first_name']}', '{$post['new_last_name']}', '{$post['new_first_name']}' || ' ' || '{$post['new_last_name']}', '{$post['new_email']}'";
 		sqlInsert($workers_table, $columns, $values, (0), "saveChangesToWorkers(): creating", TRUE);
 	}
 	

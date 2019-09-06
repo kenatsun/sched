@@ -33,7 +33,6 @@ if ($special_case == 'one_liaison') {
 	$page_subtitle = 'to the ' . $season_name . ' survey';
 	if (userIsAdmin()) {
 		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "special=one_liaison") . '">view my contacts\' responses only</a><br>';
-		// $toggle = ' <a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "special=one_liaison") . '">view ' . currentAdmin()['name'] . '\'s contacts only</a><br>'; 
 	}
 
 	$scoreboard_body = renderScoreboard("");
@@ -98,7 +97,7 @@ function saveLiaisonData($posts) {
 			$liaison_action = explode(".", $liaison_action)[1];
 			if ($liaison_action) $liaison_action = "'" . $liaison_action . "'"; else $liaison_action = "NULL";
 			sqlUpdate(SEASON_WORKERS_TABLE, "liaison_action = " . $liaison_action . ""	, " season_id = " . SEASON_ID . " AND id = " . $season_worker_id, (0));
-		}
+		} 
 	}
 	
 
@@ -121,9 +120,13 @@ function saveLiaisonData($posts) {
 					explode (":" , $key)[1];
 				sqlInsert(LIAISON_REPORTS_TABLE, $columns, $values, (0));
 			} elseif ($report_cud == "update_report") {
-				$set = "report = '" . $text . "', author_id = " . explode(":", $key)[2];
-				$where = "id = " . explode (":", $key)[1];
-				sqlUpdate(LIAISON_REPORTS_TABLE, $set, $where, (0));
+				$report_id = explode (":", $key)[1];
+				$report = sqlSelect("*", LIAISON_REPORTS_TABLE, "id = " . $report_id, "")[0];
+				if ($report['report'] != $text) {
+					$set = "report = '" . $text . "', author_id = " . explode(":", $key)[2];
+					$where = "id = " . explode (":", $key)[1];
+					sqlUpdate(LIAISON_REPORTS_TABLE, $set, $where, (0));
+				}
 			} elseif ($report_cud == "delete_report") {
 				$where = "id = " . explode (":" , $key)[1];
 				sqlDelete(LIAISON_REPORTS_TABLE, $where, (0));
@@ -164,9 +167,7 @@ function renderNonResponders() {
 		$non_responder_names .= "<tr><td>{$non_responder['name']}</td></tr>
 			";
 	}
-	// $non_responders_headline = "Who hasn't responded yet";
-	// $html_before = '<h2>';
-	// $html_after = ' Who hasn\'t responded yet</h2>';
+
 	$non_responders_count = count($non_responders);	
 	$block = '
 		<table><tr><td style="background:Yellow">
@@ -179,7 +180,6 @@ function renderNonResponders() {
 
 	$section_title = 'Who hasn\'t responded yet';
 	$out = renderBlockInShowHideWrapper($block, $section_title, '<h2>', $section_title . '</h2>');
-	// $out = renderBlockInShowHideWrapper($block, 'non_responders', '<h2>', 'Who hasn\'t responded yet</h2>');
 
 	if (0) deb("report.renderNonResponders: out =", $out);
 	return $out;

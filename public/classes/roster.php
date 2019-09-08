@@ -187,12 +187,6 @@ EOSQL;
 				AND o.instances > 0
 				AND ({$job_ids_clause})
 				{$user_clause}";
-		// $where = "o.season_id={$sid}
-				// AND o.type='a'
-				// AND o.worker_id = u.id
-				// AND o.instances > 0
-				// AND ({$job_ids_clause})
-				// {$user_clause}";
 		$order_by = "u.username";
 		$offers = sqlSelect($select, $from, $where, $order_by, (0), "roster.loadNumShiftsAssigned()"); 
 
@@ -209,33 +203,6 @@ EOSQL;
 			$this->total_labor_avail[$job_id] += $num_instances;			
 		}
 		
-		// $sql = <<<EOSQL
-		// SELECT u.username, a.job_id, a.instances
-			// FROM {$assn_table} as a, {$auth_user_table} as u
-			// WHERE a.season_id={$sid}
-				// AND a.type="a"
-				// AND a.worker_id = u.id
-				// AND ({$job_ids_clause})
-				// {$user_clause}
-			// ORDER BY u.username
-// EOSQL;
-		// if (0) deb("roster.php: SQL to read offers:", $sql);
-		// $count = 0;
-		// foreach($this->dbh->query($sql) as $row) {
-			// $count++;
-
-			// $u = $row['username'];
-			// $job_id = $row['job_id'];
-			// $w = $this->getWorker($u);
-
-			// // determine the number of shifts across the season
-			// $num_instances = isset($dinners_per_job[$job_id]) ?
-				// ($row['instances'] * $dinners_per_job[$job_id]) : 
-				// ($row['instances'] * $this->num_shifts_per_season);
-			// $w->addNumShiftsAssigned($job_id, $num_instances);
-			// $this->total_labor_avail[$job_id] += $num_instances;
-		// }
-
 		$this->loadNumShiftsAssignedFromOverrides($username);
 
 		return TRUE;

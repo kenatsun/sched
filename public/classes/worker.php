@@ -31,15 +31,16 @@ class Worker {
 		return $this->is_placeholder;
 	}
 
-	public function debugLogSummary() {
-		$nsf = print_r($this->num_shifts_to_fill, true);
+	// public function debugLogSummary() {
+		// if (0) deb("worker.php: this->num_shifts_to_fill = " . $this->num_shifts_to_fill);
+		// $nsf = print_r($this->num_shifts_to_fill, true);
 
-		error_log('debugLogSummary: ' . __CLASS__ . ' ' . __FUNCTION__ . ' ' .
-			__LINE__ . "
-			Username:{$this->username},
-			id:{$this->worker_id}
-			NSF:{$nsf}");
-	}
+		// error_log('debugLogSummary: ' . __CLASS__ . ' ' . __FUNCTION__ . ' ' .
+			// __LINE__ . "
+			// Username:{$this->username},
+			// id:{$this->worker_id}
+			// NSF:{$nsf}");
+	// }
 
 	public function setNames($first, $last) {
 		$this->first_name = $first;
@@ -138,11 +139,11 @@ class Worker {
 	public function addNumShiftsAssigned($job_id, $instances) {
 		if (!isset($this->num_shifts_to_fill[$job_id])) {
 			$this->num_shifts_to_fill[$job_id] = $instances;
-			return;
+			// return;
+		} else {
+			// add additional shifts if they were already set
+			$this->num_shifts_to_fill[$job_id] += $instances;
 		}
-
-		// add additional shifts if they were already set
-		$this->num_shifts_to_fill[$job_id] += $instances;
 	}
 
 

@@ -620,9 +620,9 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 		</td></tr></table> 
 		<!-- signup rows table 1 / -->
 	</form>' .
-	$responders_count . ' people have responded.'
+	renderResponseCounts()
 	;
-	
+
 	if ($special_case == "one_liaison") {
 		$out = $block;
 	} else {

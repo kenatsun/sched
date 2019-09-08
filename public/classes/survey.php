@@ -529,17 +529,15 @@ EOHTML;
 	 * Used by the save process to figure out if the user has selected enough
 	 * shifts to fulfill their assignment. 
 	 */
-	protected function confirmWorkLoad() {
+	protected function confirmWorkLoad() { 
 		global $all_jobs;
 		$insufficient_prefs = array();
 
 		$num_shifts_to_fill = $this->worker->getNumShiftsToFill();
 		foreach($num_shifts_to_fill as $job_id => $num_instances) {
-			$pos_count = !array_key_exists($job_id, $this->positive_count) ? 0 :
-				$this->positive_count[$job_id];
+			$pos_count = array_key_exists($job_id, $this->positive_count) ? $this->positive_count[$job_id] : 0;
 
-			// if they haven't filled out enough preferences to fulfill this
-			// shift, then warn them.
+			// if they haven't filled out enough preferences to fulfill this shift, then warn them.
 			if ($pos_count < $num_instances) {
 				$shortage = $num_instances - $pos_count;
 				$day_text = ($shortage == 1 ? "a day" : "days");
@@ -690,14 +688,24 @@ EOSQL;
 			$job_n++;
 			if (empty($job_ids)) continue;
 
+			// store this worker's prefs for each job
 			foreach($job_ids as $job_id=>$shift_ids) {
-				// store prefs for each meal
 				$prev_pref = NULL;
+				// store this worker's prefs for each shift
 				foreach($shift_ids as $shift_id) {
-					$into = SCHEDULE_PREFS_TABLE;
+					$select = "o.*";
+					$from = OFFERS_TABLE . " as o, " . SURVEY_JOB_TABLE . " as j";
+					$where = "o.job_id = j.id" .
+						" AND o.worker_id = " . $this->worker_id . 
+						" AND j.season_id = " . SEASON_ID .
+						" AND (o.instances = 0 OR o.instances IS NULL)"
+					;						
+					$zero_offer = sqlSelect($select, $from, $where, "", (0));
+					if ($zero_offer) sqlDelete(SCHEDULE_PREFS_TABLE, "shift_id = " . $shift_id . " AND worker_id = " . $this->worker_id, (0), "", true);
+					
 					$columns = "shift_id, worker_id, pref";
 					$values = "{$shift_id}, {$this->worker_id}, {$pref_rating}";
-					$success = sqlReplace($into, $columns, $values, (0), "survey.savePreferences()");
+					$success = sqlReplace(SCHEDULE_PREFS_TABLE, $columns, $values, (0), "survey.savePreferences()");
 					if ($success) { 
 						$this->saved++;
 						if ($prev_pref !== $pref_rating) {

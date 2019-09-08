@@ -2,7 +2,7 @@
 
 /**
  * Track the list of people.
- * "People" means everybody in the workers table, whether or not they have any offers (OFFERS_TABLE rows)
+ * "People" means everybody in the workers table, whether or not they have any offers (offers_table rows)
  */
 class PeopleList {
 	public $people;

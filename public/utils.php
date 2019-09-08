@@ -774,8 +774,6 @@ function getJobAssignments($meal_id=NULL, $job_id=NULL, $worker_id=NULL) {
 
 
 function getResponders() {
-	// $responder_ids = array();
-	// $signups_table = OFFERS_TABLE;
 	$season_id = SEASON_ID;
 	$season_workers_table = SEASON_WORKERS_TABLE;
 	$responders = sqlSelect("worker_id as id", SEASON_WORKERS_TABLE, "season_id = {$season_id} and first_response_timestamp is not null", "", (0));
@@ -817,9 +815,6 @@ function renderScoreboard($section_title=NULL) {
 	$signups = sqlSelect($select, $from, $where, $order_by);
 	if (0) deb ("index.renderScoreboard(): signups =", $signups);
 
-	// $signups = getJobSignups();
-	// if (0) deb("report.renderScoreboard(): getJobSignups() returns:", $signups);
-
 	// Make header rows for the table
 	$job_names_header = '<tr style="text-align:center;"><th></th>';
 	$data_types_header = '<tr style="text-align:center;"><th></th>';
@@ -833,7 +828,7 @@ function renderScoreboard($section_title=NULL) {
 	if (0) deb ("index.renderScoreboard(): job_names_header =", $job_names_header); 
 	
 	// Make data rows
-	$responders_count = 0;
+	// $responders_count = 0;
 	$prev_person_id = 0;
 	$signup_rows = '';
 	foreach($signups as $index=>$signup) {
@@ -844,7 +839,7 @@ function renderScoreboard($section_title=NULL) {
 			<tr>
 				<td>{$signup['first_name']} {$signup['last_name']}</td>";
 			$prev_person_id = $signup['person_id'];
-			$responders_count++;
+			// $responders_count++;
 		}
 		
 		if (0) deb ("index.renderScoreboard(): signup['job_id']) = {$signup['job_id']}");
@@ -911,10 +906,41 @@ function renderScoreboard($section_title=NULL) {
 					</tr>
 				</table>
 			</td></tr></table> ' .
-			$responders_count . ' people have responded.
+			renderResponseCounts() . '
 		</div>'
 	;
+	// $out = 
+		// $section_title . '	
+		// <div>
+			// <table><tr><td style="background:Yellow">
+				// <table border="1" cellspacing="3">
+					// <tr>' .
+						// $job_names_header .
+						// $needed_row .
+						// $totals_row .
+						// $shortfall_row . '
+					// </tr>
+				// </table>
+			// </td></tr></table> ' .
+			// $responders_count . ' people have responded.
+		// </div>'
+	// ;
 	if (0) deb ("index.renderScoreboard(): out =", $out);
+	return $out;
+}
+
+function renderResponseCounts() {
+	$select = "count (*) as n";
+	$from = SEASON_WORKERS_TABLE;
+	// {$person_table} as p, 
+		// {$offers_table} as o, 
+		// {$jobs_table} as j";
+	$where = "season_id = " . SEASON_ID;
+	$n_workers = sqlSelect($select, $from, $where, "", (0))[0]['n'];
+	$n_respondents = sqlSelect($select, $from, $where . " AND last_response_timestamp IS NOT NULL", "", (0))[0]['n'];
+	$people = ($n_respondents == 1) ? " person has" : " people have";
+	$n_nonrespondents = $n_workers - $n_respondents;
+	$out = $n_respondents . $people . ' responded.  Still need to hear from ' . $n_nonrespondents . ' more.';
 	return $out;
 }
 

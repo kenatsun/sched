@@ -189,7 +189,7 @@ EOSQL;
 			$this->results[$job_id] = $offer;
 		}
 		if (0) deb("Survey1: processPost: Results:", $this->results);
-	}
+	} 
 
 	/**
 	 * Save the stated offers.

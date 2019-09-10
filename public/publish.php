@@ -1,7 +1,7 @@
 <?php
 
 require_once "start.php";
-require_once "team_utils.php";
+require_once "teams_utils.php";
 print '<script src="js/publish.js"></script>';
 
 $headline = renderHeadline("Publish Changes?", "", "", 1);
@@ -11,7 +11,7 @@ $form .= '<form method="POST" id="publish_form" name="publish_form" action="' . 
 // Which edition is being published? (this affects labeling of the display and printout) 
 $form .= '<p>Which edition of the schedule is this?</p>';
 $form .= '<input type="radio" name="edition" value="first">First<br>'; 
-$form .= '<input type="radio" name="edition" value="revised">Revised<br>'; 
+$form .= '<input type="radio" name="edition" value="revised">Revised<br>';  
 $form .= '<input type="radio" name="edition" value="final">Final<br>'; 
 $form .= '<br>';  
 

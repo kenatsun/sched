@@ -125,7 +125,7 @@ function renderShiftPreferences($survey) {
 			// and s.job_id = j.id
 			// and j.season_id = " . SEASON_ID;
 		$order_by = "j.display_order asc";
-		$jobs = sqlSelect($select, $from, $where, $order_by, (1), "finish.renderShiftPreferences(): jobs");
+		$jobs = sqlSelect($select, $from, $where, $order_by, (0), "finish.renderShiftPreferences(): jobs");
 		
 		foreach($jobs as $job) {
 			// Get all shift_prefs of this worker for this job

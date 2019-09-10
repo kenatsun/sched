@@ -105,6 +105,7 @@ function saveLiaisonData($posts) {
 	if ($posts) {
 		foreach($posts as $key=>$post) {
 			$text = str_replace("'", "''", $post);
+			// $text = str_replace('"', '""', $text);
 			if (0) deb("report.php: post = ", $post);
 			$report_cud = explode (":" , $key)[0];
 			if ($report_cud == "create_report" && $text) {
@@ -530,6 +531,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 				$report_rows = '';
 				if ($reports) {
 					foreach($reports as $report) {
+						$report_text = str_replace('"', '&quot;', $report['report']);
 						$when = date_format(date_create($report['timestamp']), "D n/j ga");
 						
 						// Render the report
@@ -537,7 +539,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 						$report_rows .= '
 							<div name="view_element">';
 						$report_rows .= '
-								<span style="font-style: italic;">' . $when . ' by ' . $report['author_name'] . ':</span> ' . $report['report'];
+								<span style="font-style: italic;">' . $when . ' by ' . $report['author_name'] . ':</span> ' . $report_text;
 						$report_rows .= '
 							</div>';
 							
@@ -553,7 +555,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 								type="textarea"
 								style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
 								name="update_report:' . $report['id'] . ':'	. currentAdmin()['id']	. '"								
-								value="' . $report['report'] . '"> 
+								value="' . $report_text . '"> 
 								<!-- liaison_report_input / -->'
 						;
 
@@ -568,7 +570,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 				}
 				
 				// Render field to add a new report
-				if (0) deb ("report.renderJobSignups(): report_rows =" . $report_rows);
+				if (0) deb ("report.renderJobSignups(): report_rows = " . $report_rows);
 				$hr = ($report_rows) ? '<hr>' : '';
 
 				$report_rows .= '

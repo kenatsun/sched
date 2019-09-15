@@ -311,7 +311,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					$remove_row = '';
 					$moveout_row = '';
 					$trade_row = '';
-					if (userIsAdmin() && $controls_display == "show" && $exists_now) {
+					if (userIsAdmin() && $controls_display == "show" && $exists_now && $meal['meal_date'] >= date("Y-m-d")) {
 					
 						// Display the REMOVE checkbox 
 						$action = "remove";
@@ -415,7 +415,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 							';
 						}	// if ($possible_trades)
 					// }	else {
-					}// if (userIsAdmin() && $controls_display == "show" && $exists_now)
+					}// if (userIsAdmin() && $controls_display == "show" && $exists_now && $meal['meal_date'] >= date("Y-m-d"))
 				}	// if ($exists_now || ($has_changed && $change_markers_display == "show"))
 			
 				$worker_table = '
@@ -458,7 +458,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 			// Display controls that ADD workers to this shift
 			
-			if (userIsAdmin() && $controls_display == "show") { 
+			if (userIsAdmin() && $controls_display == "show" && $meal['meal_date'] >= date("Y-m-d")) { 
 
 				// Figure out which workers could be MOVEd INto this shift from another shift
 				$possible_move_ins = getPossibleMovesIntoShift($shift_id);
@@ -569,7 +569,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					</tr>
 					
 				';
-			}	// if (userIsAdmin() && $controls_display == "show") 
+			}	// if (userIsAdmin() && $controls_display == "show" && $meal['meal_date'] >= date("Y-m-d")) 
 
 			if (0) deb("teams.php.renderAssignmentsForm(): job = {$job['description']}, slots_to_fill = $slots_to_fill"); 		
 			if (0) deb("teams.php.renderAssignmentsForm(): shift_table = ", $shift_table);

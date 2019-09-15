@@ -785,13 +785,14 @@ function getPossibleMovesIntoShift($shift_id) {
     and a.exists_now = 1
     and p.shift_id = " . $shift_id . "
     and s.id = a.shift_id
-    and m.id = s.meal_id		
+    and m.id = s.meal_id
+		and m.date >= '" . date("Y-m-d") . "'
 	";
 	$order_by = "shift_id asc";
-	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForShift()"); 
-	if (0) deb("teams.php:getPossibleMovesIntoShift() possible_trades = ", $possible_trades);
+	$possible_moveins = sqlSelect($select, $from, $where, $order_by, (1), "getPossibleTradesIntoShift()"); 
+	if (0) deb("teams.php:getPossibleMovesIntoShift() possible_moveins = ", $possible_moveins); 
 	
-	return $possible_trades;
+	return $possible_moveins;
 }
 
 

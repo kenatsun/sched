@@ -4,7 +4,10 @@ window.onload = function(){
 
 	// Hide all submit and reset buttons
 	document.querySelectorAll("FORM").forEach(function(this_form){
-		modifyInputFieldsOfForm(this_form, "", "hide");
+		if (0) console.log("this_form.name = " + this_form.name);
+		if (this_form.name != "export_meals_form" && this_form.name != "admin_notice_form") { // XXX temporary kludges
+			modifyInputFieldsOfForm(this_form, "", "hide"); 
+		}
 	})
 
 	// When an input value is changed, enable all inputs and buttons in its form, 

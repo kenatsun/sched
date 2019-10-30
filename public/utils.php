@@ -1,34 +1,34 @@
 <?php
 
 // connect to SQLite database
-function create_sqlite_connection() {
-	global $dbh;
-	global $db_is_writable;
-	$db_is_writable = FALSE;
+// function create_sqlite_connection() {
+	// global $dbh;
+	// global $db_is_writable;
+	// $db_is_writable = FALSE;
 
-	try {
-		global $relative_dir;
-		if (!isset($relative_dir)) { 
-			$relative_dir = '';
-		}
-		else {
-			$relative_dir .= '/';
-		}
+	// try {
+		// global $relative_dir;
+		// if (!isset($relative_dir)) { 
+			// $relative_dir = '';
+		// }
+		// else {
+			// $relative_dir .= '/';
+		// }
 
-		$db_fullpath = getDatabaseFullpath();  // This function is in git_ignored.php because production & development use different databases
-		$db_is_writable = is_writable($db_fullpath);
-		$db_file = "sqlite:{$db_fullpath}";
-		$dbh = new PDO($db_file);
-		$timeout = 5; // in seconds
-		$dbh->setAttribute(PDO::ATTR_TIMEOUT, $timeout);
-		// Enable foreign keys enforcement in database
-		$dbh->exec("PRAGMA foreign_keys = ON;");
-	}
-	catch(PDOException $e) {
-		echo "problem loading sqlite file [$db_fullpath]: {$e->getMessage()}\n";
-		exit;
-	}
-}
+		// $db_fullpath = getDatabaseFullpath();  // This function is in git_ignored.php because production & development use different databases
+		// $db_is_writable = is_writable($db_fullpath);
+		// $db_file = "sqlite:{$db_fullpath}";
+		// $dbh = new PDO($db_file);
+		// $timeout = 5; // in seconds
+		// $dbh->setAttribute(PDO::ATTR_TIMEOUT, $timeout);
+		// // Enable foreign keys enforcement in database
+		// $dbh->exec("PRAGMA foreign_keys = ON;");
+	// }
+	// catch(PDOException $e) {
+		// echo "problem loading sqlite file [$db_fullpath]: {$e->getMessage()}\n";
+		// exit;
+	// }
+// }
 
 // Work with assignments and changes from the latest scheduler run in the current season.
 function scheduler_run() { 
@@ -640,6 +640,39 @@ function renderToolsList($tools, $subhead=null) {
 	return $body;
 } 
 
+// Force the specified file (no matter what type) 
+// to be downloaded rather than displayed in browser
+// Adapted from: https://www.tutorialrepublic.com/php-tutorial/php-file-download.php
+function forceDownload($filepath) {
+	// if(isset($_REQUEST["file"])){
+		// // Get parameters
+			// $images = array("kites.jpg", "balloons.jpg");
+		// $file = urldecode($_REQUEST["file"]); // Decode URL-encoded string
+			
+			// if(in_array($file, $images, true)){
+					// $filepath = "../images/" . $file;
+			
+					// Process download
+					if(file_exists($filepath)) {
+							// header('Content-Description: File Transfer');
+							// header('Content-Type: application/octet-stream');
+							// header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
+							// header('Expires: 0');
+							// header('Cache-Control: must-revalidate');
+							// header('Pragma: public');
+							// header('Content-Length: ' . filesize($filepath));
+							flush(); // Flush system output buffer
+							readfile($filepath);
+							exit; 
+					}
+			// }
+		// else{
+			// echo "File does not exist.";
+		// }
+	// }
+}
+
+
 function exportSurveyAnnouncementCSV($season, $filename) { 
 
 	$columns = array();
@@ -666,22 +699,22 @@ function exportSurveyAnnouncementCSV($season, $filename) {
 	$columns[] = array("sql"=>"", "colname"=>"scheduling_end");
 
 	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): columns =", $columns);
-	$fputcsv_header = array();
+	$header_row = array();
 	foreach($columns as $column) {
 		if ($column['sql']) {
 			if ($select) $select .= ", 
 			";
 			$select .= $column['sql'] . " as " . $column['colname'];
 		}
-		$fputcsv_header[] = $column['colname'];
+		$header_row[] = $column['colname'];
 	} 	
-	$from = AUTH_USER_TABLE . " as w, " . SEASONS_TABLE . " as s, " . SEASON_WORKERS_TABLE . " as sw";
-	$where = "w.id = sw.worker_id and sw.season_id = s.id and s.id = " . $season['id'];
+	$from = AUTH_USER_TABLE . " as w, " . SEASONS_TABLE . " as s, " . SEASON_WORKERS_TABLE . " as sw"; 
+	$where = "w.id = sw.worker_id and sw.season_id = s.id and s.id = " . $season['id']; 
 	$order_by = "cast(unit as integer), first_name, last_name";
 	$workers = sqlSelect($select, $from, $where, $order_by, (0), "season_utils.exportSurveyAnnouncementCSV()");
 	
 	$file = fopen($filename,"w");
-	fputcsv($file, $fputcsv_header, "\t");
+	fputcsv($file, $header_row, "\t");
 	foreach ($workers as $i=>$worker) { 
 		$workers[$i]['start_month'] = date_format(date_create($worker['season_start_date']), "F");
 		$workers[$i]['end_month'] = date_format(date_create($worker['season_end_date']), "F");
@@ -696,15 +729,15 @@ function exportSurveyAnnouncementCSV($season, $filename) {
 		fputcsv($file, $workers[$i], "\t");
 		$out_rows .= implode("\t", $worker) . "\n";
 	}
-	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): out =", $out);
+	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): out_rows =", $out_rows);
 	if (0) deb("season_utils.exportSurveyAnnouncementCSV(): workers =", $workers);
 	fclose($file); 	
 }
 
 
-function getJobs() {
+function getJobs($season_id=null) {
 	$jobs_table = SURVEY_JOB_TABLE;
-	$season_id = SEASON_ID;
+	if (!$season_id) $season_id = SEASON_ID;
 	$select = "j.description, j.id as job_id, j.instances, j.workers_per_shift, 0 as signups";
 	$from = "{$jobs_table} as j";
 	$where = "j.season_id = {$season_id}";
@@ -964,7 +997,6 @@ function getJobsFromDB($season_id) {
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where=NULL, $order_by=NULL, $debs=0, $tag="") {
 	global $dbh;
-	if ($debs && $tag) $tag = " [$tag]";
 	$sql = <<<EOSQL
 SELECT {$select} 
 FROM {$from} 
@@ -981,7 +1013,6 @@ EOSQL;
 ORDER BY {$order_by}
 EOSQL;
 	}
-	if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $sql); 
 	$rows = array();
 	$found = $dbh->query($sql);
 	if ($found) {
@@ -994,8 +1025,14 @@ EOSQL;
 			$rows[] = $row;
 		}
 	}
+	// $results = sqlSelectQuery($select, $from, $where, $order_by);
+	if ($debs && $tag) $tag = " [$tag]";
+	if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $sql); 
 	if ($debs) deb("utils.sqlSelect() {$tag}: rows:", $rows);
 	return $rows;
+	// if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $results['sql']); 
+	// if ($debs) deb("utils.sqlSelect() {$tag}: rows:", $results['rows']);
+	// return $results['rows'];
 }
 
 // Generic SQL UPDATE
@@ -1004,7 +1041,7 @@ function sqlUpdate($table, $set, $where, $debs=0, $tag="", $do_it=TRUE) {
 	if ($debs && $tag) $tag = " [$tag]";
 	$sql = <<<EOSQL
 UPDATE {$table} 
-SET {$set}
+SET {$set} 
 EOSQL;
 	if ($where) {
 		$sql .= <<<EOSQL

@@ -2,19 +2,8 @@
 
 if (0) deb("config.php: start"); 
 
-
-date_default_timezone_get('America/Detroit');
-define('BASE_DIR', '');
-define('PUBLIC_DIR', BASE_DIR);
-define('DB_DIR', BASE_DIR . '../db');
-define("REQUEST_QUERY_STRING", $_SERVER['QUERY_STRING']);
-define("SCRIPT_URL", $_SERVER['SCRIPT_URL']);
-define("SESSION_ID", $_REQUEST['PHPSESSID']);
-define('COMMUNITY', 'Sunward');
-define("ADMIN_PASSWORD", "a");
-
-// Open the database
-create_sqlite_connection();
+// // Open the database
+// create_sqlite_connection();
 
 // Configure the session
 setSessionConstants();
@@ -61,21 +50,8 @@ $body = '
 	<script src="js/utils2.js"></script>
 ' 		. $survey_scripts 
 ;
-// $body = '
-// <body>
-	// <input type="hidden" id="script_url" value="' . SCRIPT_URL . '">
-	// <input type="hidden" id="sign_in_as" value="">
-	// <input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">
-	// <input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">
-	// <script src="js/utils2.js"></script>
-// ' 		. $survey_scripts 
-// ;
 
 print $body;
-// print '<input type="hidden" id="script_url" value="' . SCRIPT_URL . '">';
-// print '<input type="hidden" id="sign_in_as" value="">';
-// print '<input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '">';
-// print '<input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '">';
 
 //////////////////////////////////////////////////////// FUNCTIONS
 

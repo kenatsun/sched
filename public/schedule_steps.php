@@ -28,6 +28,11 @@ function renderPageBody($season) {
 			case RUN_SCHEDULER_ID:
 				break;
 			case REFINE_ASSIGNMENTS_ID:
+				break;  
+			case EXPORT_TEAMS_ID:
+				$body .= renderExportMealsForm($season, "update");
+				// $body .= '<p><a style="margin-left:2em;" href="' . MEALS_EXPORT_FILE . '" download>Download Export File</a></p>';			
+				if (0) deb("schedule_steps.renderPageBody(): body = ", $body);
 				break;
 		}
 	}

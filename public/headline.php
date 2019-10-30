@@ -28,7 +28,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 
 	// Render admin notice (shown iff user is admin)
 	if (userIsAdmin() && !$_GET['printable'] == 1) {
-		$admin_notice = '<form method="post" action="' . makeURI(SCRIPT_URL, "", REQUEST_QUERY_STRING) . '">';
+		$admin_notice = '<form name="admin_notice_form" method="post" action="' . makeURI(SCRIPT_URL, "", REQUEST_QUERY_STRING) . '">';
 		$admin_notice .= ' 
 			<div style="' . $color . '">
 				<p>

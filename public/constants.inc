@@ -5,6 +5,18 @@
  */
 
 define('RESULTS_FILE', 'schedule.txt');
+date_default_timezone_get('America/Detroit');
+define('BASE_DIR', '');
+define('PUBLIC_DIR', BASE_DIR);
+define('DB_DIR', BASE_DIR . '../db');
+define("REQUEST_QUERY_STRING", $_SERVER['QUERY_STRING']);
+define("SCRIPT_URL", $_SERVER['SCRIPT_URL']);
+define("SESSION_ID", $_REQUEST['PHPSESSID']);
+define('COMMUNITY', 'Sunward');
+define("ADMIN_PASSWORD", "a");
+define('MEALS_EXPORT_FILE', 'docs/meals.csv');
+define('TEAMS_EXPORT_FILE', 'docs/teams.csv');
+
 
 // -------- display-related constants ----------
 define('UNCHANGED_BACKGROUND_COLOR', 'white');	// Background for unchanged unsaved field
@@ -17,7 +29,6 @@ define('ADDED_ICON', '<img src="/display/images/plusIcon.png" alt="plusIcon" wid
 define('REMOVED_COLOR', ' background:White; ');	// Format for worker removed from shift
 define('REMOVED_DECORATION', ' text-decoration:line-through; ');	// Format for worker removed from shift
 define('REMOVED_ICON', '<img src="/display/images/minusIcon.png" width="18" height="18">');		// Format for worker removed from shift
-
 
 
 // -------- sqlite tables --------- 
@@ -53,10 +64,10 @@ define('JOB_TYPES_TABLE', 'job_types');
 define('PAGES_TABLE', 'pages');
 define('CRUMBS_TABLE', 'crumbs');
 define('SESSIONS_TABLE', 'sessions');
+define('MEAL_TIMES_TABLE', 'meal_times');
 
 // liaison tables
 define('SEASON_LIAISONS_TABLE', 'season_liaisons');
-{ define('LIAISONS_OF_WORKERS_TABLE', 'liaisons_of_workers'); }
 define('LIAISON_REPORTS_TABLE', 'liaison_reports');
 define('LIAISON_ACTIONS_LOV', 'liaison_actions_lov');
 
@@ -68,7 +79,7 @@ define('ASSIGN_ID', 3);
 define('EDIT_SEASON_ID', 4);
 define('EDIT_MEALS_CALENDAR_ID', 5);
 define('IMPORT_WORKERS_ID', 6);
-define('EDIT_WORKERS_ID', 7);
+define('EDIT_WORKERS_ID', 7); 
 define('SET_SURVEY_DATES_ID', 8);
 define('VIEW_SURVEY_RESULTS_ID', 9);
 define('TAKE_SURVEY_ID', 10);
@@ -78,6 +89,8 @@ define('MONITOR_MANAGE_SURVEY_ID', 13);
 define('RUN_SCHEDULER_ID', 15);
 define('REFINE_ASSIGNMENTS_ID', 16);
 define('EDIT_LIAISONS_ID', 17);
+define('EXPORT_MEALS_ID', 19);
+define('EXPORT_TEAMS_ID', 20);
 
 
 ?>

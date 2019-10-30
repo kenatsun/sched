@@ -26,6 +26,9 @@ function renderPageBody($season, $parent_process_id) {
 			case EDIT_MEALS_CALENDAR_ID:
 				$body .= renderEditMealsCalendarForm($season, $parent_process_id);
 				break;
+			case EXPORT_MEALS_ID:
+				$body .= renderExportMealsForm($season, "create");
+				break;
 			case IMPORT_WORKERS_ID:
 				$body .= renderWorkerImportForm($season, $parent_process_id);
 				break;
@@ -146,7 +149,7 @@ function renderEditMealsCalendarTable($season, $meals) {
 		$table .= $row;
 	}
 	
-	// KEEPING THIS CODE (originally from renderWorkerTable()) IN CASE WANT TO ENABLE ADDING A MEAL
+	// XXX KEEPING THIS CODE (originally from renderWorkerTable()) IN CASE WANT TO ENABLE ADDING A MEAL
 	// $table .= '<tr><th colspan="50"><i>Add a Meal ( * means required field):</i></th></tr>';
 	// $table .= '<tr>
 		// <th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">In Season?</th>
@@ -166,6 +169,14 @@ function renderEditMealsCalendarTable($season, $meals) {
 	$table .= '</table>';
 	return $table;
 }
+
+
+
+// function generateAndDownloadExportMealsCSV($post, $season_id) {
+	// if (0) deb("season_utils.generateAndDownloadExportMealsCSV: post = ", $post);
+	// exportMealsCSV($season_id, MEALS_EXPORT_FILE); 
+	// forceDownload(MEALS_EXPORT_FILE);
+// }
 
 
 function renderWorkerImportForm($season, $parent_process_id) {
@@ -372,7 +383,6 @@ function renderSurveySetupForm($season, $next, $parent_process_id=null) {
 	return $form;
 }
 
-
 //////////////////////////////////////////////////////////////// DATABASE FUNCTIONS
 
 // Create or update season in the database
@@ -500,21 +510,23 @@ function generateJobsForSeason($season_id) {
 
 
 function generateMealsForSeason($season_id) {
-	$season = sqlSelect("*", SEASONS_TABLE, "id = $season_id", "", (0), "generateMealsForSeason()")[0];
+	$season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "generateMealsForSeason()")[0];
 	$start_date = new DateTime($season['start_date']);
 	$end_date = new DateTime($season['end_date']);
 	$end_date->modify("+1 day"); // so the last date gets included in the season
 	$interval = DateInterval::createFromDateString('1 day');
 	$dates = new DatePeriod($start_date, $interval, $end_date); 
 	if (0) deb("season.generateMealsForSeason(): dates =", $dates);
-	$meal_dows = get_weekday_meal_days();
+	$meal_dows = get_weekday_meal_days(); 
 	foreach ($dates as $date) {
 		if (in_array(date_format($date, "w"), $meal_dows)) {
 			// Insert the meal if not already in database
 			$meal_date = $date->format("Y-m-d");
+			$meal_dow = $date->format("w");
+			$meal_time = sqlSelect("meal_time", MEAL_TIMES_TABLE, "day_number = " . $meal_dow, "", (0))[0]['meal_time'];
 			if (0) deb("season.generateMealsForSeason(): meal_date = $meal_date");
 			if (!sqlSelect("*", MEALS_TABLE, "date in ('" . $meal_date . "')", "", (0))[0]) { 
-				sqlInsert(MEALS_TABLE, "season_id, date", $season_id . ", '" . $meal_date . "'", (0), "generateMealsForSeason()");
+				sqlInsert(MEALS_TABLE, "season_id, date, time", $season_id . ", '" . $meal_date . "', '" . $meal_time . "'", (0), "generateMealsForSeason()");
 			}
 			$meal = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (0))[0];
 			
@@ -522,6 +534,8 @@ function generateMealsForSeason($season_id) {
 			generateShiftsForMeal($season_id, $meal);
 		}
 	}	
+	// // Generate export file
+	// exportMealsCSV($season_id, MEALS_EXPORT_FILE, "create");  
 }
 	
 	
@@ -541,10 +555,14 @@ function saveChangesToMealsCalendar($post, $season_id) {
 		// Update skip_reason (set to null if skip_indicator = 0)
 		$skip_reason = ($skip_indicator == 1) ? $post[$meal['id'] . "_reason"] : ""; 
 		sqlUpdate($meals_table, "skip_reason = '" . $skip_reason . "'", "id = " . $meal['id'], (0), "saveChangesToMealsCalendar(): updating skip_reason", TRUE);
-		
+
 		// Create and delete shifts for this meal
 		generateShiftsForMeal($season_id, $meal);
 	}
+
+	// // Generate export file
+	// exportMealsCSV($season_id, MEALS_EXPORT_FILE, "create"); 
+		
 
 	// KEEPING THIS CODE (originally from updateSeasonWorkers()) IN CASE WANT TO ENABLE ADDING A MEAL
 	// // Add a new meal

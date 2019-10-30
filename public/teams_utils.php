@@ -789,7 +789,7 @@ function getPossibleMovesIntoShift($shift_id) {
 		and m.date >= '" . date("Y-m-d") . "'
 	";
 	$order_by = "shift_id asc";
-	$possible_moveins = sqlSelect($select, $from, $where, $order_by, (1), "getPossibleTradesIntoShift()"); 
+	$possible_moveins = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesIntoShift()"); 
 	if (0) deb("teams.php:getPossibleMovesIntoShift() possible_moveins = ", $possible_moveins); 
 	
 	return $possible_moveins;
@@ -804,7 +804,7 @@ function formattedDateForOption($date) {
 
 function publishSchedule() {
 	$scheduler_run_id = scheduler_run()['id'];	
-	$assignments = sqlSelect("*", ASSIGNMENTS_TABLE, "scheduler_run_id = " . $scheduler_run_id, "", (0), "change_sets_utils.publishSchedule()");
+	$assignments = sqlSelect("*", ASSIGNMENTS_TABLE, "scheduler_run_id = " . $scheduler_run_id, "", (0), "change_sets_utils.publishSchedule()"); 
 	foreach($assignments as $assignment) {
 		// Mark assignments that currently exist as having been generated
 		if ($assignment['exists_now']) {
@@ -817,7 +817,12 @@ function publishSchedule() {
 		}
 	}
 
+	// // Generate export file
+	// exportMealsCSV(SEASON_ID, MEALS_EXPORT_FILE, "update"); 
+
+	// Mark the just-published change sets as published
 	sqlUpdate(CHANGE_SETS_TABLE, "published = 1", "scheduler_run_id = " . $scheduler_run_id . " and published = 0", (0));
+	
 	displaySchedule();
 }
 

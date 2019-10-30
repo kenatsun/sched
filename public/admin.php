@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once 'start.php';
 require_once 'classes/calendar.php';
 require_once 'classes/PeopleList.php'; 

@@ -40,17 +40,13 @@ $head = '
             }
         }
 		window.onbeforeunload = unloadPage; 
-	</script>
+	</script> 
 ';
  
-print $head; 
-
-//////////////// JUNK
-	// <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-	// <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script></head>
-
+print $head;
 
 ?>
+
 
 
 

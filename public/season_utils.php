@@ -41,6 +41,14 @@ function renderPageBody($season, $parent_process_id) {
 			case SET_SURVEY_DATES_ID:
 				$body .= renderSurveySetupForm($season, "season.php", $parent_process_id);
 				break;  
+			case ANNOUNCE_SURVEY_ID:
+				$body .= '<p><a style="margin-left:2em;" href="docs/announcement - poster version.doc" download>Download Announcement (poster version)</a></p>';
+				$body .= '<p><a style="margin-left:2em;" href="docs/announcement - mail merge version.doc" download>Download Announcement (mail merge version)</a></p>';
+				$filename = "docs/announcement - workers list.csv";
+				if (0) deb("survey_steps.renderPageBody(): calling exportSurveyAnnouncementCSV()"); 
+				exportSurveyAnnouncementCSV($season, $filename); 
+				$body .= '<p><a style="margin-left:2em;" href="' . $filename . '" download>Download Workers List</a></p>';
+				break;
 		}
 	}
 	return $body;
@@ -171,14 +179,6 @@ function renderEditMealsCalendarTable($season, $meals) {
 }
 
 
-
-// function generateAndDownloadExportMealsCSV($post, $season_id) {
-	// if (0) deb("season_utils.generateAndDownloadExportMealsCSV: post = ", $post);
-	// exportMealsCSV($season_id, MEALS_EXPORT_FILE); 
-	// forceDownload(MEALS_EXPORT_FILE);
-// }
-
-
 function renderWorkerImportForm($season, $parent_process_id) {
 	if (!$season) return;
 	$form = '';
@@ -292,7 +292,7 @@ function renderLiaisonTable($season) {
 	$order_by = "first_name asc, last_name asc";
 	$liaisons = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): liaisons");
 	$table = '<table style="table-layout:auto; width:1px; vertical-align:middle;" border="1" >';
-	$table .= '<tr><th colspan="50"><i>Liaisons:</i></th></tr>';
+	// $table .= '<tr><th colspan="50"><i>Liaisons:</i></th></tr>';
 	$table .= '
 		<tr>
 			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Name</th>
@@ -314,7 +314,7 @@ function renderLiaisonTable($season) {
 		"AND NOT (w.id IN (SELECT worker_id FROM " . SEASON_LIAISONS_TABLE . " WHERE season_id = " . SEASON_ID . "))";
 	$order_by = "first_name asc, last_name asc";
 	$workers = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): workers");
-	$table .= '<tr><th colspan="50"><i>Add a Liaison:</i></th></tr>';
+	$table .= '<tr><th colspan="50"><i>Add a Helper:</i></th></tr>';
 	$table .= '
 		<tr>
 			<td>' . '
@@ -456,6 +456,10 @@ function saveChangesToSeason($post) {
 		sqlUpdate(SESSIONS_TABLE, "season_id = " . $season_id, "session_id = '" . SESSION_ID . "'");
 		// setSeason($season_id);
 		if (0) deb("season_utils.saveChangesToSeason(): new season id: $season_id, new current season id: " . getSeason("id"));
+		
+		// Set new season as current_season
+		sqlUpdate(SEASONS_TABLE, "current_season = NULL", "", "", (0));
+		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$season_id}", "", (0), "season.saveChangesToSeason(): set new season as current_season");	
 
 		// Generate the admin processes for this new season
 		generateAdminProcessesForSeason($season_id);

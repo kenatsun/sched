@@ -363,7 +363,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 	if (userIsAdmin()) {
 		$header_row_1 .= '
 			<th style="text-align:center;" colspan="3">
-				<input type="button" name="view_element" id="edit_liaisons_th" value="Edit Liaison Info" onclick="toggleMode(\'edit\')">  
+				<input type="button" name="view_element" id="edit_liaisons_th" value="Edit Helper Info" onclick="toggleMode(\'edit\')">  
 				<input type="submit" name="edit_element" id="save_changes_th" value="Save Changes" onclick="toggleMode(\'view\')" style="display:none"> 
 				<input type="reset" name="edit_element" id="cancel_changes_th" value="Cancel Changes" onclick="toggleMode(\'view\')" style="display:none">
 			</th>';

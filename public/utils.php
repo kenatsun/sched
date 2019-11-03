@@ -1,35 +1,5 @@
 <?php
 
-// connect to SQLite database
-// function create_sqlite_connection() {
-	// global $dbh;
-	// global $db_is_writable;
-	// $db_is_writable = FALSE;
-
-	// try {
-		// global $relative_dir;
-		// if (!isset($relative_dir)) { 
-			// $relative_dir = '';
-		// }
-		// else {
-			// $relative_dir .= '/';
-		// }
-
-		// $db_fullpath = getDatabaseFullpath();  // This function is in git_ignored.php because production & development use different databases
-		// $db_is_writable = is_writable($db_fullpath);
-		// $db_file = "sqlite:{$db_fullpath}";
-		// $dbh = new PDO($db_file);
-		// $timeout = 5; // in seconds
-		// $dbh->setAttribute(PDO::ATTR_TIMEOUT, $timeout);
-		// // Enable foreign keys enforcement in database
-		// $dbh->exec("PRAGMA foreign_keys = ON;");
-	// }
-	// catch(PDOException $e) {
-		// echo "problem loading sqlite file [$db_fullpath]: {$e->getMessage()}\n";
-		// exit;
-	// }
-// }
-
 // Work with assignments and changes from the latest scheduler run in the current season.
 function scheduler_run() { 
 	return sqlSelect("*", SCHEDULER_RUNS_TABLE, "season_id = " . SEASON_ID, "run_timestamp desc", (0))[0];
@@ -635,7 +605,7 @@ function renderToolsList($tools, $subhead=null) {
 	foreach ($tools as $tool) { 
 		if (0) deb("utils.renderToolsList(): tool = ", $tool);
 		if (0) deb("utils.renderToolsList(): URI = ", makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']));
-		$body .= '<p style="margin-left:2em;"><a href="' . makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']) . '">' . $tool['name'] . '</a></p>';
+		$body .= '<h4><p style="margin-left:2em;"><a href="' . makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']) . '">' . $tool['name'] . '</a></p></h4>';
 	}
 	return $body;
 } 

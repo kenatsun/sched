@@ -23,7 +23,7 @@ $special_case = $_GET['special'];
 
 if ($special_case == 'one_liaison') {
 	$admin = currentAdmin();
-	$page_title = 'Liaison Report for ' . $admin['name'];
+	$page_title = 'Helper Report for ' . $admin['name'];
 	$page_subtitle = 'in the ' . $season_name . ' survey ';
 	if (userIsAdmin()) {
 		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "") . '">view all responses to the survey</a>';
@@ -105,9 +105,8 @@ function saveLiaisonData($posts) {
 	if ($posts) {
 		foreach($posts as $key=>$post) {
 			$text = str_replace("'", "''", $post);
-			// $text = str_replace('"', '""', $text);
 			if (0) deb("report.php: post = ", $post);
-			$report_cud = explode (":" , $key)[0];
+			$report_cud = explode(":" , $key)[0];
 			if ($report_cud == "create_report" && $text) {
 				$columns = "
 					worker_id, 
@@ -123,7 +122,8 @@ function saveLiaisonData($posts) {
 			} elseif ($report_cud == "update_report") {
 				$report_id = explode (":", $key)[1];
 				$report = sqlSelect("*", LIAISON_REPORTS_TABLE, "id = " . $report_id, "")[0];
-				if ($report['report'] != $text) {
+				if (str_replace("'", "''", $report['report']) != $text) {
+				// if ($report['report'] != $text) {
 					$set = "report = '" . $text . "', author_id = " . explode(":", $key)[2];
 					$where = "id = " . explode (":", $key)[1];
 					sqlUpdate(LIAISON_REPORTS_TABLE, $set, $where, (0));
@@ -367,11 +367,11 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 				<input type="submit" name="edit_element" id="save_changes_th" value="Save Changes" onclick="toggleMode(\'view\')" style="display:none"> 
 				<input type="reset" name="edit_element" id="cancel_changes_th" value="Cancel Changes" onclick="toggleMode(\'view\')" style="display:none">
 			</th>';
-		$header_row_2 .= '<th style="text-align:center; display:' . $liaison_column_display . '">liaison</th>';
+		$header_row_2 .= '<th style="text-align:center; display:' . $liaison_column_display . '">helper</th>';
 		$header_row_2 .= '<th style="text-align:center;">suggested action</th>';
-		$header_row_2 .= '<th style="text-align:center; width:300px;">liaison reports</th>'; 
+		$header_row_2 .= '<th style="text-align:center; width:300px;">helper reports</th>'; 
 	} else {
-		$header_row_1 .= '<th style="text-align:center;" rowspan="2">liaison</th>';
+		$header_row_1 .= '<th style="text-align:center;" rowspan="2">helper</th>';
 	}
 	
 

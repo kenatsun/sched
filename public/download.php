@@ -40,7 +40,7 @@ function renderExportMealsForm($season, $action) {
 }
 
 
-function exportMealsCSV($season_id, $filename, $action="create") { 
+function exportMealsCSV($season_id, $filename, $action="create") {
 	if (0) deb("utils.exportMealsCSV: start");
 	$file = fopen($filename,"w");
 
@@ -59,31 +59,33 @@ function exportMealsCSV($season_id, $filename, $action="create") {
 	// Make a row for each meal
 	$meals = sqlSelect("*", MEALS_TABLE, "season_id = " . $season_id, "date, time asc", (0), "utils.exportMealsCSV()");	
 	foreach ($meals as $i=>$meal) { 
-		$row = array();
-		$row['Action'] = ($meal['skip_indicator'] ? "delete" : $action); 
-		$row['Time'] = $meal['date'] . "T" . $meal['time'];
-		$row['Resources'] = 'Kitchen & Dining Room';
-		foreach($jobs as $job) {
-			$select = "w.gid as gather_id";
-			$from = 
-				ASSIGNMENTS_TABLE . " as a, " . 
-				SCHEDULE_SHIFTS_TABLE . " as s, " . 
-				AUTH_USER_TABLE . " as w";
-			$where = 
-				"a.shift_id = s.id 
-				AND s.meal_id = " . $meal['id'] . " 
-				AND s.job_id = " . $job['id'] . "
-				AND a.worker_id = w.id";
-			$assignments = sqlSelect($select, $from, $where, "", (0));
-			$worker_ids = "";
-			foreach($assignments as $assignment) {
-				if ($worker_ids) $worker_ids .= ";";
-				$worker_ids .= $assignment['gather_id'];
+		if (!($action == "create" && $meal['skip_indicator'])) {	// Don't create a meal if it's marked to skip
+			$row = array();
+			$row['Action'] = ($meal['skip_indicator'] ? "destroy" : $action);	// Destroy an existing meal if it's marked to skip
+			$row['Time'] = $meal['date'] . "T" . $meal['time'];
+			$row['Resources'] = 'Kitchen & Dining Room';
+			foreach($jobs as $job) {
+				$select = "w.gid as gather_id";
+				$from = 
+					ASSIGNMENTS_TABLE . " as a, " . 
+					SCHEDULE_SHIFTS_TABLE . " as s, " . 
+					AUTH_USER_TABLE . " as w";
+				$where = 
+					"a.shift_id = s.id 
+					AND s.meal_id = " . $meal['id'] . " 
+					AND s.job_id = " . $job['id'] . "
+					AND a.worker_id = w.id";
+				$assignments = sqlSelect($select, $from, $where, "", (0));
+				$worker_ids = "";
+				foreach($assignments as $assignment) {
+					if ($worker_ids) $worker_ids .= ";";
+					$worker_ids .= $assignment['gather_id'];
+				}
+				$row[] = $worker_ids; 
 			}
-			$row[] = $worker_ids; 
+			fputcsv($file, $row);
+			unset($row);
 		}
-		fputcsv($file, $row);
-		unset($row);
 	}
 	fclose($file);
 }

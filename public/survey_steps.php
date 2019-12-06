@@ -18,11 +18,11 @@ function renderPageBody($season) {
 	$where = "type = 'Tool' 
 		and season_id = " . $season['id'] . "
 		and parent_process_id = " . CONDUCT_SURVEY_ID;
-	$tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (1), "season_utils.renderPageBody():");
+	$tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
 	// $where = "type = 'Step' 
 		// and season_id = " . $season['id'] . "
 		// and parent_process_id = " . CONDUCT_SURVEY_ID;
-	// $steps = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (1), "season_utils.renderPageBody():");
+	// $steps = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
 	if (0) deb("survey_steps.renderPageBody(): tools = ", $tools);
 	$body .= renderToolsList($tools, "Tools for managing and monitoring the survey:");
 	

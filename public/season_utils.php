@@ -292,7 +292,7 @@ function renderLiaisonTable($season) {
 	$order_by = "first_name asc, last_name asc";
 	$liaisons = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): liaisons");
 	$table = '<table style="table-layout:auto; width:1px; vertical-align:middle;" border="1" >';
-	// $table .= '<tr><th colspan="50"><i>Liaisons:</i></th></tr>';
+	// $table .= '<tr><th colspan="50"><i>Helpers:</i></th></tr>';
 	$table .= '
 		<tr>
 			<th style="width:1px; white-space:nowrap; text-align:center; padding:4px;">Name</th>
@@ -314,7 +314,7 @@ function renderLiaisonTable($season) {
 		"AND NOT (w.id IN (SELECT worker_id FROM " . SEASON_LIAISONS_TABLE . " WHERE season_id = " . SEASON_ID . "))";
 	$order_by = "first_name asc, last_name asc";
 	$workers = sqlSelect($select, $from, $where, $order_by, (0), "renderLiaisonTable(): workers");
-	$table .= '<tr><th colspan="50"><i>Add a Helper:</i></th></tr>';
+	$table .= '<tr><th colspan="50"><i>Add a helper:</i></th></tr>';
 	$table .= '
 		<tr>
 			<td>' . '
@@ -501,12 +501,11 @@ function date_postcol($year=0, $month=0, $day=999, $column_name="") {
 
 
 function generateJobsForSeason($season_id) {
-
-	$jobs = sqlSelect("*", JOB_TYPES_TABLE, "", "display_order", (0), "season.generateJobsForSeason(): job types");
-	foreach ($jobs as $i=>$job) {
-		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $job['description'] . "'", "")[0]) {
-			$columns = "season_id, active, description, display_order, constant_name, workers_per_shift";
-			$values = "$season_id, '{$job['active']}', '{$job['description']}', {$job['display_order']}, '{$job['constant_name']}', {$job['workers_per_shift']}";
+	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (0), "season.generateJobsForSeason(): job types");
+	foreach ($job_types as $i=>$job_type) {
+		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $job_type['description'] . "'", "")[0]) {
+			$columns = "season_id, active, description, display_order, constant_name, workers_per_shift, job_type_id";
+			$values = "$season_id, '{$job_type['active']}', '{$job_type['description']}', {$job_type['display_order']}, '{$job_type['constant_name']}', {$job_type['workers_per_shift']}, {$job_type['id']}";
 			sqlInsert(SURVEY_JOB_TABLE, $columns, $values, (0), "season.generateJobsForSeason(): insert new job");
 		}
 	}
@@ -535,7 +534,7 @@ function generateMealsForSeason($season_id) {
 			$meal = sqlSelect("*", MEALS_TABLE, "date = '" . $meal_date . "'", "", (0))[0];
 			
 			// Generate the shifts for this meal
-			generateShiftsForMeal($season_id, $meal);
+			generateShiftsForMeal($season_id, $meal); 
 		}
 	}	
 	// // Generate export file
@@ -778,6 +777,25 @@ function updateSeasonWorkers($season_id) {
 }
 
 
+// XXX NOTE 12/5/19: COMMENTING THIS HALF-COMPLETED FUNCTION OUT FOR NOW.  WILL RESTORE AND COMPLETE AFTER THIS ORGANIZING SEASON.
+// function generateWorkerOffersForSeason($worker_id) {
+	// // Insert a row for each job into offers table for this worker
+	// // Initialize the offers for this season to the worker's offers from last season (if any)
+	// $prev_season_id = getPrevSeason()['id'];
+	// $jobs = getJobs($season_id);
+	// foreach ($jobs as $job) {
+		// if (!sqlSelect("1", OFFERS_TABLE, "worker_id = " . $worker_id . " AND season_id = " . $season_id . " AND job_type_id = " . $job['job_type_id'], "", (0))) {
+			// $where = "worker_id = " . $worker_id . " AND season_id = " . $prev_season_id . " AND job_type_id = " . $job['job_type_id'];
+			// $instances = sqlSelect("instances", OFFERS_TABLE, $where, "", (0))[0]['instances'];
+			// if (!$instances) $instances = null; 
+			// $columns = "worker_id, job_id, season_id, instances";
+			// $values = $worker_id . ", " . $job['id'] . ", " . $season_id . ", " . $instances;
+			// sqlInsert(OFFERS_TABLE, $columns, $values);
+		// }
+	// }
+// }
+
+
 function generateLiaisonsForSeason($season_id) {
 	// Get id of the previous season
 	$last_season_id = sqlSelect("id", SEASONS_TABLE, "NOT id = " . $season_id, "start_date desc", (0))[0]['id'];
@@ -833,5 +851,4 @@ function updateSeasonLiaisons($post, $season_id) {
 		sqlInsert(SEASON_LIAISONS_TABLE, $columns, $values, (0), "", true);
 	}
 }
-
 ?>

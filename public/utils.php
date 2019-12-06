@@ -488,6 +488,7 @@ function array_get($array, $key, $default=NULL) {
 	return $default;
 }
 
+
 // Get the current season or a specified attribute of it from the database
 function getSeason($attribute="") {
 	if ($attribute) {
@@ -495,6 +496,12 @@ function getSeason($attribute="") {
 	} else {
 		return sqlSelect("*", "seasons", "id = " . SEASON_ID, "", (0), "utils.getSeason('id')")[0];
 	}
+}
+
+// Get the season before the current season
+function getPrevSeason() {
+	$this_season = getSeason();
+	return sqlSelect("*", SEASONS_TABLE, "start_date <= '" . $this_season['start_date'] . "'", "start_date desc", (0))[0];
 }
 
 

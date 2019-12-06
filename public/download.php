@@ -48,7 +48,7 @@ function exportMealsCSV($season_id, $filename, $action="create") {
 	$header = array();
 	$header[] = "Action";
 	$header[] = "Date/Time"; 
-	$header[] = "Resources";
+	$header[] = "Locations";
 	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0)); 
 	foreach($jobs as $job) {
 		$header[] = $job['gather_name'];

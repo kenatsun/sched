@@ -103,15 +103,16 @@ function setSessionConstants() {
 		sqlUpdate(SESSIONS_TABLE, "season_id = {$_REQUEST['session_season_id']}", "session_id = '" . SESSION_ID . "'", (0), "config.setSessionConstants(): set new session season");		
 	}
 
-	// If this session has no session season, set its session season to global season
-	if (!$session['season_id']) {
+	// If user is not an admin this session doesn't have a session season, set this session season to global season
+	// XXX 12/8/2019 - SETTING SESSION SEASON UNCONDITIONALLY TO GLOBAL SEASON TILL A BUG IS FIXED
+	// if (!userIsAdmin() || !$session['season_id']) {
 		$global_season = sqlSelect("*", SEASONS_TABLE, "current_season = 1", "", (0), "config.setSessionConstants(): ")[0];
 		if (0) deb("config.setSessionConstants(): global_season = ", $global_season);
 		sqlUpdate(SESSIONS_TABLE, "season_id = " . $global_season['id'], "session_id = '" . SESSION_ID . "'", [1]);
-	}
+	// }
 	
 	// Get season for this session
-	$session = sqlSelect("*", SESSIONS_TABLE, "session_id = '" . SESSION_ID . "'", "", (0))[0];
+	$session = sqlSelect("*", SESSIONS_TABLE, "session_id = '" . SESSION_ID . "'", "", (0))[0]; 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . $session['season_id'], "", (0), "config.setSessionConstants(): ")[0];
 	if (0) deb("config.setSessionConstants(): season = ", $season);
 		

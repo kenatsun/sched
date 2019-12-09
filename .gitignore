@@ -1,5 +1,5 @@
 /public/git_ignored.php
-/db/*
-/old_migration_scripts/*
+/db/
+/old_migration_scripts/
 /public/docs/
-/public/obsolete/*
+/public/obsolete/

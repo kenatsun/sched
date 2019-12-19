@@ -26,7 +26,7 @@ $(document).on('mousedown', ':input', function(){
 	$(this).data('val', $(this).val());
 	if (0) console.log("utils2.js: $(this).val() = " + $(this).val());
 	if (0) console.log("utils2.js: $(this).data('val') = " + $(this).data('val'));
-});
+}); 
 
 
 function modifyInputFieldsOfForm(this_form, field_action, button_action){ 	
@@ -122,16 +122,13 @@ function showHide(divid, linkid) {
 	var divid = document.getElementById(divid);
 	var toggleLink = document.getElementById(linkid);
 	if (divid.style.display == 'block') {
-			// toggleLink.innerHTML = 'click to hide';
-			toggleLink.innerHTML = '<img src="display/images/triangle_pointing_right.png" alt="" height="16" width="16"></img><span style="font-size: 9pt; "> click to show </span>';
-			// toggleLink.innerHTML = '<img src="display/images/triangle_pointing_right.png" alt="click to show" height="16" width="16">';
-			divid.style.display = 'none';
+		toggleLink.innerHTML = '<img src="display/images/triangle_pointing_right.png" alt="" height="16" width="16"></img><span style="font-size: 9pt; "> click to show </span>';
+		divid.style.display = 'none';
 	}
 	else {
-			// toggleLink.innerHTML = '<img src="display/images/triangle_pointing_down.png" alt="click to hide" height="16" width="16">'; 
-			// toggleLink.innerHTML = 'click to show'; 
-			toggleLink.innerHTML = '<img src="display/images/triangle_pointing_down.png" alt="click to hide" height="16" width="16"></img><span style="font-size: 9pt; "> click to hide </span>'; 
-			divid.style.display = 'block';
+		toggleLink.innerHTML = '<img src="display/images/triangle_pointing_down.png" alt="click to hide" height="16" width="16"></img><span style="font-size: 9pt; "> click to hide </span>'; 
+		divid.style.display = 'block';
 	}
 	return false;
 }
+

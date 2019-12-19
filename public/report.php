@@ -10,6 +10,9 @@ if (0) deb("report: userIsAdmin() = " . userIsAdmin());
 require_once('classes/calendar.php');
 require_once('participation.php');
 
+if (!$_SESSION['show_hide_other_season_liaison_reports']) $_SESSION['show_hide_other_season_liaison_reports'] = 'show';
+if (0) deb("report: _SESSION after init = ", $_SESSION);
+
 //////////////// SAVE CHANGES
 
 if ($_POST) saveLiaisonData($_POST);
@@ -20,19 +23,19 @@ if ($_POST) saveLiaisonData($_POST);
 $season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
 
 $special_case = $_GET['special'];
+$admin = currentAdmin();
 
 if ($special_case == 'one_liaison') {
-	$admin = currentAdmin();
 	$page_title = 'Helper Report for ' . $admin['name'];
 	$page_subtitle = 'in the ' . $season_name . ' survey ';
 	if (userIsAdmin()) {
-		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "") . '">view all responses to the survey</a>';
+		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "") . '">view all workers</a>';
 	}
 } else {
 	$page_title = 'Our Responses So Far';
 	$page_subtitle = 'to the ' . $season_name . ' survey';
 	if (userIsAdmin()) {
-		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "special=one_liaison") . '">view my contacts\' responses only</a><br>';
+		$toggle = '<br><a style="font-weight:normal;" href="' . makeURI("/report.php", NEXT_CRUMBS_IDS, "special=one_liaison") . '">view ' . $admin['name'] . '\'s workers only</a><br>';
 	}
 
 	$scoreboard_body = renderScoreboard("");
@@ -53,12 +56,10 @@ if ($special_case == 'one_liaison') {
 
 $headline = renderHeadline($page_title, $page_subtitle);
 
-$workers = renderJobSignups("Job sign-ups", TRUE, $special_case);
+$workers = renderJobSignups("Job sign-ups", TRUE, $special_case, $toggle);
 
 print 
 	$headline .
-	$toggle . '
-	<br>' .
 	$scoreboard . '
 	<br>' .
 	$workers . '
@@ -71,6 +72,22 @@ print
 	</body>
 	</html>'
 ;
+// print 
+	// $headline .
+	// $toggle . '
+	// <br>' .
+	// $scoreboard . '
+	// <br>' .
+	// $workers . '
+	// <br>' .
+	// $non_responders . '
+	// <br>' .
+	// $cal_string . '
+	// <br>' .
+	// $comments . '
+	// </body>
+	// </html>'
+// ;
 
 
 //////////////// DATABASE FUNCTIONS
@@ -113,11 +130,18 @@ function saveLiaisonData($posts) {
 					report, 
 					timestamp, 
 					author_id";
+				$columns = "
+					worker_id, 
+					report, 
+					timestamp, 
+					author_id,
+					season_id";
 				$values = 
 					explode (":" , $key)[2] . ", '" . 
 					$text . "', '" . 
 					date_format(date_create(), "Y-m-d H:i:s") . "', " .
-					explode (":" , $key)[1];
+					explode (":" , $key)[1] . ", " .
+					SEASON_ID;
 				sqlInsert(LIAISON_REPORTS_TABLE, $columns, $values, (0));
 			} elseif ($report_cud == "update_report") {
 				$report_id = explode (":", $key)[1];
@@ -155,11 +179,9 @@ function renderOffersCalendar($calendar) {
 }
 
 function renderNonResponders() {
-	// $non_responders = getNonResponders();
 	$select = "first_name || ' ' || last_name as name";
 	$from = SEASON_WORKERS_TABLE . " as sw, " . AUTH_USER_TABLE . " as w";
 	$where = "sw.worker_id = w.id and season_id = " . SEASON_ID . " and sw.first_response_timestamp is null";
-	// $where = "sw.worker_id = w.id and season_id = " . SEASON_ID . " and (sw.first_response_timestamp is null or sw.first_response_timestamp = '')";
 	$order_by = "first_name, last_name";
 	$non_responders = sqlSelect($select, $from, $where, $order_by, (0));
 	
@@ -260,7 +282,7 @@ function renderOtherPreferences() {
 }
 
 
-function renderJobSignups($section_title=NULL, $include_assignments=true, $special_case="") {
+function renderJobSignups($section_title=NULL, $include_assignments=true, $special_case="", $toggle="") {
 	$include_assignments = false;  // TEMPORARY
 	$jobs = getJobs();
 	if (0) deb("report.renderJobSignups(): renderJobSignups(): getJobs():", $jobs);
@@ -361,19 +383,32 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 		}
 	}
 	if (userIsAdmin()) {
+		// $link = '<a name="show_this_season_reports" id="here_hide" href="#here_hide" onclick="toggleMode(\'\', \'hide\')" style="display:inline;">hide others</a>
+		// <a name="show_all_reports" id="here_show" href="#here_show" onclick="toggleMode(\'\', \'show\')" style="display:none;">show all</a>';
 		$header_row_1 .= '
 			<th style="text-align:center;" colspan="3">
-				<input type="button" name="view_element" id="edit_liaisons_th" value="Edit Helper Info" onclick="toggleMode(\'edit\')">  
-				<input type="submit" name="edit_element" id="save_changes_th" value="Save Changes" onclick="toggleMode(\'view\')" style="display:none"> 
-				<input type="reset" name="edit_element" id="cancel_changes_th" value="Cancel Changes" onclick="toggleMode(\'view\')" style="display:none">
+				<input type="button" name="view_element" id="edit_liaisons_th" value="Edit Helper Info" onclick="toggleMode(\'edit\', \'\')" style="display:inline;" data-from-this-season="1">
+				<input type="submit" name="edit_element" id="save_changes_th" value="Save Changes" onclick="toggleMode(\'view\', \'\')" style="display:none;" data-from-this-season="1"> 
+				<input type="reset" name="edit_element" id="cancel_changes_th" value="Cancel Changes" onclick="toggleMode(\'view\', \'\')" style="display:none;" data-from-this-season="1"> 
 			</th>';
 		$header_row_2 .= '<th style="text-align:center; display:' . $liaison_column_display . '">helper</th>';
 		$header_row_2 .= '<th style="text-align:center;">suggested action</th>';
-		$header_row_2 .= '<th style="text-align:center; width:300px;">helper reports</th>'; 
+		$header_row_2 .= 
+			'<th style="text-align:center; width:300px;">' . 
+				'helper reports' . 
+			'</th>'; 
+		// $header_row_2 .= 
+			// '<th style="text-align:center; width:300px;">' . 
+				// 'helper reports<br>' . 
+				// '<span style="font-weight:normal; font-style:italic;">' .
+						// $link . 
+					// '</span>' . 
+			// '</th>'; 
 	} else {
 		$header_row_1 .= '<th style="text-align:center;" rowspan="2">helper</th>';
 	}
 	
+	// <a href="{$dir}/report.php?key={$key}&show={$data_key}">{$label}{$only}</a>
 
 	$header_row_1 .= "
 		</tr> 
@@ -391,7 +426,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 	$signup_rows = '';
 	$n_jobs = sqlSelect("count(*) as n_jobs", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "", (0))[0]['n_jobs'];
 	$job_n = 1;
-	$header_interval = 24;
+	$header_interval = 12;
 	$row_n = 1;
 	foreach($signups as $signup) {
 		if (0) deb ("report.renderJobSignups(): signup['job_id']) = {$signup['job_id']}");
@@ -517,7 +552,8 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 					l.first_name || ' ' || l.last_name as author_name,
 					r.id,
 					r.timestamp,
-					r.report";
+					r.report,
+					r.season_id";
 				$from = 
 					LIAISON_REPORTS_TABLE . " as r " . "
 						LEFT JOIN " . AUTH_USER_TABLE . " as l ON r.author_id = l.id";
@@ -531,26 +567,28 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 				$report_rows = '';
 				if ($reports) {
 					foreach($reports as $report) {
+						$from_this_season = ($report['season_id'] == SEASON_ID ? 1 : 0);
 						$report_text = str_replace('"', '&quot;', $report['report']);
-						$when = date_format(date_create($report['timestamp']), "D n/j ga");
+						$when = date_format(date_create($report['timestamp']), "D n/j/Y ga");
 						
 						// Render the report
-						if ($report_rows) $report_rows .= '<hr>';
+						$report_rows .= '<ul>'; 
 						$report_rows .= '
-							<div name="view_element">';
+							<div name="view_element" id="liaison_report_' . $report['id'] . '_view_div" data-from-this-season="' . $from_this_season . '">';
 						$report_rows .= '
-								<span style="font-style: italic;">' . $when . ' by ' . $report['author_name'] . ':</span> ' . $report_text;
+								<li style="list-style-type: circle;"><span style="font-style: italic;">' . $when . ' by ' . $report['author_name'] . ':</span> ' . $report_text . '</li>';
 						$report_rows .= '
-							</div>';
+							</div></ul>';
 							
 						// Render report edit fields
 						$report_rows .= '
 							<!-- liaison report update edit div -->
-							<div name="edit_element" id="liaison_report_' . $report['id'] . '_span" style="display:none">';
+							<div name="edit_element" id="liaison_report_' . $report['id'] . '_edit_div" style="display:none" data-from-this-season="' . $from_this_season . '">';
 
 						// Render report update field
 						$report_rows .= '
 							<!-- liaison_report_input -->
+							<span style="font-style: italic;">' . $when . ' by ' . $report['author_name'] . ':</span> 
 							<input 
 								type="textarea"
 								style="font-size:9pt; width:300px; resize:both; wrap:soft; overflow:auto;"										  
@@ -571,14 +609,12 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 				
 				// Render field to add a new report
 				if (0) deb ("report.renderJobSignups(): report_rows = " . $report_rows);
-				$hr = ($report_rows) ? '<hr>' : '';
 
 				$report_rows .= '
 						<!-- liaison report add div -->
-						<div name="edit_element" id="liaison_report_' . $report['id'] . '_add_span" style="display:none">'
-						. $hr;
+						<div name="edit_element" id="liaison_report_' . $report['id'] . '_add_div" style="display:none" data-from-this-season="1">';
 				$report_rows .= '
-							<p>add a report:</p>
+							<p><em>add a new report:</em></p>
 							<!-- liaison_report_add_input -->
 							<input 
 								type="textarea"
@@ -604,24 +640,30 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 	} // signups loop
 	$signup_rows .= '</tr>'; 
 
+	if (userIsAdmin()) $reports_to_show = 
+		$toggle . 
+		'<p><a name="show_this_season_reports" id="show_this_season_reports" href="#show_this_season_reports" onclick="toggleMode(\'\', \'hide\')" style="display:inline;">show helper reports from this season only</a>
+		<a name="show_all_reports" id="show_all_reports" href="#show_all_reports" onclick="toggleMode(\'\', \'show\')" style="display:none;">show helper reports from all seasons</a>';
+
 	if ($special_case == "one_liaison") $query_string = "special=one_liaison";
-	$block = '
-	<form id="liaisons_form" name="liaisons_form" action="' . makeURI("report.php", CRUMBS_IDS, $query_string) . '" method="post">
-		<!-- signup rows table 1 -->
-		<table><tr><td style="background:Yellow"> 
-			<!-- signup rows table 2 -->
-			<table border="1" cellspacing="3"> 
-				<!-- signup rows tr -->
-				<tr>  ' .
-					$header .
-					$signup_rows . ' 
-				</tr> 
-				<!-- signup rows tr / -->
-			</table> 
-			<!-- signup rows table 2 / -->
-		</td></tr></table> 
-		<!-- signup rows table 1 / -->
-	</form>' .
+	$block = 
+		$reports_to_show . '
+		<form id="liaisons_form" name="liaisons_form" action="' . makeURI("report.php", CRUMBS_IDS, $query_string) . '" method="post">
+			<!-- signup rows table 1 -->
+			<table><tr><td style="background:Yellow"> 
+				<!-- signup rows table 2 -->
+				<table border="1" cellspacing="3"> 
+					<!-- signup rows tr -->
+					<tr>  ' .
+						$header .
+						$signup_rows . ' 
+					</tr> 
+					<!-- signup rows tr / -->
+				</table> 
+				<!-- signup rows table 2 / -->
+			</td></tr></table> 
+			<!-- signup rows table 1 / -->
+		</form>' .
 	renderResponseCounts()
 	;
 

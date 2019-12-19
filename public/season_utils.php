@@ -563,10 +563,6 @@ function saveChangesToMealsCalendar($post, $season_id) {
 		generateShiftsForMeal($season_id, $meal);
 	}
 
-	// // Generate export file
-	// exportMealsCSV($season_id, MEALS_EXPORT_FILE, "create"); 
-		
-
 	// KEEPING THIS CODE (originally from updateSeasonWorkers()) IN CASE WANT TO ENABLE ADDING A MEAL
 	// // Add a new meal
 	// if ($post['new_first_name'] && $post['new_last_name'] && $post['new_email']) {
@@ -756,7 +752,7 @@ function updateSeasonWorkers($season_id) {
 	$new_workers = sqlSelect("*", $from, $where, $order_by, (0), "importWorkersFromGather(): insert current workers not in season_workers for this season into season_workers");
 	if ($new_workers) {
 		foreach($new_workers as $new_worker) {
-			sqlInsert($season_workers_table, "worker_id, season_id", "{$new_worker['id']}, {$season_id}", (0), "importWorkersFromGather(): inserting workers into season_workers", TRUE);
+			sqlInsert($season_workers_table, "worker_id, season_id", "{$new_worker['id']}, {$season_id}", (0), "importWorkersFromGather(): inserting workers into season_workers", TRUE); 
 		}
 	}
 	

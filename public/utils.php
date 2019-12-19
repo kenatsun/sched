@@ -27,7 +27,7 @@ function changeUserStatus() {
 	} elseif (array_key_exists('sign_out_admin', $_REQUEST)) { 
 		$_SESSION['access_type'] = "guest";
 		$_SESSION['admin_id'] = "";
-		$_SESSION['admin_name'] = "";
+		$_SESSION['admin_name'] = ""; 
 	}
 	if (0) deb("utils.changeUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
 	if (0) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);

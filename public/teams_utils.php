@@ -721,7 +721,7 @@ function getAvailableWorkersForShift($shift_id, $addable_only=FALSE, $omit_avoid
 					and oo.season_id = {$season_id}		-- in this season.
 		)";
 	$order_by = "open_offers_count desc, pref desc, worker asc";
-	$available_workers = sqlSelect($select, $from, $where, $order_by, (0), "available_workers");
+	$available_workers = sqlSelect($select, $from, $where, $order_by, (1), "available_workers");
 	if (0) deb("teams.php:getPossibleShiftsForWorker() available_workers for shift {$shift_id} (from view) = ", $available_workers);
 
 	return $available_workers;

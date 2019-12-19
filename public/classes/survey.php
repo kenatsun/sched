@@ -614,7 +614,7 @@ replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comment
 		{$season_id}
 	)
 EOSQL;
-		if (0) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
+		if (0) deb("survey.saveRequests(): SQL to insert or update work_prefs", $sql);
 		$success = $this->dbh->exec($sql);
 		if (0) deb("survey.saveRequests(): success?", $success);
 

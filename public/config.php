@@ -18,6 +18,10 @@ defineJobCategories();
 global $json_assignments_file; 
 $json_assignments_file = 'results/' . SEASON_ID . '.json';
 
+// check on the time zone
+if (0) deb ("config.php: date_default_timezone_get(): ", date_default_timezone_get());
+
+
 
 /* ----------- meals on holidays? -------------- */
 if (COMMUNITY == 'Sunward') {

@@ -271,6 +271,7 @@ function renderWorkerTable($season) {
 
 
 function renderLiaisonEditForm($season, $parent_process_id) {
+	if (0) deb("season.renderLiaisonEditForm() season from arg = ", $season);
 	if (!$season) return;
 	if (!sqlSelect("id", SEASON_LIAISONS_TABLE, "season_id = {$season['id']}", "", (0), "renderLiaisonEditForm(): season_liaisons")) return;
 	$form = '';
@@ -279,7 +280,7 @@ function renderLiaisonEditForm($season, $parent_process_id) {
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="update_liaisons">';
 	$form .= renderLiaisonTable($season);
-  $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
+	$form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
 	$form .= '</form>';
 	return $form;	
 }
@@ -471,7 +472,7 @@ function saveChangesToSeason($post) {
 		generateMealsForSeason($season_id);
 		
 		// Generate the liaisons for this new season (can't do till after workers are imported)
-		// generateLiaisonsForSeason($season_id);
+		generateLiaisonsForSeason($season_id);
 		
 		// Record the number of shifts this season for each job
 		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
@@ -579,15 +580,15 @@ function saveChangesToMealsCalendar($post, $season_id) {
 
 function generateShiftsForMeal($season_id, $meal) {
 	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
-	if ($meal['skip_indicator']) {		// A skipped meal should have no shifts
-		sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", (0));
-	} else {							// Create any missing shifts for this meal
+	//if ($meal['skip_indicator']) {		// A skipped meal should have no shifts
+		// sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", (0));
+	// } else {							// Create any missing shifts for this meal
 		foreach($jobs as $i=>$job) {
 			if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = {$job['id']} and meal_id = {$meal['id']}", "", (0))[0]) {
 				sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", "{$job['id']}, {$meal['id']}", (0), "generateShiftsForMeal()");
 			}
 		}
-	}
+	//}
 }
 
 

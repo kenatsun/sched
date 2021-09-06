@@ -1,5 +1,7 @@
 <?php
 
+//if (0) deb("download.php: start);
+
 if($_POST['file_to_download']) {
 	// $filepath = "docs/meals.csv";
 	$filepath = $_POST['file_to_download'];
@@ -22,7 +24,7 @@ if($_POST['file_to_download']) {
 	header('Cache-Control: must-revalidate');
 	header('Pragma: public');
 	header('Content-Length: ' . filesize($filepath)); 
-	readfile($filepath);
+	readfile($filepath);  
 	exit;
 }
 

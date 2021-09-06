@@ -2,8 +2,8 @@ var session_mode = "view";
 var session_others_display = "show";
 
 function toggleMode(mode, others_display) {
-	if (1) console.log("toggleMode() start: mode = " + mode + ", session_mode = " + session_mode);
-	if (1) console.log("toggleMode() start: others_display = " + others_display + ", session_others_display = " + session_others_display);
+	if (0) console.log("toggleMode() start: mode = " + mode + ", session_mode = " + session_mode);
+	if (0) console.log("toggleMode() start: others_display = " + others_display + ", session_others_display = " + session_others_display);
 	
 	if (mode) {
 		session_mode = mode;
@@ -16,8 +16,8 @@ function toggleMode(mode, others_display) {
 		others_display = session_others_display;
 	}
 	
-	if (1) console.log("toggleMode() after assmt: mode = " + mode + ", session_mode = " + session_mode);
-	if (1) console.log("toggleMode() after assmt: others_display = " + others_display + ", session_others_display = " + session_others_display);
+	if (0) console.log("toggleMode() after assmt: mode = " + mode + ", session_mode = " + session_mode);
+	if (0) console.log("toggleMode() after assmt: others_display = " + others_display + ", session_others_display = " + session_others_display);
 
 	const edit_elements = document.getElementsByName("edit_element");
 	edit_elements.forEach(element => {
@@ -64,7 +64,7 @@ function isCurrentSeasonReport(element) {
 	// var reports;
 	// reports = document.getElementsByName("view_element");
 	// reports.forEach(report => {
-		// if (1) console.log("report.name =  = " + divid + " linkid = " + linkid);
+		// if (0) console.log("report.name =  = " + divid + " linkid = " + linkid);
 		// report.display = inline_or_none;
 	// })
 	// reports = document.getElementsByName("edit_element");

@@ -2,6 +2,8 @@
 
 require_once "start.php";
 
+if (0) deb("change_sets_utils.php: start");
+
 if (0) deb("change_set_utils.php: _POST = ", $_POST);
  
 define('OK_CHANGE_VALUE', 'ok_change');

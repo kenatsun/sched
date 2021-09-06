@@ -5,7 +5,7 @@
  */
 
 define('RESULTS_FILE', 'schedule.txt');
-date_default_timezone_get('America/Detroit');
+date_default_timezone_set('America/Detroit');
 define('BASE_DIR', '');
 define('PUBLIC_DIR', BASE_DIR);
 define('DB_DIR', BASE_DIR . '../db');

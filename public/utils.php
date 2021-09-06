@@ -970,6 +970,7 @@ function getJobsFromDB($season_id) {
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where=NULL, $order_by=NULL, $debs=0, $tag="") {
 	global $dbh;
+	$rows = array();
 	$sql = <<<EOSQL
 SELECT {$select} 
 FROM {$from} 
@@ -987,13 +988,18 @@ ORDER BY {$order_by}
 EOSQL;
 	}
 
-	if ($debs > 1) deb("utils.sqlSelect(){$tag}: before EXEC QUERY" . since("before EXEC QUERY"));
+	if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $sql); 
+	if ($debs == 2) deb("utils.sqlSelect(){$tag}: before EXEC QUERY" . since("before EXEC QUERY"));
+
 	$query = $dbh->query($sql);
-	$rows = $query->fetchAll(PDO::FETCH_ASSOC);
-	$query->closeCursor();
-	if ($debs > 1) deb("utils.sqlSelect(){$tag}: after  EXEC QUERY" . since("after  EXEC QUERY"));
-	if ($debs == 1 && $tag) $tag = " [$tag]";
-	if ($debs == 1) deb("utils.sqlSelect(){$tag}: sql:", $sql); 
+	if ($query) {
+		$rows = $query->fetchAll(PDO::FETCH_ASSOC);
+		$query->closeCursor();
+	}
+	if ($debs == 2) deb("utils.sqlSelect(){$tag}: after  EXEC QUERY" . since("after  EXEC QUERY"))
+		;
+	if ($debs && $tag) $tag = " [$tag]";
+
 	return $rows;
 }
 

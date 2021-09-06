@@ -3,15 +3,16 @@ require_once 'start.php';
 require_once "classes/PeopleList.php";
 print '<script src="js/report.js"></script>';
 
-if (0) deb("report: _SESSION = ", $_SESSION);
-if (0) deb("report: _GET = ", $_GET);
-if (0) deb("report: userIsAdmin() = " . userIsAdmin());
+if (0) deb(">>>> report.php: start");
+if (0) deb("report.php: _SESSION = ", $_SESSION);
+if (0) deb("report.php: _GET = ", $_GET);
+if (0) deb("report.php: userIsAdmin() = " . userIsAdmin());
 
 require_once('classes/calendar.php');
 require_once('participation.php');
 
 if (!$_SESSION['show_hide_other_season_liaison_reports']) $_SESSION['show_hide_other_season_liaison_reports'] = 'show';
-if (0) deb("report: _SESSION after init = ", $_SESSION);
+if (0) deb("report.php: _SESSION after init = ", $_SESSION);
 
 //////////////// SAVE CHANGES
 
@@ -22,7 +23,7 @@ if ($_POST) saveLiaisonData($_POST);
 
 $season_name = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "")[0]['name'];
 
-$special_case = $_GET['special'];
+if ($_GET) $special_case = $_GET['special'];
 $admin = currentAdmin();
 
 if ($special_case == 'one_liaison') {
@@ -56,7 +57,9 @@ if ($special_case == 'one_liaison') {
 
 $headline = renderHeadline($page_title, $page_subtitle);
 
+if (0) deb(">>> report.php: calling renderJobSignups()");
 $workers = renderJobSignups("Job sign-ups", TRUE, $special_case, $toggle);
+if (0) deb("<<< report.php: called renderJobSignups()");
 
 print 
 	$headline .
@@ -72,22 +75,9 @@ print
 	</body>
 	</html>'
 ;
-// print 
-	// $headline .
-	// $toggle . '
-	// <br>' .
-	// $scoreboard . '
-	// <br>' .
-	// $workers . '
-	// <br>' .
-	// $non_responders . '
-	// <br>' .
-	// $cal_string . '
-	// <br>' .
-	// $comments . '
-	// </body>
-	// </html>'
-// ;
+
+if (0) deb("<<<< report.php: end");
+
 
 
 //////////////// DATABASE FUNCTIONS
@@ -164,6 +154,7 @@ function saveLiaisonData($posts) {
 //////////////// DISPLAY FUNCTIONS
 
 function renderOffersCalendar($calendar) {
+	if (0) deb(">> report.renderOffersCalendar(): start");
 	$worker_dates = $calendar->getWorkerShiftPrefs();
 	$selector_html = $calendar->renderDisplaySelectors($calendar->job_key, $calendar->data_key);
 	$calendar_body = $calendar->renderCalendar(NULL, $worker_dates);
@@ -175,8 +166,10 @@ function renderOffersCalendar($calendar) {
 		<ul>' . $selector_html . '</ul>'
 	;
 	$out = renderBlockInShowHideWrapper($block, $section_title, '<h2>', $section_title . '</h2>');
+	if (0) deb("<< report.renderOffersCalendar(): end");
 	return $out;
 }
+
 
 function renderNonResponders() {
 	$select = "first_name || ' ' || last_name as name";
@@ -185,6 +178,7 @@ function renderNonResponders() {
 	$order_by = "first_name, last_name";
 	$non_responders = sqlSelect($select, $from, $where, $order_by, (0));
 	
+	if (0) deb(">> report.renderNonResponders(): start");
 	if (0) deb("report.renderNonResponders: non_responders =", $non_responders);
 	foreach($non_responders as $non_responder) {
 		$non_responder_names .= "<tr><td>{$non_responder['name']}</td></tr>
@@ -205,6 +199,7 @@ function renderNonResponders() {
 	$out = renderBlockInShowHideWrapper($block, $section_title, '<h2>', $section_title . '</h2>');
 
 	if (0) deb("report.renderNonResponders: out =", $out);
+	if (0) deb("<< report.renderNonResponders(): end");
 	return $out;
 }
 
@@ -218,6 +213,7 @@ function renderOtherPreferences() {
 	$where = "c.worker_id = w.id and c.season_id = {$season_id}";
 	$order_by = "w.first_name, w.last_name";
 	$workers = sqlSelect($select, $from, $where, $order_by);
+	if (0) deb(">> report.renderOtherPreferences(): start");
 	if (0) deb ("report.renderOtherPreferences(): comments =", $workers); 
 
 	$attributes = array(
@@ -277,6 +273,7 @@ function renderOtherPreferences() {
 	
 	$section_title = 'Other Preferences';
 	$out = renderBlockInShowHideWrapper($block, $section_title, '<h2>', $section_title . '</h2>');
+	if (0) deb("<< report.renderOtherPreferences(): end");
 
 	return $out;
 }
@@ -285,6 +282,7 @@ function renderOtherPreferences() {
 function renderJobSignups($section_title=NULL, $include_assignments=true, $special_case="", $toggle="") {
 	$include_assignments = false;  // TEMPORARY
 	$jobs = getJobs();
+	if (0) deb(">> report.renderJobSignups(): start");
 	if (0) deb("report.renderJobSignups(): renderJobSignups(): getJobs():", $jobs);
 
 	$person_table = AUTH_USER_TABLE;
@@ -397,19 +395,10 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 			'<th style="text-align:center; width:300px;">' . 
 				'helper reports' . 
 			'</th>'; 
-		// $header_row_2 .= 
-			// '<th style="text-align:center; width:300px;">' . 
-				// 'helper reports<br>' . 
-				// '<span style="font-weight:normal; font-style:italic;">' .
-						// $link . 
-					// '</span>' . 
-			// '</th>'; 
 	} else {
 		$header_row_1 .= '<th style="text-align:center;" rowspan="2">helper</th>';
 	}
 	
-	// <a href="{$dir}/report.php?key={$key}&show={$data_key}">{$label}{$only}</a>
-
 	$header_row_1 .= "
 		</tr> 
 		<!-- jobnames header tr / -->";
@@ -674,6 +663,7 @@ function renderJobSignups($section_title=NULL, $include_assignments=true, $speci
 	}
 	
 	if (0) deb ("report.renderJobSignups(): out =", $out);
+	if (0) deb("<< report.renderJobSignups(): end");
 	return $out;
 }
 

@@ -55,6 +55,6 @@ if (0) deb("teams.php: before displaySchedule()" . since("before displaySchedule
 
 displaySchedule($controls_display, $change_markers_display, $edition);
 
-if (0) deb("<<<<< teams.php: end" . since()); 
+if (1) deb("<<<<< teams.php: end" . since()); 
 
 ?>

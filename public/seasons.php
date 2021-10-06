@@ -39,7 +39,6 @@ function renderSeasonsForm() {
 	$td_style = 'style="font-size:11pt; border: 1px solid lightgray; text-align:center;"'; 
 	$form = "";
 	$form .= '<form action="' . makeURI("/seasons.php", CRUMBS_IDS, REQUEST_QUERY_STRING) . '" method="post">';
-	// $form .= '<form action="' . makeURI("seasons.php", CRUMBS_IDS, REQUEST_QUERY_STRING) . '" method="post" onsubmit="return false">';
 	$form .= '<form action="seasons.php" method="post" onsubmit="return false">';
 	$form .= '<table style="width:50%; font-size:11pt; border-collapse: collapse;">';
 	$form .= '<tr>';
@@ -66,8 +65,6 @@ function renderSeasonsForm() {
 		if ($deletable_season_exists) {
 			if (seasonIsDeletable($season)) {
 					$form .= '<td ' . $td_style . '>' . '<input type="checkbox" name="delete_season_' . $season['id'] . '" value="' . $season['id'] . '"></td>';
-					// $form .= '<td ' . $td_style . '>' . '<input type="checkbox" onClick="confirmDeleteSeason(' . $season['id'] . ', &quot;'. $season['name'] . '&quot;)"  name="delete_season" value="' . $season['id'] . '"></td>';
-					// $form .= '<td ' . $td_style . '>' . '<input type="submit" onClick="confirmDeleteSeason(' . $season['id'] . ', &quot;'. $season['name'] . '&quot;)"  name="' . $season['id'] . '_delete" value="Delete this Season">' . '</td>';
 				} else {
 					$form .= '<td ' . $td_style . '></td>'; 
 				}

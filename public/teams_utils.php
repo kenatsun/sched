@@ -49,15 +49,70 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	if (!array_key_exists("previewonly", $_GET)) $bullpen = '<br>' . renderBullpen();
 	if (0) deb("teams_utils.php.displaySchedule(): after renderBullpen()");
 
+	$xxselect_tag = xxSelect();
+	
 	$page = <<<EOHTML
 		{$headline}
 		{$change_requests_line}
 		{$change_sets_link}
 		{$assignments_form}
 		{$bullpen}
+		{$xxselect_tag}
+		Hi there!
 EOHTML;
 	if (0) deb("teams_utils.php.displaySchedule(): before print page");
 	print $page;
+}
+
+function xxSelect() {
+	
+	$select = "w.id, w.first_name || ' ' || w.last_name as name";
+	$from = "workers as w, season_workers as sw";
+	$where = "sw.worker_id = w.id and sw.season_id = " . SEASON_ID;
+	$order_by = "name";
+	
+	$workers = sqlSelect($select, $from, $where, $order_by, (0));
+	$options = '';
+	foreach($workers as $worker) {
+		$options .= '
+			<option value=' . $worker['id'] . '>' . $worker['name'] . '</option>';
+	}
+	$xxselect_tag = '<select name="multisel" multiple="multiple">' .
+		$options . '
+	</select>';
+	if (0) deb("xxSelect(): xxselect_tag =", $xxselect_tag);
+	
+	return $select_tag;
+
+			// $worker_list = new WorkersList();
+		// $workers = $worker_list->getWorkers();
+		// $options = ($first_entry) ? '<option value="none"></option>' : '';
+		// foreach($workers as $username=>$info) {
+			// if (!is_null($skip_user) && $username == $skip_user) {
+				// continue;
+			// }
+
+			// if ($info['first_name'] . " " . $info['last_name'] == $username) {
+				// $visible_name = <<<EOTXT
+// {$info['first_name']} {$info['last_name']}
+// EOTXT;
+			// } else {
+				// $visible_name = <<<EOTXT
+// {$info['first_name']} {$info['last_name']} ({$username})
+// EOTXT;
+			// }
+			
+			// $selected = isset($chosen[$username]) ? ' selected' : '';
+			// $options .= <<<EOHTML
+			// <option value="{$username}"{$selected}>{$visible_name}</option>
+// EOHTML;
+		// }
+
+		// return <<<EOHTML
+		// <select name="{$id}[]" id="{$id}" multiple="multiple">
+			// {$options}
+		// </select>
+// EOHTML;
 }
 
 
@@ -71,16 +126,12 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 	$meals_table = MEALS_TABLE;
 	$season_id = SEASON_ID;
 	
-	// if (0) deb("teams_utils.php.renderAssignmentsForm(): before prepareQueries()" . since("before prepareQueries()"));
-	// $prepared_queries = prepareQueries();
-	// if (0) deb("teams_utils.php.renderAssignmentsForm(): after prepareQueries()" . since("after prepareQueries()"));
-	
 	if (0) deb("teams_utils.php.renderAssignmentsForm(): change_markers_display =", $change_markers_display);
 	$jobs = getJobs();
 	if (0) deb("teams_utils.php.renderAssignmentsForm(): jobs = ", $jobs);
 	if (0) deb("teams_utils.php.renderAssignmentsForm(): controls_display = ", $controls_display);
 
-	// // Re-populate stash tables
+	// Populate stash tables
 	populateStashTables($season_id);
 
 
@@ -235,7 +286,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			$order_by = "";
 			$shifts = sqlSelect($select, $from, $where, $order_by, (0), "teams_utils.phprenderAssignmentsForm()"); 
 			$shift_id = $shifts[0]['id'];
-			if (0) deb("teams_utils.php.renderAssignmentsForm(): shift_id = {$shift_id}");
+			if (0) deb("teams_utils.php.renderAssignmentsForm(): start processing this shift\nshift_id = {$shift_id}");
 
 			// Find the worker(s) assigned to this shift
 			$select = "w.username as worker_name, 
@@ -491,9 +542,10 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 
 				// Figure out which workers could be MOVEd INto this shift from another shift
 				$possible_move_ins = getPossibleMovesIntoShift($shift_id);
-				if (0) deb("&&& teams_utils.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, possible_move_ins = ", $possible_move_ins);
+				if (0) deb("&&& teams_utils.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, \nshift_id = " . $shift_id . "\npossible_move_ins = ", $possible_move_ins);
 
-				// Render the MOVE-IN-able  workers in a dropdown box
+				// Render the MOVE-IN-able workers  - if there are any - in a dropdown box
+				$movein_row = "";
 				if ($possible_move_ins) {
 					$action = "movein";
 					$movein_row = '
@@ -537,10 +589,10 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 				if (0) deb("teams_utils.php.renderAssignmentsForm(): BEFORE getPossibleAddsIntoShift()"); 
 				$available_workers = getPossibleAddsIntoShift($shift_id, FALSE, TRUE); 
 				if (0) deb("teams_utils.php.renderAssignmentsForm(): AFTER  getPossibleAddsIntoShift()"); 
-				// $available_workers = getPossibleAddsIntoShift($prepared_queries['AvailableWorkersForShift'], $shift_id, FALSE, TRUE); 
 				if (0) deb("$$$ teams_utils.php.renderAssignmentsForm(): meal_date = {$meal['meal_date']}, available_workers = ", $available_workers); 
 
-				// Render the available workers to ADD to this shift in a dropdown box 
+				// Render the available workers to ADD to this shift  - if there are any - in a dropdown box
+				$add_row = "";
 				if ($available_workers) {
 					$action = "add";
 					$add_row = '
@@ -754,15 +806,9 @@ function publishSchedule() {
 		}
 	}
 
-	// // Generate export file
-	// exportMealsCSV(SEASON_ID, MEALS_EXPORT_FILE, "update"); 
-
 	// Mark the just-published change sets as published
 	sqlUpdate(CHANGE_SETS_TABLE, "published = 1", "scheduler_run_id = " . $scheduler_run_id . " and published = 0", (0));
 	
-	if (0) deb("change_sets_utils.publishSchedule(): before displaySchedule()");
-	// displaySchedule();
-	if (0) deb("change_sets_utils.publishSchedule(): after  displaySchedule()");
 }
 
 ?>

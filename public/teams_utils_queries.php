@@ -37,6 +37,7 @@ function populateStashTables($season_id) {
 
 }
 
+
 function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 	if (0) deb("getPossibleShiftsForWorker(): start" . since("getPossibleShiftsForWorker(): start"));
 	$season_id = SEASON_ID;
@@ -53,7 +54,7 @@ function getPossibleShiftsForWorker($worker_id, $job_id, $omit_avoiders=TRUE) {
 	if (0) deb(">> start MOVE OUT query" . since("start MOVE OUT query"));
 	$possible_shifts = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleShiftsForWorker()");
 	if (0) deb("<< end MOVE OUT query" . since("end MOVE OUT query"));
-	if (0) deb("teams.php:getPossibleShiftsForWorker() possible_shifts = ", $possible_shifts);
+	if (0) deb("teams.php:getPossibleShiftsForWorker(): shift_id = " . $shift_id . "\npossible_shifts = ", $possible_shifts);
 	if (0) deb("getPossibleShiftsForWorker(): end" . since("getPossibleShiftsForWorker(): end"));
 
 	return $possible_shifts;
@@ -76,7 +77,7 @@ function getPossibleTradesForShift($worker_id, $shift_id, $job_id) {
 	if (0) deb(">> start TRADE query" . since("start TRADE query"));
 	$possible_trades = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleTradesForShift()"); 
 	if (0) deb("<< end TRADE query" . since("end TRADE query"));
-	if (0) deb("teams.php:getPossibleTradesForShift() possible_trades = ", $possible_trades);
+	if (0) deb("teams.php:getPossibleTradesForShift(): shift_id = " . $shift_id . "\n possible_trades = ", $possible_trades);
 	
 	return $possible_trades;  
 }
@@ -111,7 +112,7 @@ function getPossibleMovesIntoShift($shift_id) {
 	if (0) deb(">> start MOVE IN query" . since("start MOVE IN query"));
 	$possible_moveins = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleMovesIntoShift()"); 
 	if (0) deb("<< end MOVE IN query" . since("end MOVE IN query"));
-	if (0) deb("teams.php:getPossibleMovesIntoShift() possible_moveins = ", $possible_moveins); 
+	if (0) deb("teams.php:getPossibleMovesIntoShift(): shift_id = " . $shift_id . "\n possible_moveins = ", $possible_moveins); 
 	
 	return $possible_moveins;
 }
@@ -123,7 +124,7 @@ function getPossibleAddsIntoShift($shift_id, $addable_only=FALSE, $omit_avoiders
 			p.worker as worker_name,
 			p.job_name, 
 			o.open_offers_count";
-	$from = "stash_possible_shifts_for_workers p, open_offers_count o";
+	$from = "stash_possible_shifts_for_workers p, stash_open_offers_count o";
 	$where = "p.shift_id = {$shift_id}      	-- This shift.
 			and p.season_id = {$season_id}  	-- This season.
 			and o.worker_id = p.worker_id		-- The open offers of this worker
@@ -141,12 +142,13 @@ function getPossibleAddsIntoShift($shift_id, $addable_only=FALSE, $omit_avoiders
 		)";
 	$order_by = "open_offers_count desc, pref desc, worker asc";
 	if (0) deb(">> start ADD query" . since("start ADD query"));
-	$available_workers = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleAddsIntoShift()");
+	$possible_adds = sqlSelect($select, $from, $where, $order_by, (0), "getPossibleAddsIntoShift()");
 	if (0) deb("<< end ADD query" . since("end ADD query"));
+	if (0) deb("teams.php:getPossibleAddsIntoShift(): shift_id = " . $shift_id . "\npossible_adds = ", $possible_adds); 
 	// }
 	if (0) deb("getPossibleAddsIntoShift(): query end" . since("getPossibleAddsIntoShift(): query end"));
 
-	return $available_workers;
+	return $possible_adds;
 }
 
 

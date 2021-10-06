@@ -29,6 +29,9 @@ function renderPageBody($season, $parent_process_id) {
 			case EXPORT_MEALS_ID:
 				$body .= renderExportMealsForm($season, "create");
 				break;
+			// case EXPORT_MEALS_ID:
+				// $body .= renderExportMealsForm($season, "season.php", "create");
+				// break;
 			case IMPORT_WORKERS_ID:
 				$body .= renderWorkerImportForm($season, $parent_process_id);
 				break;
@@ -538,8 +541,6 @@ function generateMealsForSeason($season_id) {
 			generateShiftsForMeal($season_id, $meal); 
 		}
 	}	
-	// // Generate export file
-	// exportMealsCSV($season_id, MEALS_EXPORT_FILE, "create");  
 }
 	
 	

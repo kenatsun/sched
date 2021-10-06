@@ -73,10 +73,10 @@ function runScheduler($options) {
 				$change_set_ids .= $change_set['id'];
 			}
 			if (0) deb("assignments.php: change_set_ids = {$change_set_ids}");
-			sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (0));
-			sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (0));
-			sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (0));
-			sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (0)); 
+			sqlDelete(ASSIGNMENT_STATES_TABLE, "season_id = {$season_id}", (1));
+			sqlDelete(CHANGES_TABLE, "change_set_id in ({$change_set_ids})", (1));
+			sqlDelete(CHANGE_SETS_TABLE, "id in ({$change_set_ids})", (1));
+			sqlDelete(SCHEDULER_RUNS_TABLE, "season_id = {$season_id}", (1)); 
 		}
 		sqlInsert(SCHEDULER_RUNS_TABLE, "season_id, run_timestamp", "{$season_id}, '{$scheduler_timestamp}'", (0));
 		$scheduler_run_id = sqlSelect("id", SCHEDULER_RUNS_TABLE, "run_timestamp = '{$scheduler_timestamp}'", (0))[0]['id'];

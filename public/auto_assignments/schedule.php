@@ -7,6 +7,7 @@ define('DEFAULT_AVOIDS_SCORE', 7);
 define('DEFAULT_PREFERS_SCORE', 4);
 
 require_once('../public/utils.php');
+require_once('../public/teams_utils_queries.php');
 
 class Schedule {
 	protected $meals = array();

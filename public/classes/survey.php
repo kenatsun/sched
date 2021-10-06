@@ -341,9 +341,10 @@ EOHTML;
 		$avoids = explode(',', array_get($comments_info, 'avoids', ''));
 		$avoids = array_flip($avoids);
 		$avoids = array_fill_keys(array_keys($avoids), 1);
-		if(0) deb("survey.renderRequests: avoids =", $avoids);
+		if (0) deb("survey.renderRequests: avoids =", $avoids);
 		$avoid_worker_selector = $this->getWorkerList('avoid_worker', FALSE,
 			$this->worker->getUsername(), $avoids);
+		if (0) deb("survey.renderRequests: avoid_worker_selector =", $avoid_worker_selector);
 
 		$prefers = explode(',', array_get($comments_info, 'prefers', ''));
 		$prefers = array_flip($prefers);

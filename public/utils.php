@@ -389,6 +389,8 @@ function since($this_label='') {
 }
 
 
+// RENDERING FUNCTIONS - start ----------------------------------------------------
+
 function renderSendEmailControl($name) {
 	if(userIsAdmin()) {
 		$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $name . '?</div><br>';
@@ -448,6 +450,23 @@ $div = '
 	
 return $html_before . $link . $html_after . $div;
 }
+
+
+// function renderExportMealsForm($season, $caller, $action) {
+function renderExportMealsForm($season, $action) {
+	if (!$season) return;
+	$form = '';
+	$form .= '<form enctype="multipart/form-data" action="' . makeURI('download.php', PREVIOUS_CRUMBS_IDS, "", EXPORT_MEALS_ID) . '" method="POST" name="export_meals_form">';
+		$form .= '<input type="hidden" name="file_to_download" value="' . MEALS_EXPORT_FILE . '">'; 
+		$form .= '<input type="hidden" name="download_parameters" value="' . $action . '">'; 
+		$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">'; 
+    $form .= '<p><input type="submit" value="Download Export File" />';
+	$form .= '</form>';
+	if (0) deb("utils.renderExportMealsForm(): form = " , $form);
+	return $form; 
+}
+
+// RENDERING FUNCTIONS - end ----------------------------------------------------
 
  
 function autoIncrementId($table) { 
@@ -559,7 +578,7 @@ function deb($label, $data=NULL) {
 
 function console_log($output, $with_script_tags = true) {
 	// From https://stackify.com/how-to-log-to-console-in-php/
-  $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . ');';
+	$js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . ');';
 	if ($with_script_tags) {
 		$js_code = '<script>' . $js_code . '</script>';
 	}
@@ -1000,6 +1019,7 @@ EOSQL;
 		;
 	if ($debs && $tag) $tag = " [$tag]";
 
+	if ($debs) deb("utils.sqlSelect(){$tag}: rows:", $rows); 
 	return $rows;
 }
 

@@ -31,7 +31,6 @@ function renderPageBody($season) {
 				break;  
 			case EXPORT_TEAMS_ID:
 				$body .= renderExportMealsForm($season, "update");
-				// $body .= renderExportMealsForm($season, "schedule_steps.php", "update");
 				if (0) deb("schedule_steps.renderPageBody(): body = ", $body);
 				break;
 		}

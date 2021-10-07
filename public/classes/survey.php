@@ -240,6 +240,7 @@ class Survey {
 		$headline . 
 		'<form method="POST" class="kform" action="' . makeURI("process.php", NEXT_CRUMBS_IDS, "person=" . $this->worker->id) . '">
 			<input type="hidden" name="username" value="' . $this->worker->getUsername() . '">
+			<input type="hidden" name="person_id" value="' . $this->worker->id . '">
 			<input type="hidden" name="posted" value="1">
 			<br>
 			<p>Thanks, ' . $first_name . '!  You\'ve signed up to do these jobs during ' . $season_name . ':</p>' .

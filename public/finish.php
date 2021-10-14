@@ -7,7 +7,7 @@ require_once "classes/survey.php";
 function finishSurvey($survey, $person_id) {
 	if (0) deb("finish.finishSurvey(): survey:", $survey);
 	if (0) deb("finish.finishSurvey(): _POST =", $_POST);
-	if (1) deb("finish.finishSurvey(): _REQUEST =", $_REQUEST);
+	if (0) deb("finish.finishSurvey(): _REQUEST =", $_REQUEST);
 	$dir = BASE_DIR;
 	$person = new Person($person_id);	
 	$person_email = $person->email;
@@ -51,7 +51,7 @@ function finishSurvey($survey, $person_id) {
 	
 	$signup_crumb = sqlSelect("*", CRUMBS_TABLE, "url = '/survey_page_1.php'", "when_created desc", (0))[0];
 	$signup_uri = makeURI($signup_crumb['url'], "", "person=" . $_REQUEST['person']);
-	if (1) deb("finish.displayResultsPage(): signup_uri:", $signup_uri);
+	if (0) deb("finish.displayResultsPage(): signup_uri:", $signup_uri);
 	$index_uri = makeURI("/", "", "");
 	
 	// Render the page

@@ -3,12 +3,12 @@ require_once 'start.php';
 require_once 'season_utils.php';
 $dir = BASE_DIR;
 print '<script src="js/season.js"></script>';
-if (1) deb(">>>> season.php: start"); 
+if (0) deb(">>>> season.php: start"); 
 
 
 // Read the current data for this season (if it exists)
-if (1) deb("season.php: _REQUEST =", $_REQUEST); 
-if (1) deb("season.php: _POST =", $_POST); 
+if (0) deb("season.php: _REQUEST =", $_REQUEST); 
+if (0) deb("season.php: _POST =", $_POST); 
 if (0) deb("season.php: _GET =", $_GET);
 if (0) deb("season.php: _FILES =", $_FILES);
 if (0) deb("season.php: _GET['parent_process_id'] = {$_GET['parent_process_id']}");
@@ -21,7 +21,7 @@ if (!array_key_exists('new_season', $_REQUEST)) {
 	$season_id = null;
 }
 
-if (1) deb("season.php: season_id = " . $season_id . " SEASON_ID = " . SEASON_ID); 
+if (0) deb("season.php: season_id = " . $season_id . " SEASON_ID = " . SEASON_ID); 
 
 // Get the id of the parent admin process (stage)
 if ($_REQUEST['parent_process_id']) $parent_process_id = $_REQUEST['parent_process_id'];

@@ -57,8 +57,6 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 		{$change_sets_link}
 		{$assignments_form}
 		{$bullpen}
-		{$xxselect_tag}
-		Hi there!
 EOHTML;
 	if (0) deb("teams_utils.php.displaySchedule(): before print page");
 	print $page;

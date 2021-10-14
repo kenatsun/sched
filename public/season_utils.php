@@ -401,7 +401,7 @@ function renderSurveySetupForm($season, $next, $parent_process_id=null) {
 
 // Create or update season in the database
 function saveChangesToSeason($post) {
-	if (1) deb("season.saveChangesToSeason(): post =", $post);
+	if (0) deb("season.saveChangesToSeason(): post =", $post);
 	$season_id = getSeason('id');
 	
 	$postcols = array();
@@ -505,13 +505,13 @@ function saveChangesToSeason($post) {
 	}
 	
 	// Populate the COMMUNITIES_INVITED_TO_MEALS_TABLE
-	sqlDelete(COMMUNITIES_INVITED_TO_MEALS_TABLE, "season_id = " . $season_id, (1), "season_utils.saveChangesToSeason(): delete invited communities", TRUE);
+	sqlDelete(COMMUNITIES_INVITED_TO_MEALS_TABLE, "season_id = " . $season_id, (0), "season_utils.saveChangesToSeason(): delete invited communities", TRUE);
 	foreach($post as $post_item) {
-		if (1) deb("season.saveChangesToSeason(): key($post_item): " . key($post));
+		if (0) deb("season.saveChangesToSeason(): key($post_item): " . key($post));
 		if (substr_count(key($post),"invited_")) {
 			$columns = "season_id, community_id";
 			$values = $season_id . ", " . $post_item;
-			sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (1), "season_utils.saveChangesToSeason(): insert invited community", TRUE);
+			sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (0), "season_utils.saveChangesToSeason(): insert invited community", TRUE);
 		}
 		next($post);
 	}
@@ -531,11 +531,11 @@ function date_postcol($year=0, $month=0, $day=999, $column_name="") {
 
 
 function generateInvitedCommunitiesForSeason($season_id) {
-	$communities = sqlSelect("*", COMMUNITIES_TABLE, "invited_default = 1", "", (1), "season.generateInvitedCommunitiesForSeason(): invited defaults");
+	$communities = sqlSelect("*", COMMUNITIES_TABLE, "invited_default = 1", "", (0), "season.generateInvitedCommunitiesForSeason(): invited defaults");
 	foreach ($communities as $i=>$community) {
 		$columns = "season_id, community_id";
 		$values = $season_id . ", '{$community['id']}'";
-		sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (1), "season.generateInvitedCommunitiesForSeason(): insert new default-invited community");
+		sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (0), "season.generateInvitedCommunitiesForSeason(): insert new default-invited community");
 	}
 }
 

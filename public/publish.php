@@ -35,6 +35,9 @@ $page = <<<EOHTML
 	{$headline}
 	{$form}
 EOHTML;
+
+if (0) deb("publish.php: before print page");
 print $page; 
+if (0) deb("publish.php: after  print page");
 
 ?>

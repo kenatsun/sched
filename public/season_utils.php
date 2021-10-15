@@ -29,6 +29,9 @@ function renderPageBody($season, $parent_process_id) {
 			case EXPORT_MEALS_ID:
 				$body .= renderExportMealsForm($season, "create");
 				break;
+			// case EXPORT_MEALS_ID:
+				// $body .= renderExportMealsForm($season, "season.php", "create");
+				// break;
 			case IMPORT_WORKERS_ID:
 				$body .= renderWorkerImportForm($season, $parent_process_id);
 				break;
@@ -93,8 +96,18 @@ function renderEditSeasonForm($season, $parent_process_id) {
 	if (0) deb("season.renderEditSeasonForm(): end_month_value =", $end_month_value);
 	$form .= '<tr><td style="text-align:right">last month of season:</td><td>' . $end_month_value . ' ' . $required . '</td></tr>';
 	
+	// Communities invited to dine
+	$form .= '<tr><td style="text-align:right">communities invited:</td><td>';
+	$communities = sqlSelect("*", COMMUNITIES_TABLE, "", "this desc, name asc", (0));
+	foreach($communities as $community) {
+		$where = "community_id = " . $community['id'] . " AND season_id = " . $season['id'];
+		$checked = (sqlSelect("'x'", COMMUNITIES_INVITED_TO_MEALS_TABLE, $where, "", (0))[0]) ? "checked" : "";
+		$form .= '<input type="checkbox" id="id_invited_' . $community['id'] . '" name="invited_' . $community['id'] . '" value="' . $community['id'] . '" ' . $checked . '>' . $community['name'];
+	}
+	$form .= '</td></tr>';
+	
 	// Season is deletable?
-	$checked = 	($season['deletable']) ? "checked" : "";
+	$checked = ($season['deletable']) ? "checked" : "";
 	$form .= '<tr><td style="text-align:right">deletable?:</td><td><input type="checkbox" name="deletable" ' . $checked . '></td></tr>';	
 	
 	$form .= '</table>'; 
@@ -271,6 +284,7 @@ function renderWorkerTable($season) {
 
 
 function renderLiaisonEditForm($season, $parent_process_id) {
+	if (0) deb("season.renderLiaisonEditForm() season from arg = ", $season);
 	if (!$season) return;
 	if (!sqlSelect("id", SEASON_LIAISONS_TABLE, "season_id = {$season['id']}", "", (0), "renderLiaisonEditForm(): season_liaisons")) return;
 	$form = '';
@@ -279,7 +293,7 @@ function renderLiaisonEditForm($season, $parent_process_id) {
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="update_liaisons">';
 	$form .= renderLiaisonTable($season);
-  $form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
+	$form .= '<p><input type="submit" value="Save Changes" /><input type="reset" value="Cancel Changes" /></p>';
 	$form .= '</form>';
 	return $form;	
 }
@@ -391,9 +405,8 @@ function saveChangesToSeason($post) {
 	$season_id = getSeason('id');
 	
 	$postcols = array();
-	// $postcols[] = array("sql"=>"id", "value"=>$post['season_id']);
 
-	// Process data from the new season form
+	// Process data from the season details form
 	if (array_key_exists('season_status', $post)) {
 		if ($post['name_without_year']) $postcols[] = array("sql"=>"name_without_year", "value"=>$post['name_without_year']);
 		else $required_fields_missing .= "name_without_year&";
@@ -414,6 +427,7 @@ function saveChangesToSeason($post) {
 		
 		$deletable = $post['deletable'] ? 1 : 0;
 		$postcols[] = array("sql"=>"deletable", "value"=>$deletable); 
+		
 	}
 
 	// Process data from the survey setup form
@@ -464,6 +478,9 @@ function saveChangesToSeason($post) {
 		// Generate the admin processes for this new season
 		generateAdminProcessesForSeason($season_id);
 		
+		// Generate the default-invited communities for this new season
+		generateInvitedCommunitiesForSeason($season_id);
+		
 		// Generate the jobs for this new season
 		generateJobsForSeason($season_id);
 		
@@ -471,7 +488,7 @@ function saveChangesToSeason($post) {
 		generateMealsForSeason($season_id);
 		
 		// Generate the liaisons for this new season (can't do till after workers are imported)
-		// generateLiaisonsForSeason($season_id);
+		generateLiaisonsForSeason($season_id);
 		
 		// Record the number of shifts this season for each job
 		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
@@ -486,6 +503,19 @@ function saveChangesToSeason($post) {
 		$where = "id = {$season_id}";
 		sqlUpdate(SEASONS_TABLE, $set, $where, (0), "season.saveChangesToSeason(): update");
 	}
+	
+	// Populate the COMMUNITIES_INVITED_TO_MEALS_TABLE
+	sqlDelete(COMMUNITIES_INVITED_TO_MEALS_TABLE, "season_id = " . $season_id, (0), "season_utils.saveChangesToSeason(): delete invited communities", TRUE);
+	foreach($post as $post_item) {
+		if (0) deb("season.saveChangesToSeason(): key($post_item): " . key($post));
+		if (substr_count(key($post),"invited_")) {
+			$columns = "season_id, community_id";
+			$values = $season_id . ", " . $post_item;
+			sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (0), "season_utils.saveChangesToSeason(): insert invited community", TRUE);
+		}
+		next($post);
+	}
+
 	return $season_id;
 }
 
@@ -499,6 +529,15 @@ function date_postcol($year=0, $month=0, $day=999, $column_name="") {
 	}
 }
 
+
+function generateInvitedCommunitiesForSeason($season_id) {
+	$communities = sqlSelect("*", COMMUNITIES_TABLE, "invited_default = 1", "", (0), "season.generateInvitedCommunitiesForSeason(): invited defaults");
+	foreach ($communities as $i=>$community) {
+		$columns = "season_id, community_id";
+		$values = $season_id . ", '{$community['id']}'";
+		sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (0), "season.generateInvitedCommunitiesForSeason(): insert new default-invited community");
+	}
+}
 
 function generateJobsForSeason($season_id) {
 	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (0), "season.generateJobsForSeason(): job types");
@@ -537,8 +576,6 @@ function generateMealsForSeason($season_id) {
 			generateShiftsForMeal($season_id, $meal); 
 		}
 	}	
-	// // Generate export file
-	// exportMealsCSV($season_id, MEALS_EXPORT_FILE, "create");  
 }
 	
 	
@@ -563,10 +600,6 @@ function saveChangesToMealsCalendar($post, $season_id) {
 		generateShiftsForMeal($season_id, $meal);
 	}
 
-	// // Generate export file
-	// exportMealsCSV($season_id, MEALS_EXPORT_FILE, "create"); 
-		
-
 	// KEEPING THIS CODE (originally from updateSeasonWorkers()) IN CASE WANT TO ENABLE ADDING A MEAL
 	// // Add a new meal
 	// if ($post['new_first_name'] && $post['new_last_name'] && $post['new_email']) {
@@ -583,15 +616,15 @@ function saveChangesToMealsCalendar($post, $season_id) {
 
 function generateShiftsForMeal($season_id, $meal) {
 	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
-	if ($meal['skip_indicator']) {		// A skipped meal should have no shifts
-		sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", (0));
-	} else {							// Create any missing shifts for this meal
+	//if ($meal['skip_indicator']) {		// A skipped meal should have no shifts
+		// sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", (0));
+	// } else {							// Create any missing shifts for this meal
 		foreach($jobs as $i=>$job) {
 			if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = {$job['id']} and meal_id = {$meal['id']}", "", (0))[0]) {
 				sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", "{$job['id']}, {$meal['id']}", (0), "generateShiftsForMeal()");
 			}
 		}
-	}
+	//}
 }
 
 
@@ -756,7 +789,7 @@ function updateSeasonWorkers($season_id) {
 	$new_workers = sqlSelect("*", $from, $where, $order_by, (0), "importWorkersFromGather(): insert current workers not in season_workers for this season into season_workers");
 	if ($new_workers) {
 		foreach($new_workers as $new_worker) {
-			sqlInsert($season_workers_table, "worker_id, season_id", "{$new_worker['id']}, {$season_id}", (0), "importWorkersFromGather(): inserting workers into season_workers", TRUE);
+			sqlInsert($season_workers_table, "worker_id, season_id", "{$new_worker['id']}, {$season_id}", (0), "importWorkersFromGather(): inserting workers into season_workers", TRUE); 
 		}
 	}
 	

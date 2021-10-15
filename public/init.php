@@ -1,7 +1,6 @@
 <?php
 
 // connect to SQLite database
-// function create_sqlite_connection() {
 	global $dbh;
 	global $db_is_writable;
 	$db_is_writable = FALSE;
@@ -28,44 +27,5 @@
 		echo "problem loading sqlite file [$db_fullpath]: {$e->getMessage()}\n";
 		exit;
 	}
-// }
-
-// function sqlSelectQuery($select, $from, $where=NULL, $order_by=NULL) {
-	// global $dbh;
-	// $sql = <<<EOSQL
-// SELECT {$select} 
-// FROM {$from} 
-// EOSQL;
-	// if ($where) {
-		// $sql .= <<<EOSQL
-		
-// WHERE {$where}
-// EOSQL;
-	// }
-	// if ($order_by) {
-		// $sql .= <<<EOSQL
-		
-// ORDER BY {$order_by}
-// EOSQL;
-	// }
-	// $rows = array();
-	// $found = $dbh->query($sql);
-	// if ($found) {
-		// foreach($dbh->query($sql) as $row) {
-			// // Get rid of the numbered elements that get stuck into these row-arrays,  
-			// // leaving only named attributes as elements in the rows array
-			// foreach($row as $key=>$value) {
-				// if (is_int($key)) unset($row[$key]); 
-			// }
-			// $rows[] = $row;
-		// }
-	// }
-	// $out = array(
-		// "sql" => $sql,
-		// "rows" => $rows,
-	// );
-	// return $out;
-// }
-
 
 ?>

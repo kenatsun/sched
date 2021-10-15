@@ -43,7 +43,7 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= render_instructions();
 		$page .= render_person_menu();
 		$page .= render_footer();
-		$page .= renderScoreboard("<h3><em>What we've signed up for so far</em></h3>");
+		// $page .= renderScoreboard("<h3><em>What we've signed up for so far</em></h3>");
 		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));	
 		if (scheduler_run()['id']) $page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS));			
 	} else {

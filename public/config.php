@@ -18,6 +18,10 @@ defineJobCategories();
 global $json_assignments_file; 
 $json_assignments_file = 'results/' . SEASON_ID . '.json';
 
+// check on the time zone
+if (0) deb ("config.php: date_default_timezone_get(): ", date_default_timezone_get());
+
+
 
 /* ----------- meals on holidays? -------------- */
 if (COMMUNITY == 'Sunward') {
@@ -108,7 +112,7 @@ function setSessionConstants() {
 	// if (!userIsAdmin() || !$session['season_id']) {
 		$global_season = sqlSelect("*", SEASONS_TABLE, "current_season = 1", "", (0), "config.setSessionConstants(): ")[0];
 		if (0) deb("config.setSessionConstants(): global_season = ", $global_season);
-		sqlUpdate(SESSIONS_TABLE, "season_id = " . $global_season['id'], "session_id = '" . SESSION_ID . "'", [1]);
+		sqlUpdate(SESSIONS_TABLE, "season_id = " . $global_season['id'], "session_id = '" . SESSION_ID . "'", (0));
 	// }
 	
 	// Get season for this session

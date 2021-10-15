@@ -77,6 +77,7 @@ EOHTML;
 		<p>Welcome, ' . $this->person->name . '!</p>
 		<form method="POST" action="' . makeURI("survey_page_2.php", NEXT_CRUMBS_IDS, "person=" . $_GET['person']) . '">
 			<input type="hidden" name="username" value="' . $this->person->username . '">
+			<input type="hidden" name="person_id" value="' . $this->person->id . '">
 			<input type="hidden" name="posted" value="0">' .
 			$this->renderInstructions() .
 			$this->renderHints() .

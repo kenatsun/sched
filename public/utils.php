@@ -27,7 +27,7 @@ function changeUserStatus() {
 	} elseif (array_key_exists('sign_out_admin', $_REQUEST)) { 
 		$_SESSION['access_type'] = "guest";
 		$_SESSION['admin_id'] = "";
-		$_SESSION['admin_name'] = "";
+		$_SESSION['admin_name'] = ""; 
 	}
 	if (0) deb("utils.changeUserStatus: _SESSION['access_type'] = ", $_SESSION['access_type']);
 	if (0) deb("utils.changeUserStatus: _SESSION = ", $_SESSION);
@@ -193,15 +193,6 @@ function renderUpcomingMonthsSelectList($field_name="months", $selected_date=NUL
 	}
 	if (0) deb("utils.renderUpcomingMonthsSelectList: final select =", $select_field);
 	return $select_field;
-}
-
-function renderSendEmailControl($name) {
-	if(userIsAdmin()) {
-		$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $name . '?</div><br>';
-	} else {
-		$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
-	}
-	return $send_email; 
 }
 
 function renderYearsSelectList($num_years=3, $field_name="years") {
@@ -370,6 +361,46 @@ function get_holidays() {
 // DATE-RELATED FUNCTIONS - end ----------------------------------------------------
 
 
+// For performance timing - Returns seconds since the app's start and since previous call
+function since($this_label='') {
+	// Initialize statics for first call
+	static $then = 0;
+	static $since_start = 0;
+	static $last_label = "previous";
+	
+	if (0) deb ("\nsince() before: then = " . $then);
+	$now = hrtime(true);
+	if (0) deb ("since() before:  now = " . $now);
+	$since_previous = ($now - $then) / 1e+9;
+	if (0) deb ("since() before:  since_previous = $since_previous");
+	$since_start = ($then == 0 ? 0 : $since_start + $since_previous);
+	if (0) deb ("since() before:  since_start = " . $since_start);
+	$return = "\nsince " . $last_label . ": " . number_format($since_previous, 2, ".", ",") 
+		. "  since start: " . number_format($since_start, 2, ".", ",");
+
+	// Update the statics for the next call
+	$then = $now;
+	if (0) deb ("since()  after: then = $then \n");
+	if (0) deb ("since()  before: last_label = $last_label \n");
+	if ($this_label == '') $last_label = "previous"; else $last_label = $this_label;
+	if (0) deb ("since()  after: last_label = $last_label \n");
+	
+	return $return;
+}
+
+
+// RENDERING FUNCTIONS - start ----------------------------------------------------
+
+function renderSendEmailControl($name) {
+	if(userIsAdmin()) {
+		$send_email = '<div align="right"><input type="checkbox" name="send_email" value="yes">Email summary to ' . $name . '?</div><br>';
+	} else {
+		$send_email = '<div align="right"><input type="hidden" name="send_email" value="default">';
+	}
+	return $send_email; 
+}
+
+
 function renderBlockInShowHideWrapper($block, $section_title, $html_before="", $html_after="", $display="none") {
 $id = str_replace(' ', '_', $section_title);
 $id = str_replace("'", "", $id);
@@ -420,40 +451,24 @@ $div = '
 return $html_before . $link . $html_after . $div;
 }
 
-function renderBullpen() {
-	$td_style = ' style="border:1px shadow;"'; 
-	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . SEASON_ID, "display_order asc");
-	$num_jobs = count($jobs);
-	$title_row = '<tr><td style="text-align:center; font-weight:bold; font-size:12pt; border:1px shadow; background-color:' . HEADER_COLOR . ';" colspan="' . $num_jobs . '">The Bullpen</td></tr>';
-	$header_row = '<tr>';
-	$bullpen_row = '<tr>';
-	foreach ($jobs as $job) {
-		$num_available = 0;
-		$select = "*";
-		$from = "open_offers_count";
-		$where = "job_id = {$job['id']}
-			and open_offers_count > 0";
-		$order_by = "open_offers_count desc, worker_name asc";
-		$workers = sqlSelect($select, $from, $where, $order_by, (0), "utils:renderBullpen()"); 
-		$bullpen_for_job = "";
-		foreach ($workers as $worker) {
-			if ($bullpen_for_job) $bullpen_for_job .= "<br>";
-			$bullpen_for_job .= $worker['worker_name'] . " (" . $worker['open_offers_count'] . ")";
-			$num_available += $worker['open_offers_count'];
-		}
-		if (!$num_available) $num_available = "0"; 
-		if (0) deb("utils.renderBullpen(): job = ", $job);
-		$header_row .= '<th ' . $td_style . '>' . $job['description'] . ' (' . $num_available . ')</th>'; 
-		if (0) deb("utils.renderBullpen(): header_row = ", $header_row);
-		$bullpen_row .= '<td ' . $td_style . '>' . $bullpen_for_job . '</td>'; 
-	}
-	$bullpen_row .= '</tr>';
-	$header_row .= '</tr>';
-	// return '<table style="width:75%; border-collapse:collapse;" >' . $title_row . $header_row . $bullpen_row . '</table>';
-	return '<table style="width:75%;" border="1">' . $title_row . $header_row . $bullpen_row . '</table>';
+
+// function renderExportMealsForm($season, $caller, $action) {
+function renderExportMealsForm($season, $action) {
+	if (!$season) return;
+	$form = '';
+	$form .= '<form enctype="multipart/form-data" action="' . makeURI('download.php', PREVIOUS_CRUMBS_IDS, "", EXPORT_MEALS_ID) . '" method="POST" name="export_meals_form">';
+		$form .= '<input type="hidden" name="file_to_download" value="' . MEALS_EXPORT_FILE . '">'; 
+		$form .= '<input type="hidden" name="download_parameters" value="' . $action . '">'; 
+		$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">'; 
+    $form .= '<p><input type="submit" value="Download Export File" />';
+	$form .= '</form>';
+	if (0) deb("utils.renderExportMealsForm(): form = " , $form);
+	return $form; 
 }
 
+// RENDERING FUNCTIONS - end ----------------------------------------------------
 
+ 
 function autoIncrementId($table) { 
 	// Returns the highest id in the specified table + 1
 	return sqlSelect("max(id)+1 as id", $table, "", "", (0), "autoIncrementId($table)")[0]['id'];
@@ -563,7 +578,7 @@ function deb($label, $data=NULL) {
 
 function console_log($output, $with_script_tags = true) {
 	// From https://stackify.com/how-to-log-to-console-in-php/
-  $js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . ');';
+	$js_code = 'console.log(' . json_encode($output, JSON_HEX_TAG) . ');';
 	if ($with_script_tags) {
 		$js_code = '<script>' . $js_code . '</script>';
 	}
@@ -974,6 +989,7 @@ function getJobsFromDB($season_id) {
 // Generic SQL SELECT
 function sqlSelect($select, $from, $where=NULL, $order_by=NULL, $debs=0, $tag="") {
 	global $dbh;
+	$rows = array();
 	$sql = <<<EOSQL
 SELECT {$select} 
 FROM {$from} 
@@ -990,26 +1006,21 @@ EOSQL;
 ORDER BY {$order_by}
 EOSQL;
 	}
-	$rows = array();
-	$found = $dbh->query($sql);
-	if ($found) {
-		foreach($dbh->query($sql) as $row) {
-			// Get rid of the numbered elements that get stuck into these row-arrays,  
-			// leaving only named attributes as elements in the rows array
-			foreach($row as $key=>$value) {
-				if (is_int($key)) unset($row[$key]); 
-			}
-			$rows[] = $row;
-		}
-	}
-	// $results = sqlSelectQuery($select, $from, $where, $order_by);
-	if ($debs && $tag) $tag = " [$tag]";
+
 	if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $sql); 
-	if ($debs) deb("utils.sqlSelect() {$tag}: rows:", $rows);
+	if ($debs == 2) deb("utils.sqlSelect(){$tag}: before EXEC QUERY" . since("before EXEC QUERY"));
+
+	$query = $dbh->query($sql);
+	if ($query) {
+		$rows = $query->fetchAll(PDO::FETCH_ASSOC);
+		$query->closeCursor();
+	}
+	if ($debs == 2) deb("utils.sqlSelect(){$tag}: after  EXEC QUERY" . since("after  EXEC QUERY"))
+		;
+	if ($debs && $tag) $tag = " [$tag]";
+
+	if ($debs) deb("utils.sqlSelect(){$tag}: rows:", $rows); 
 	return $rows;
-	// if ($debs) deb("utils.sqlSelect(){$tag}: sql:", $results['sql']); 
-	// if ($debs) deb("utils.sqlSelect() {$tag}: rows:", $results['rows']);
-	// return $results['rows'];
 }
 
 // Generic SQL UPDATE
@@ -1036,10 +1047,21 @@ EOSQL;
 // Generic SQL INSERT
 function sqlInsert($table, $columns, $values, $debs=0, $tag="", $do_it=TRUE) {
 	global $dbh;
+	if ($columns) $columns = "(" . $columns . ")";
 	$sql = <<<EOSQL
-INSERT INTO {$table} ({$columns})
+INSERT INTO {$table} {$columns}
+EOSQL;
+	if (0) deb ("values = '" . $values . "'\ntrim(values) = '" . trim($values) . "'\nsubstr(trim(values),0, 6) = ". substr(trim($values),0, 6));
+	if (substr(trim($values),0, 6) == 'SELECT') {
+		$sql .= <<<EOSQL
+{$values} 
+EOSQL;
+	} else {
+		$sql .= <<<EOSQL
 VALUES ({$values}) 
 EOSQL;
+	}
+
 	if ($debs) deb("utils.sqlInsert() {$tag}: sql:", $sql);
 	if ($do_it) $rows_affected = $dbh->exec($sql);
 	if (!$rows_affected) $rows_affected = 0;

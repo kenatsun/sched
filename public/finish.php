@@ -7,6 +7,7 @@ require_once "classes/survey.php";
 function finishSurvey($survey, $person_id) {
 	if (0) deb("finish.finishSurvey(): survey:", $survey);
 	if (0) deb("finish.finishSurvey(): _POST =", $_POST);
+	if (0) deb("finish.finishSurvey(): _REQUEST =", $_REQUEST);
 	$dir = BASE_DIR;
 	$person = new Person($person_id);	
 	$person_email = $person->email;
@@ -49,9 +50,9 @@ function finishSurvey($survey, $person_id) {
 	$headline = renderHeadline("Thank you, {$person_name}!");
 	
 	$signup_crumb = sqlSelect("*", CRUMBS_TABLE, "url = '/survey_page_1.php'", "when_created desc", (0))[0];
-	$signup_uri = makeURI($signup_crumb['url'], "", $signup_crumb['query_string']);
+	$signup_uri = makeURI($signup_crumb['url'], "", "person=" . $_REQUEST['person']);
 	if (0) deb("finish.displayResultsPage(): signup_uri:", $signup_uri);
-	$index_uri = makeURI("/index.html", "", "");
+	$index_uri = makeURI("/", "", "");
 	
 	// Render the page
 	$out = <<<EOHTML
@@ -62,7 +63,7 @@ function finishSurvey($survey, $person_id) {
 {$prefs_line}
 {$email_coming}
 <br><br>
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~ The Sunward Meals Committee (Suzanne, Ken, Mark, Jon, & Ed)</p> 
+<p>~ The Sunward Meals Committee</p> 
 
 {$summary_text}
 <br>

@@ -5,7 +5,7 @@
  */
 
 define('RESULTS_FILE', 'schedule.txt');
-date_default_timezone_get('America/Detroit');
+date_default_timezone_set('America/Detroit');
 define('BASE_DIR', '');
 define('PUBLIC_DIR', BASE_DIR);
 define('DB_DIR', BASE_DIR . '../db');
@@ -65,6 +65,9 @@ define('PAGES_TABLE', 'pages');
 define('CRUMBS_TABLE', 'crumbs');
 define('SESSIONS_TABLE', 'sessions');
 define('MEAL_TIMES_TABLE', 'meal_times');
+define('COMMUNITIES_TABLE', 'communities');
+define('COMMUNITIES_INVITED_TO_MEALS_TABLE', 'communities_invited_to_meals');
+
 
 // liaison tables
 define('SEASON_LIAISONS_TABLE', 'season_liaisons');

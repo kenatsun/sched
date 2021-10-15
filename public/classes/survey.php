@@ -240,6 +240,7 @@ class Survey {
 		$headline . 
 		'<form method="POST" class="kform" action="' . makeURI("process.php", NEXT_CRUMBS_IDS, "person=" . $this->worker->id) . '">
 			<input type="hidden" name="username" value="' . $this->worker->getUsername() . '">
+			<input type="hidden" name="person_id" value="' . $this->worker->id . '">
 			<input type="hidden" name="posted" value="1">
 			<br>
 			<p>Thanks, ' . $first_name . '!  You\'ve signed up to do these jobs during ' . $season_name . ':</p>' .
@@ -341,9 +342,10 @@ EOHTML;
 		$avoids = explode(',', array_get($comments_info, 'avoids', ''));
 		$avoids = array_flip($avoids);
 		$avoids = array_fill_keys(array_keys($avoids), 1);
-		if(0) deb("survey.renderRequests: avoids =", $avoids);
+		if (0) deb("survey.renderRequests: avoids =", $avoids);
 		$avoid_worker_selector = $this->getWorkerList('avoid_worker', FALSE,
 			$this->worker->getUsername(), $avoids);
+		if (0) deb("survey.renderRequests: avoid_worker_selector =", $avoid_worker_selector);
 
 		$prefers = explode(',', array_get($comments_info, 'prefers', ''));
 		$prefers = array_flip($prefers);
@@ -614,7 +616,7 @@ replace into {$work_prefs_table} (worker_id, timestamp, avoids, prefers, comment
 		{$season_id}
 	)
 EOSQL;
-		if (0) deb("survey.saveRequests(): SQL to insert work_prefs", $sql);
+		if (0) deb("survey.saveRequests(): SQL to insert or update work_prefs", $sql);
 		$success = $this->dbh->exec($sql);
 		if (0) deb("survey.saveRequests(): success?", $success);
 

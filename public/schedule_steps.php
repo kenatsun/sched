@@ -31,7 +31,6 @@ function renderPageBody($season) {
 				break;  
 			case EXPORT_TEAMS_ID:
 				$body .= renderExportMealsForm($season, "update");
-				// $body .= '<p><a style="margin-left:2em;" href="' . MEALS_EXPORT_FILE . '" download>Download Export File</a></p>';			
 				if (0) deb("schedule_steps.renderPageBody(): body = ", $body);
 				break;
 		}

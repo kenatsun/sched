@@ -113,13 +113,24 @@ EOHTML;
 		$season_name = get_season_name_from_db();
 		$months = get_current_season_months();
 		if (0) deb("survey1.renderHints: months = ", $months);
+		$number_names = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
 		$month_names = array_values($months);
+		$month_string = "";
+		$month_count = count($month_names);
+		$i = 0;
+		foreach($month_names as $month_name) {
+			$i++;
+			if ($month_string) {
+				if ($i == $month_count-1) $month_string .= " and "; else $month_string .= ", ";
+			}
+			$month_string .= $month_name; 
+		}
 		if (0) deb("survey1.renderHints: month_names = ", $month_names);
 		return <<<EOHTML
 <!--			<p>Hopefully helpful hints:</p> -->
 			<ul>
-				<li style="list-style-type:circle">We're scheduling for the {$season_name} season, which consists of {$month_names[0]}, {$month_names[1]}, and {$month_names[2]}.</li>
-				<li style="list-style-type:circle">The number you enter is how many times you will do this job in this whole three-month period.  So for example if you want to be an assistant cook once a month, enter a 3 next to "asst cook".</li>
+				<li style="list-style-type:circle">We're scheduling for the {$season_name} season, which consists of {$month_string}.</li>
+				<li style="list-style-type:circle">The number you enter is how many times you will do this job in this whole {$number_names[$month_count]}-month period.  So for example if you want to be an assistant cook once a month, enter a {$month_count} next to "asst cook".</li>
 				<li style="list-style-type:circle">If you don't want to do a particular job at all this season, enter a 0.</li>
 			</ul>
 			<br>

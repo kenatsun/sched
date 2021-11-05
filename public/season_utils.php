@@ -100,8 +100,12 @@ function renderEditSeasonForm($season, $parent_process_id) {
 	$form .= '<tr><td style="text-align:right">communities invited:</td><td>';
 	$communities = sqlSelect("*", COMMUNITIES_TABLE, "", "this desc, name asc", (0));
 	foreach($communities as $community) {
-		$where = "community_id = " . $community['id'] . " AND season_id = " . $season['id'];
-		$checked = (sqlSelect("'x'", COMMUNITIES_INVITED_TO_MEALS_TABLE, $where, "", (0))[0]) ? "checked" : "";
+		if ($season_status == "existing") { 
+			$where = "community_id = " . $community['id'] . " AND season_id = " . $season['id'];
+			$checked = (sqlSelect("'x'", COMMUNITIES_INVITED_TO_MEALS_TABLE, $where, "", (0))[0]) ? "checked" : "";
+		} else {
+			$checked = ($community['invited_default'] || $community['this']) ? "checked" : "";
+		}
 		$form .= '<input type="checkbox" id="id_invited_' . $community['id'] . '" name="invited_' . $community['id'] . '" value="' . $community['id'] . '" ' . $checked . '>' . $community['name'];
 	}
 	$form .= '</td></tr>';
@@ -468,7 +472,6 @@ function saveChangesToSeason($post) {
 		sqlInsert(SEASONS_TABLE, "id, " . $columns, $new_id . ", " . $values, (0), "seasons.saveChangesToSeason()");
 		$season_id = sqlSelect("max(id) as id", SEASONS_TABLE, "", "")[0]['id'];
 		sqlUpdate(SESSIONS_TABLE, "season_id = " . $season_id, "session_id = '" . SESSION_ID . "'");
-		// setSeason($season_id);
 		if (0) deb("season_utils.saveChangesToSeason(): new season id: $season_id, new current season id: " . getSeason("id"));
 		
 		// Set new season as current_season
@@ -477,9 +480,6 @@ function saveChangesToSeason($post) {
 
 		// Generate the admin processes for this new season
 		generateAdminProcessesForSeason($season_id);
-		
-		// Generate the default-invited communities for this new season
-		generateInvitedCommunitiesForSeason($season_id);
 		
 		// Generate the jobs for this new season
 		generateJobsForSeason($season_id);
@@ -529,15 +529,6 @@ function date_postcol($year=0, $month=0, $day=999, $column_name="") {
 	}
 }
 
-
-function generateInvitedCommunitiesForSeason($season_id) {
-	$communities = sqlSelect("*", COMMUNITIES_TABLE, "invited_default = 1", "", (0), "season.generateInvitedCommunitiesForSeason(): invited defaults");
-	foreach ($communities as $i=>$community) {
-		$columns = "season_id, community_id";
-		$values = $season_id . ", '{$community['id']}'";
-		sqlInsert(COMMUNITIES_INVITED_TO_MEALS_TABLE, $columns, $values, (0), "season.generateInvitedCommunitiesForSeason(): insert new default-invited community");
-	}
-}
 
 function generateJobsForSeason($season_id) {
 	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (0), "season.generateJobsForSeason(): job types");

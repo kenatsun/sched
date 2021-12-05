@@ -613,8 +613,6 @@ function makeURI($url, $crumbs="", $other_queries="", $anchor="") {
 	if ($crumbs && $other_queries) $uri .= "&";
 	if ($other_queries) $uri .= $other_queries;
 	if ($anchor) $uri .= "#" . $anchor;
-	// $uri .= "#";
-	// $uri = urlencode($uri);
 	if (0) deb("utils.phpmakeURI(): crumbs = $crumbs"); 
 	if (0) deb("utils.phpmakeURI(): other_queries = $other_queries"); 
 	if (0) deb("utils.phpmakeURI(): uri = $uri"); 

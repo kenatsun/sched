@@ -1,12 +1,12 @@
 <?php
 
 require_once "teams_utils_queries.php"; 
-if (0) deb("teams_utils.php: start");
+if (1) deb("teams_utils.php: start");
 
 
 function displaySchedule($controls_display="show", $change_markers_display="show", $edition="") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
-	if (0) deb("teams_utils.php.displaySchedule(): start");
+	if (1) deb("teams_utils.php.displaySchedule(): start");
 	if (0) deb("teams_utils.php.displaySchedule(): CRUMBS_QUERY = " . CRUMBS_QUERY);
 	if (0) deb("teams_utils.php.displaySchedule(): NEXT_CRUMBS_IDS = {NEXT_CRUMBS_IDS}"); 
 	$now = date_create();
@@ -16,7 +16,7 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	$scheduling_end_date = $season['scheduling_end_date'];
 	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS"); 
 
-	if (0) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
+	if (1) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
 
 	if ($edition == "first") {		
 		if (0) deb("first");
@@ -35,22 +35,20 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 		$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
 	if (0) deb("teams_utils.php.displaySchedule(): adjective = " . $adjective);
-	if (0) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
+	if (1) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
 	$crumbs = $edition ? "" : CRUMBS_QUERY;  // Omit breadcrumbs from printable editions
 	if (0) deb("teams_utils.php.displaySchedule(): crumbs = " . $crumbs);
 	if (0) deb("teams_utils.php.displaySchedule(): before renderHeadline()");
 	$headline = renderHeadline($adjective . "Sunward Dinner Teams for {$season['name']}", $subhead, 1);
 	if ($change_requests_line)	$change_requests_line = '<br><p style="color:blue; font-size:larger"><strong>' . $change_requests_line . '<a href="mailto:moremeals@sunward.org">moremeals@sunward.org</a></strong></p><br>'; 
 	if (0) deb("teams_utils.php.displaySchedule(): before renderAssignmentsForm()" . since("before renderAssignmentsForm()"));
-	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display);
+	$assignments_form = renderAssignmentsForm($controls_display, $change_markers_display, $edition);
 	if (0) deb("teams_utils.php.displaySchedule(): after renderAssignmentsForm()");
 
 	if (0) deb("teams_utils.php.displaySchedule(): before renderBullpen()");
 	if (!array_key_exists("previewonly", $_GET)) $bullpen = '<br>' . renderBullpen();
 	if (0) deb("teams_utils.php.displaySchedule(): after renderBullpen()");
 
-	$xxselect_tag = xxSelect();
-	
 	$page = <<<EOHTML
 		{$headline}
 		{$change_requests_line}
@@ -62,61 +60,11 @@ EOHTML;
 	print $page;
 }
 
-function xxSelect() {
-	
-	$select = "w.id, w.first_name || ' ' || w.last_name as name";
-	$from = "workers as w, season_workers as sw";
-	$where = "sw.worker_id = w.id and sw.season_id = " . SEASON_ID;
-	$order_by = "name";
-	
-	$workers = sqlSelect($select, $from, $where, $order_by, (0));
-	$options = '';
-	foreach($workers as $worker) {
-		$options .= '
-			<option value=' . $worker['id'] . '>' . $worker['name'] . '</option>';
-	}
-	$xxselect_tag = '<select name="multisel" multiple="multiple">' .
-		$options . '
-	</select>';
-	if (0) deb("xxSelect(): xxselect_tag =", $xxselect_tag);
-	
-	return $select_tag;
 
-			// $worker_list = new WorkersList();
-		// $workers = $worker_list->getWorkers();
-		// $options = ($first_entry) ? '<option value="none"></option>' : '';
-		// foreach($workers as $username=>$info) {
-			// if (!is_null($skip_user) && $username == $skip_user) {
-				// continue;
-			// }
+function renderAssignmentsForm($controls_display="show", $change_markers_display="show", $edition="") {	
 
-			// if ($info['first_name'] . " " . $info['last_name'] == $username) {
-				// $visible_name = <<<EOTXT
-// {$info['first_name']} {$info['last_name']}
-// EOTXT;
-			// } else {
-				// $visible_name = <<<EOTXT
-// {$info['first_name']} {$info['last_name']} ({$username})
-// EOTXT;
-			// }
-			
-			// $selected = isset($chosen[$username]) ? ' selected' : '';
-			// $options .= <<<EOHTML
-			// <option value="{$username}"{$selected}>{$visible_name}</option>
-// EOHTML;
-		// }
-
-		// return <<<EOHTML
-		// <select name="{$id}[]" id="{$id}" multiple="multiple">
-			// {$options}
-		// </select>
-// EOHTML;
-}
-
-
-function renderAssignmentsForm($controls_display="show", $change_markers_display="show") {	
-
-	if (0) deb("teams_utils.php.renderAssignmentsForm(): start");
+	if (1) deb("teams_utils.php.renderAssignmentsForm(): start");
+	if (1) deb("teams_utils.php.renderAssignmentsForm(): edition = " . $edition);
 	$jobs_table = SURVEY_JOB_TABLE;
 	$shifts_table = SCHEDULE_SHIFTS_TABLE;
 	$changes_table = CHANGES_TABLE;
@@ -314,8 +262,9 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 			$worker_rows = '';
 			foreach($assignments as $assignment) {
 				$worker_id = $assignment['worker_id'];
-				if (showIds()) $wkr_id = ' (#' . $worker_id . '), assmt #' . $assignment['assignment_id']; 
-
+				if (showIds()) {
+					$id_string = '<br>(#' . $worker_id . '), assmt #' . $assignment['assignment_id']; 
+				}
 				if (0) deb("start ASSIGNING " . $assignment['worker_name'] . " as " . $job['description']);
 				$exists_now = $assignment['exists_now']; 
 				if (0) deb("teams_utils.php.renderAssignmentsForm(): exists_now = $exists_now");
@@ -332,23 +281,28 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					$latest_change_set = sqlSelect($select, $from, $where, "", (0), "latest change set")[0];
 					if (0) deb("teams_utils.php.renderAssignmentsForm(): latest_change_set = ", $latest_change_set); 
 					
-					if (showIds()) $chg_id = '<br>(chg set #' . $latest_change_set['id'] . ')';
-					$change_marker = formatted_date($latest_change_set['when_saved'], "M j g:ia") . $chg_id;
-					if (0) deb("teams_utils.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
+					if (showIds()) $id_string .= ' (chg set #' . $latest_change_set['id'] . ')';
+					if (1) deb("teams_utils.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
 					
 					// If assignment exists now, make an "added" marker	 
 					if ($exists_now) {
 						$assignment_color = ADDED_COLOR;
 						$assignment_decoration = ADDED_DECORATION;
 						$assignment_icon = ADDED_ICON . '&nbsp;';
-						$change_marker = ' - added ' . $change_marker; 
+						if ($edition == "") {
+							$change_timestamp = ' - added ' . formatted_date($latest_change_set['when_saved'], "M j g:ia");
+						}
+						$change_marker = $change_timestamp . ' ' . $id_string ; 
 					} 
 					// Else assignment doesn't exist now, so make a "removed" marker
 					else { 
 						$assignment_color = REMOVED_COLOR;
 						$assignment_decoration = REMOVED_DECORATION;
 						$assignment_icon = REMOVED_ICON . '&nbsp;';
-						$change_marker = ' - removed ' . $change_marker; 						
+						if ($edition == "") {
+							$change_timestamp = ' - removed ' . formatted_date($latest_change_set['when_saved'], "M j g:ia");
+						}
+						$change_marker = $change_timestamp . ' ' . $id_string ; 
 					}
 				}
 				// Else assignment's status is the same as at generation, so don't make a change marker
@@ -371,7 +325,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 										$assignment['worker_name'] . '
 									</span>
 								</strong>' . 
-								$wkr_id . $change_marker . '
+								$change_marker . '
 							</td>
 						</tr>
 					'; 
@@ -708,7 +662,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		// <input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '" />
 		// <input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '" />
 		// </form>';
-	if (0) deb("teams_utils.php.renderAssignmentsForm(): end");
+	if (1) deb("teams_utils.php.renderAssignmentsForm(): end");
 	return $assignments_form;
 }
 

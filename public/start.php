@@ -16,6 +16,6 @@ require_once 'headline.php';
 require_once 'download.php';
 
 // since("start"); // Start the performance timer
-if (0) deb("start.php: end");
+if (1) deb("start.php: end");
 
 ?>

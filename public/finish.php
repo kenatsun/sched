@@ -118,13 +118,6 @@ function renderShiftPreferences($survey) {
 			and o.worker_id = p.worker_id 
 			and o.job_id = j. id
 			and j.season_id = " . SEASON_ID;
-		// $from = SCHEDULE_SHIFTS_TABLE . " as s,
-			// " . SCHEDULE_PREFS_TABLE . " as p,
-			// " . SURVEY_JOB_TABLE . " as j";
-		// $where = "worker_id = {$survey->worker_id}
-			// and s.id = p.shift_id
-			// and s.job_id = j.id
-			// and j.season_id = " . SEASON_ID;
 		$order_by = "j.display_order asc";
 		$jobs = sqlSelect($select, $from, $where, $order_by, (0), "finish.renderShiftPreferences(): jobs");
 		

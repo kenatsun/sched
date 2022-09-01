@@ -3,7 +3,7 @@ require_once 'start.php';
 require_once "change_sets_utils.php";
 print '<script src="js/change_sets.js"></script>';
 
-if (1) deb("change_sets.php: start");
+if (0) deb("change_sets.php: start");
 if (0) deb("change_sets.php: PREVIOUS_CRUMBS_IDS = " . PREVIOUS_CRUMBS_IDS . " CRUMBS_IDS = " . CRUMBS_IDS);
 
 $scheduler_run_id = scheduler_run()['id'];
@@ -20,7 +20,7 @@ $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $schedu
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 
 
 // Render undo action button and legend (initially hidden)
-if (1) deb("change_sets.php: CHANGED_BACKGROUND_COLOR = " . CHANGED_BACKGROUND_COLOR);
+if (0) deb("change_sets.php: CHANGED_BACKGROUND_COLOR = " . CHANGED_BACKGROUND_COLOR);
 $change_sets_table .= '
 	<tr id="action_row" style="border-style:solid; border-width:1px; display:none; background-color:' . CHANGED_BACKGROUND_COLOR . '">
 		<td colspan="4" style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; background-color:rgba(0,0,0,0);">

@@ -7,7 +7,7 @@ require_once "change_sets_utils.php";
 if (0) deb("teams.php: after req change_sets_utils.php"); 
 print '<script src="js/teams.js"></script>';
 
-if (1) deb(">>>>> teams.php: start"); 
+if (0) deb(">>>>> teams.php: start"); 
 if (0) deb("teams.php: _POST = ", $_POST);
 if (0) deb("teams.php: _GET = ", $_GET);
 $controls_display = $_GET['controls_display'] ? $_GET['controls_display'] : "show";
@@ -51,10 +51,10 @@ if ($_POST) {
 // Delete change sets of this scheduler run that were never saved.
 purgeUnsavedChangeSets();  
 
-if (1) deb("teams.php: before displaySchedule()" . since("before displaySchedule()")); 
+if (0) deb("teams.php: before displaySchedule()" . since("before displaySchedule()")); 
 
 displaySchedule($controls_display, $change_markers_display, $edition);
 
-if (1) deb("<<<<< teams.php: end" . since()); 
+if (0) deb("<<<<< teams.php: end" . since()); 
 
 ?>

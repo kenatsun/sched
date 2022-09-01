@@ -3,6 +3,7 @@ require_once 'start.php';
 require_once "change_sets_utils.php";
 print '<script src="js/change_sets.js"></script>';
 
+if (1) deb("change_sets.php: start");
 if (0) deb("change_sets.php: PREVIOUS_CRUMBS_IDS = " . PREVIOUS_CRUMBS_IDS . " CRUMBS_IDS = " . CRUMBS_IDS);
 
 $scheduler_run_id = scheduler_run()['id'];
@@ -19,6 +20,7 @@ $change_sets = sqlSelect("*", CHANGE_SETS_TABLE, "scheduler_run_id = " . $schedu
 $change_sets_table = '<table style="table-layout:auto; width:1px; border-spacing: 0px; border-style: solid; border-width: 1px; border-color:LightGray;" >'; 
 
 // Render undo action button and legend (initially hidden)
+if (1) deb("change_sets.php: CHANGED_BACKGROUND_COLOR = " . CHANGED_BACKGROUND_COLOR);
 $change_sets_table .= '
 	<tr id="action_row" style="border-style:solid; border-width:1px; display:none; background-color:' . CHANGED_BACKGROUND_COLOR . '">
 		<td colspan="4" style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; background-color:rgba(0,0,0,0);">
@@ -49,8 +51,14 @@ foreach($change_sets as $i=>$change_set) {
 		<tr id="undo_tr_' . $change_set['id'] . '">
 			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; background-color:rgba(0,0,0,0);">' . renderChangeSet($change_set['id'], FALSE) . '</td>
 			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; white-space: nowrap; background-color:rgba(0,0,0,0);">' . $saved_date . '<br>' . $saved_time . '</td>
-			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; text-align: center; background-color:rgba(0,0,0,0);"><input type="radio" name="' . $undo_name . '" value="' . $change_set['id'] . '" ></td>
+			<td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; text-align: center; background-color:rgba(0,0,0,0);"><input type="radio" name="' . $undo_name . '" value="' . $change_set['id'] . '"></td>
 		</tr>';
+// }	$change_sets_table .= '
+		// <tr id="undo_tr_' . $change_set['id'] . '">
+			// <td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; background-color:rgba(0,0,0,0);">' . renderChangeSet($change_set['id'], FALSE) . '</td>
+			// <td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; white-space: nowrap; background-color:rgba(0,0,0,0);">' . $saved_date . '<br>' . $saved_time . '</td>
+			// <td style="border-style: solid; border-width: 1px; vertical-align:middle; border-color:LightGray; padding:8px; text-align: center; background-color:rgba(0,0,0,0);"><input type="radio" name="' . $undo_name . '" value="' . $change_set['id'] . '" onclick="nullRadio(\'' . $undo_name . '_' . $change_set['id'] . '\')" onchange="markUndos(' . $undo_name . ')" ></td>
+		// </tr>';
 }
 // onclick="nullRadio(\'' . $undo_name . '_' . $change_set['id'] . '\')"
 // id="' . $undo_name . '_' . $change_set['id'] . ' 
@@ -61,6 +69,14 @@ $change_sets_table .= '</table>';
 $change_sets_form = '
 	<form action="' . makeURI("teams.php", PREVIOUS_CRUMBS_IDS) . '" method="post">' .
 		$change_sets_table . '
+		<tr>
+			<td colspan={$ncols}>
+				<h2>&nbsp;&nbsp;&nbsp; 
+					<input type="submit" name="undo" value="Confirm Undos"> 
+					<input type="submit" name="discard" value="Discard Undos">
+				</h2> 
+			</td>
+		<tr>
 	</form>';
 
 if (!$change_sets) $change_sets_form = "<br>There are no change sets at this time.";

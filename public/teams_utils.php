@@ -1,12 +1,12 @@
 <?php
 
 require_once "teams_utils_queries.php"; 
-if (1) deb("teams_utils.php: start");
+if (0) deb("teams_utils.php: start");
 
 
 function displaySchedule($controls_display="show", $change_markers_display="show", $edition="") { 
 	$season = sqlSelect("*", SEASONS_TABLE, "id = " . SEASON_ID, "", (0))[0]; 
-	if (1) deb("teams_utils.php.displaySchedule(): start");
+	if (0) deb("teams_utils.php.displaySchedule(): start");
 	if (0) deb("teams_utils.php.displaySchedule(): CRUMBS_QUERY = " . CRUMBS_QUERY);
 	if (0) deb("teams_utils.php.displaySchedule(): NEXT_CRUMBS_IDS = {NEXT_CRUMBS_IDS}"); 
 	$now = date_create();
@@ -16,7 +16,7 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 	$scheduling_end_date = $season['scheduling_end_date'];
 	$scheduling_end_date_f = date_format(date_create($scheduling_end_date), "l, F jS"); 
 
-	if (1) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
+	if (0) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
 
 	if ($edition == "first") {		
 		if (0) deb("first");
@@ -35,7 +35,7 @@ function displaySchedule($controls_display="show", $change_markers_display="show
 		$change_requests_line = "Got a scheduling problem you can't solve yourself?  Email ";
 	}
 	if (0) deb("teams_utils.php.displaySchedule(): adjective = " . $adjective);
-	if (1) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
+	if (0) deb("teams_utils.php.displaySchedule(): edition = " . $edition);
 	$crumbs = $edition ? "" : CRUMBS_QUERY;  // Omit breadcrumbs from printable editions
 	if (0) deb("teams_utils.php.displaySchedule(): crumbs = " . $crumbs);
 	if (0) deb("teams_utils.php.displaySchedule(): before renderHeadline()");
@@ -63,8 +63,8 @@ EOHTML;
 
 function renderAssignmentsForm($controls_display="show", $change_markers_display="show", $edition="") {	
 
-	if (1) deb("teams_utils.php.renderAssignmentsForm(): start");
-	if (1) deb("teams_utils.php.renderAssignmentsForm(): edition = " . $edition);
+	if (0) deb("teams_utils.php.renderAssignmentsForm(): start");
+	if (0) deb("teams_utils.php.renderAssignmentsForm(): edition = " . $edition);
 	$jobs_table = SURVEY_JOB_TABLE;
 	$shifts_table = SCHEDULE_SHIFTS_TABLE;
 	$changes_table = CHANGES_TABLE;
@@ -282,7 +282,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 					if (0) deb("teams_utils.php.renderAssignmentsForm(): latest_change_set = ", $latest_change_set); 
 					
 					if (showIds()) $id_string .= ' (chg set #' . $latest_change_set['id'] . ')';
-					if (1) deb("teams_utils.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
+					if (0) deb("teams_utils.php.renderAssignmentsForm(): change_marker = {$change_marker}"); 
 					
 					// If assignment exists now, make an "added" marker	 
 					if ($exists_now) {
@@ -662,7 +662,7 @@ function renderAssignmentsForm($controls_display="show", $change_markers_display
 		// <input type="hidden" id="unchanged_background_color" value="' . UNCHANGED_BACKGROUND_COLOR . '" />
 		// <input type="hidden" id="changed_background_color" value="' . CHANGED_BACKGROUND_COLOR . '" />
 		// </form>';
-	if (1) deb("teams_utils.php.renderAssignmentsForm(): end");
+	if (0) deb("teams_utils.php.renderAssignmentsForm(): end");
 	return $assignments_form;
 }
 

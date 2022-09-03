@@ -607,6 +607,24 @@ function renderLink($text, $href) {
 }
 
 
+/*
+Render breadcrumbs string from the $leaf_url page back to the root page.
+Calling tree is defined in 'breadcrumbs' table.
+*/
+function renderBreadcrumbs($leaf_url) {
+	$caller_id = sqlSelect("*", BREADCRUMBS_TABLE, "my_url = '" . $leaf_url . "'")[0]['caller_id'];
+	$breadcrumbs = "";
+	while ($caller_id) {
+		$this_crumb = sqlSelect('*', BREADCRUMBS_TABLE, "id = " . $caller_id)[0];
+		$href = makeURI($this_crumb['my_url'], "", $this_crumb['my_query_string']);
+		$breadcrumbs = '&nbsp;&nbsp;<a href = "' . $href . '">' . $this_crumb['my_label'] . '</a>' . $breadcrumbs;
+		$caller_id = $this_crumb['caller_id'];
+	}
+	if (1) deb("utils.renderBreadcrumbs(): breadcrumbs = " . $breadcrumbs); 
+	return $breadcrumbs;
+}
+
+
 function makeURI($url, $crumbs="", $other_queries="", $anchor="") {
 	$uri = $url . "?";
 	if ($crumbs) $uri .= "breadcrumbs=" . $crumbs;
@@ -630,41 +648,21 @@ function renderToolsList($tools, $subhead=null) {
 	return $body;
 } 
 
+
 // Force the specified file (no matter what type) 
 // to be downloaded rather than displayed in browser
 // Adapted from: https://www.tutorialrepublic.com/php-tutorial/php-file-download.php
-function forceDownload($filepath) {
-	// if(isset($_REQUEST["file"])){
-		// // Get parameters
-			// $images = array("kites.jpg", "balloons.jpg");
-		// $file = urldecode($_REQUEST["file"]); // Decode URL-encoded string
-			
-			// if(in_array($file, $images, true)){
-					// $filepath = "../images/" . $file;
-			
-					// Process download
-					if(file_exists($filepath)) {
-							// header('Content-Description: File Transfer');
-							// header('Content-Type: application/octet-stream');
-							// header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
-							// header('Expires: 0');
-							// header('Cache-Control: must-revalidate');
-							// header('Pragma: public');
-							// header('Content-Length: ' . filesize($filepath));
-							flush(); // Flush system output buffer
-							readfile($filepath);
-							exit; 
-					}
-			// }
-		// else{
-			// echo "File does not exist.";
-		// }
-	// }
+function forceDownload($filepath) {		
+	// Process download
+	if(file_exists($filepath)) {
+			flush(); // Flush system output buffer
+			readfile($filepath);
+			exit; 
+	}
 }
 
 
 function exportSurveyAnnouncementCSV($season, $filename) { 
-
 	$columns = array();
 	$columns[] = array("sql"=>"w.first_name || ' ' || w.last_name", "colname"=>"worker_name");
 	$columns[] = array("sql"=>"w.unit", "colname"=>"unit");

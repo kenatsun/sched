@@ -13,7 +13,6 @@ if ($_POST) $page .= renderSchedule($_POST);
 print $page;
 
 function renderParametersForm($preview_only) { 
-	// $form .= '<form action="' . makeURI('run_scheduler_from_web.php', CRUMBS_IDS, 'caller_url=' . $_SERVER['PHP_SELF'] . $preview_only) . '" method="post">'; 
 	$form .= '<form action="' . makeURI('run_scheduler_from_web.php', CRUMBS_IDS, 'caller_url=' . $_REQUEST['caller_url'] . $preview_only) . '" method="post">'; 
  	$form .= '<br>';
 	$form .= '<input type="radio" name="option" value = "h" checked>Trial run - just show the results below<br>';

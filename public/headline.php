@@ -38,14 +38,6 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 				</p>
 			</div>
 			<input type="hidden" id="sign_out_admin" name="sign_out_admin">';
-		// $admin_notice .= ' 
-			// <div style="' . $color . '">
-				// <p>
-					// <strong>
-						// You\'re signed into this session as admin ' . currentAdmin()['name'] . '.&nbsp;&nbsp;Click the ' . COMMUNITY . ' icon for the plain old user\'s view.
-					// </strong>
-				// </p>
-			// </div>';
 		$admin_notice .= '</form>'; 
 	}
 	if (0) deb ("headline.renderHeadline(): NEXT_CRUMBS_IDS = " . NEXT_CRUMBS_IDS);
@@ -58,13 +50,17 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 
 
 	// Render breadcrumbs display
-	if (CRUMBS_QUERY) {
+	// $caller_url = $_REQUEST['caller_url'];
+	$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF'], $_REQUEST['caller_url']);
+	// if (CRUMBS_QUERY) $breadcrumbs = CRUMBS_QUERY;  // Disabled because breadcrumbs.php is disabled
+	if ($breadcrumbs) {
 		$crumbs_display = '
-			<tr style="font-size:10pt; font-style:italic;">
-				<td colspan="2" style="text-align:right; ' . $td_style . '">&lt;&lt;&lt;&lt;&lt; &nbsp;&nbsp;go back to:' . CRUMBS_QUERY . '</td>
-			</tr>';
+		<tr style="font-size:10pt; font-style:italic;">
+			<td colspan="2" style="text-align:right; ' . $td_style . '">&lt;&lt;&lt;&lt;&lt; &nbsp;&nbsp;go back to:' . $breadcrumbs . '</td>
+		</tr>';
 	}
-	if (0) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);
+	
+	if (1) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);
 
 	// Render headline
 	if ($subhead) {

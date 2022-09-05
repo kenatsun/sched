@@ -50,7 +50,8 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 
 
 	// Render breadcrumbs display
-	$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF']);
+	// $caller_url = $_REQUEST['caller_url'];
+	$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF'], $_REQUEST['caller_url']);
 	// if (CRUMBS_QUERY) $breadcrumbs = CRUMBS_QUERY;  // Disabled because breadcrumbs.php is disabled
 	if ($breadcrumbs) {
 		$crumbs_display = '

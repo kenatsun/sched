@@ -45,8 +45,8 @@ if ($now <= DEADLINE || $extended || userIsAdmin()) {
 		$page .= render_footer();
 		// $page .= renderScoreboard("<h3><em>What we've signed up for so far</em></h3>");
 		$page .= '<p><a href="https://docs.google.com/document/d/1PzErij73sm_eu-x3A33Q4dNUHBy1F1lpGw_XIkeC3q0/edit?usp=sharing" target="_blank"><strong>View the COVID Precautions for Diners and Workers</strong></a></p>';
-		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));	
-		if (scheduler_run()['id']) $page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS));			
+		$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS, '&caller_url=' . $_SERVER['PHP_SELF']));	
+		if (scheduler_run()['id']) $page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS, '&caller_url=' . $_SERVER['PHP_SELF']));			
 	} else {
 		if (0) deb("index.php: gonna display first survey page");
 	}
@@ -55,8 +55,8 @@ else {
 	if (0) deb("index.php: survey closed, so gonna display home page without user links");
 	$formatted_date = date('r', DEADLINE);
 	$page .= render_countdown();
-	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS));		
-	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS));	
+	$page .= renderLink("<strong>View the Sign-Ups</strong>", PUBLIC_DIR . makeURI('/report.php', NEXT_CRUMBS_IDS, '&caller_url=' . $_SERVER['PHP_SELF']));		
+	$page .= renderLink("<strong>View the Schedule</strong>", PUBLIC_DIR . makeURI('/teams.php', NEXT_CRUMBS_IDS, '&caller_url=' . $_SERVER['PHP_SELF']));	
 }
 
 print $page;

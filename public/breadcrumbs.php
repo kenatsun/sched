@@ -8,9 +8,9 @@ NOTE 9/3/2022: This is a failed attempt at dynamic rendering of breadcrumbs base
 // if (0) deb("breadcrumbs.php: _SERVER['SCRIPT_URL'] = " . $_SERVER['SCRIPT_URL'] . ""); 
 // if (0) deb("breadcrumbs.php: _SERVER['QUERY_STRING'] = " . $_SERVER['QUERY_STRING'] . ""); 
 // if (0) deb("breadcrumbs.php: _SERVER['HTTP_FORWARDED_REQUEST_URI'] = " . $_SERVER['HTTP_FORWARDED_REQUEST_URI'] . ""); 
-if (1) deb("breadcrumbs.php: _SERVER =", $_SERVER); 
+if (0) deb("breadcrumbs.php: _SERVER =", $_SERVER); 
 // if (0) deb("breadcrumbs.php: _SESSION =", $_SESSION); 
-if (1) deb("breadcrumbs.php: _REQUEST =", $_REQUEST); 
+if (0) deb("breadcrumbs.php: _REQUEST =", $_REQUEST); 
 // if (0) deb("breadcrumbs.php: _REQUEST['breadcrumbs'] = " . $_REQUEST['breadcrumbs']); 
 // if (0) deb("breadcrumbs.php: _REQUEST['sign_in_as'] = " . $_REQUEST['sign_in_as']); 
 // if (0) deb("breadcrumbs.php: _GET =", $_GET); 

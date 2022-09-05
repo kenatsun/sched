@@ -19,7 +19,7 @@ function renderPageBody($season) {
 		and season_id = " . $season['id'] . "
 		and parent_process_id = " . CONDUCT_SURVEY_ID;
 	$tools = sqlSelect("*", ADMIN_PROCESSES_TABLE, $where, "display_order", (0), "season_utils.renderPageBody():");
-	if (1) deb("survey_steps.renderPageBody(): tools = ", $tools);
+	if (0) deb("survey_steps.renderPageBody(): tools = ", $tools);
 	$body .= renderToolsList($tools, "Tools for managing and monitoring the survey:");
 	
 	return $body;

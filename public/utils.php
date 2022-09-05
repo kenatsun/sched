@@ -612,13 +612,13 @@ Render breadcrumbs string from the $leaf_url page back to the root page.
 Calling tree is defined in 'breadcrumbs' table.
 */
 function renderBreadcrumbs($leaf_url, $caller_url="") {
-	if (1) deb("utils.renderBreadcrumbs(): leaf_url = " . $leaf_url);
-	if (1) deb("utils.renderBreadcrumbs(): caller_url = " . $caller_url);	
+	if (0) deb("utils.renderBreadcrumbs(): leaf_url = " . $leaf_url);
+	if (0) deb("utils.renderBreadcrumbs(): caller_url = " . $caller_url);	
 	$where = "my_url = '" . $leaf_url . "'";
 	if ($caller_url) $where .= " AND caller_url = '" . $caller_url . "'"; 
-	if (1) deb("utils.renderBreadcrumbs(): where = " . $where);	
+	if (0) deb("utils.renderBreadcrumbs(): where = " . $where);	
 	$back_to_id = sqlSelect("*", BREADCRUMBS_TABLE, $where)[0]['back_to_id'];
-	if (1) deb("utils.renderBreadcrumbs(): back_to_id = " . $back_to_id); 
+	if (0) deb("utils.renderBreadcrumbs(): back_to_id = " . $back_to_id); 
 	$breadcrumbs = "";
 	while ($back_to_id) {
 		$this_crumb = sqlSelect('*', BREADCRUMBS_TABLE, "id = " . $back_to_id)[0];
@@ -626,7 +626,7 @@ function renderBreadcrumbs($leaf_url, $caller_url="") {
 		$breadcrumbs = '&nbsp;&nbsp;<a href = "' . $href . '">' . $this_crumb['my_label'] . '</a>' . $breadcrumbs;
 		$back_to_id = $this_crumb['back_to_id'];
 	}
-	if (1) deb("utils.renderBreadcrumbs(): breadcrumbs = " . $breadcrumbs); 
+	if (0) deb("utils.renderBreadcrumbs(): breadcrumbs = " . $breadcrumbs); 
 	return $breadcrumbs;
 }
 
@@ -651,7 +651,7 @@ function renderToolsList($tools, $subhead=null) {
 		if (0) deb("utils.renderToolsList(): URI = ", makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']));
 		$body .= '<h4><p style="margin-left:2em;"><a href="' . makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string'] . '&caller_url=' . $_SERVER['PHP_SELF'] . '') . '">' . $tool['name'] . '</a></p></h4>';
 	}
-	if (1) deb("utils.renderToolsList(): body = " . $body);
+	if (0) deb("utils.renderToolsList(): body = " . $body);
 	return $body;
 } 
 

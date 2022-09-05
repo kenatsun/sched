@@ -60,7 +60,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 		</tr>';
 	}
 	
-	if (1) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);
+	if (0) deb ("headline.renderHeadline(): crumbs_display =", $crumbs_display);
 
 	// Render headline
 	if ($subhead) {

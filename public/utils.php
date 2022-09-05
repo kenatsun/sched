@@ -607,6 +607,30 @@ function renderLink($text, $href) {
 }
 
 
+/*
+Render breadcrumbs string from the $leaf_url page back to the root page.
+Calling tree is defined in 'breadcrumbs' table.
+*/
+function renderBreadcrumbs($leaf_url, $caller_url="") {
+	if (1) deb("utils.renderBreadcrumbs(): leaf_url = " . $leaf_url);
+	if (1) deb("utils.renderBreadcrumbs(): caller_url = " . $caller_url);	
+	$where = "my_url = '" . $leaf_url . "'";
+	if ($caller_url) $where .= " AND caller_url = '" . $caller_url . "'"; 
+	if (1) deb("utils.renderBreadcrumbs(): where = " . $where);	
+	$back_to_id = sqlSelect("*", BREADCRUMBS_TABLE, $where)[0]['back_to_id'];
+	if (1) deb("utils.renderBreadcrumbs(): back_to_id = " . $back_to_id); 
+	$breadcrumbs = "";
+	while ($back_to_id) {
+		$this_crumb = sqlSelect('*', BREADCRUMBS_TABLE, "id = " . $back_to_id)[0];
+		$href = makeURI($this_crumb['my_url'], "", $this_crumb['my_query_string']);
+		$breadcrumbs = '&nbsp;&nbsp;<a href = "' . $href . '">' . $this_crumb['my_label'] . '</a>' . $breadcrumbs;
+		$back_to_id = $this_crumb['back_to_id'];
+	}
+	if (1) deb("utils.renderBreadcrumbs(): breadcrumbs = " . $breadcrumbs); 
+	return $breadcrumbs;
+}
+
+
 function makeURI($url, $crumbs="", $other_queries="", $anchor="") {
 	$uri = $url . "?";
 	if ($crumbs) $uri .= "breadcrumbs=" . $crumbs;
@@ -625,46 +649,27 @@ function renderToolsList($tools, $subhead=null) {
 	foreach ($tools as $tool) { 
 		if (0) deb("utils.renderToolsList(): tool = ", $tool);
 		if (0) deb("utils.renderToolsList(): URI = ", makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']));
-		$body .= '<h4><p style="margin-left:2em;"><a href="' . makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string']) . '">' . $tool['name'] . '</a></p></h4>';
+		$body .= '<h4><p style="margin-left:2em;"><a href="' . makeURI($tool['href'], NEXT_CRUMBS_IDS, $tool['query_string'] . '&caller_url=' . $_SERVER['PHP_SELF'] . '') . '">' . $tool['name'] . '</a></p></h4>';
 	}
+	if (1) deb("utils.renderToolsList(): body = " . $body);
 	return $body;
 } 
+
 
 // Force the specified file (no matter what type) 
 // to be downloaded rather than displayed in browser
 // Adapted from: https://www.tutorialrepublic.com/php-tutorial/php-file-download.php
-function forceDownload($filepath) {
-	// if(isset($_REQUEST["file"])){
-		// // Get parameters
-			// $images = array("kites.jpg", "balloons.jpg");
-		// $file = urldecode($_REQUEST["file"]); // Decode URL-encoded string
-			
-			// if(in_array($file, $images, true)){
-					// $filepath = "../images/" . $file;
-			
-					// Process download
-					if(file_exists($filepath)) {
-							// header('Content-Description: File Transfer');
-							// header('Content-Type: application/octet-stream');
-							// header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
-							// header('Expires: 0');
-							// header('Cache-Control: must-revalidate');
-							// header('Pragma: public');
-							// header('Content-Length: ' . filesize($filepath));
-							flush(); // Flush system output buffer
-							readfile($filepath);
-							exit; 
-					}
-			// }
-		// else{
-			// echo "File does not exist.";
-		// }
-	// }
+function forceDownload($filepath) {		
+	// Process download
+	if(file_exists($filepath)) {
+			flush(); // Flush system output buffer
+			readfile($filepath);
+			exit; 
+	}
 }
 
 
 function exportSurveyAnnouncementCSV($season, $filename) { 
-
 	$columns = array();
 	$columns[] = array("sql"=>"w.first_name || ' ' || w.last_name", "colname"=>"worker_name");
 	$columns[] = array("sql"=>"w.unit", "colname"=>"unit");

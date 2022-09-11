@@ -249,13 +249,17 @@ function sendEmail($worker_id, $content, $insufficient_prefs_msg) {
 	$deadline = date('g:ia l, F j', DEADLINE);
 	$url = getSurveyURL();
 	$email_body .= "\nYou may revise your responses to this questionnaire at any time until $deadline, when the survey closes, by going to {$url}.\n\n" .
-	"~ The Sunward More Meals Committee (Suzanne, Ken, Mark & Ed)
+	"~ The Sunward Meals Committee
 	{$instance_label}";
+	if (0) deb("finish.sendEmail: email_body = ", $email_body);
+	if (0) deb("finish.sendEmail: person_email = ", $person_email);
+	if (0) deb("finish.sendEmail: email_body = ", $email_body);
 	if (0) deb("finish.sendEmail: SKIP_EMAIL = ", SKIP_EMAIL);
 	$sent = mail($person_email,
 		'Meal Scheduling Survey preferences saved on ' . $timestamp,
 		$email_body,
 		'From: moremeals@sunward.org');
+	if (0) deb("finish.sendEmail: sent = ", $sent);
 
 	if (!$sent) {
 		error_log("Unable to send email to: $to");

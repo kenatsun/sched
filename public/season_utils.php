@@ -29,9 +29,6 @@ function renderPageBody($season, $parent_process_id) {
 			case EXPORT_MEALS_ID:
 				$body .= renderExportMealsForm($season, "create");
 				break;
-			// case EXPORT_MEALS_ID:
-				// $body .= renderExportMealsForm($season, "season.php", "create");
-				// break;
 			case IMPORT_WORKERS_ID:
 				$body .= renderWorkerImportForm($season, $parent_process_id);
 				break;
@@ -61,7 +58,7 @@ function renderPageBody($season, $parent_process_id) {
 // Render the form to display, create, or update this season
 function renderEditSeasonForm($season, $parent_process_id) {
 	
-	if (0) deb("season.renderEditSeasonForm(): start: season =", $season);
+	if (0) deb("season.renderEditSeasonForm(): start: season = ", $season);
 	$season_status = ($season) ? "existing" : "new";
 	if ($season_status == "existing") {		// Existing season's start and end months are not updatable
 		$start_month_value = date("F Y", strtotime($season['start_date']));
@@ -139,12 +136,14 @@ function renderDateInputFields($date, $prefix="") {
 
 
 function renderEditMealsCalendarForm($season, $parent_process_id) {
+	if (0) deb("season.renderEditMealsCalendarForm() season from arg = ", $season);
 	if (!$season) return;
 	$meals = sqlSelect("*", MEALS_TABLE, "season_id = {$season['id']}", "date", (0), "renderEditMealsCalendarTable(): meals in season");
+	if (0) deb("season.renderEditMealsCalendarForm() season meals = ", $meals);
 	if (!$meals) return;
 
 	$form = '';
-	if (0) deb("season.renderEditMealsCalendarForm() season from arg = ", $season);
+	if (0) deb("season.renderEditMealsCalendarForm() making form for season ", $season);
 	$form .= '<form enctype="multipart/form-data" action= ' . makeURI("season.php", PREVIOUS_CRUMBS_IDS, "", EDIT_MEALS_CALENDAR_ID) . ' method="POST" name="edit_meals_calendar_form">'; 
 	$form .= '<input type="hidden" name="season_id" value="' . $season['id'] . '">';
 	$form .= '<input type="hidden" name="edit_meals">';

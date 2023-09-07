@@ -3,7 +3,7 @@
 /*
 Render a headline for a page
 */
-function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
+function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1, $show_breadcrumbs=1) {
 	if (0) deb ("headline.renderHeadline(): text =", $text);
 	if (0) deb ("headline.renderHeadline(): crumbs_str = '" . $crumbs_str . "'");
 	if (0) deb ("headline.renderHeadline(): labeled_crumbs =", $labeled_crumbs);
@@ -51,7 +51,9 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1) {
 
 	// Render breadcrumbs display
 	// $caller_url = $_REQUEST['caller_url'];
-	$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF'], $_REQUEST['caller_url']);
+	if ($show_breadcrumbs) {
+		$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF'], $_REQUEST['caller_url']);
+	}
 	// if (CRUMBS_QUERY) $breadcrumbs = CRUMBS_QUERY;  // Disabled because breadcrumbs.php is disabled
 	if ($breadcrumbs) {
 		$crumbs_display = '

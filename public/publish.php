@@ -4,7 +4,7 @@ require_once "start.php";
 require_once "teams_utils.php";
 print '<script src="js/publish.js"></script>';
 
-$headline = renderHeadline("Publish Changes?", "", "", 1);
+$headline = renderHeadline("Publish Changes", "", "", 1);
 
 $form .= '<form method="POST" id="publish_form" name="publish_form" action="' . makeURI("/teams.php", PREVIOUS_CRUMBS_IDS) . '">';  
 

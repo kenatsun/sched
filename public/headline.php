@@ -5,8 +5,7 @@ Render a headline for a page
 */
 function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1, $show_breadcrumbs=1) {
 	if (0) deb ("headline.renderHeadline(): text =", $text);
-	if (0) deb ("headline.renderHeadline(): crumbs_str = '" . $crumbs_str . "'");
-	if (0) deb ("headline.renderHeadline(): labeled_crumbs =", $labeled_crumbs);
+	if (0) deb ("headline.renderHeadline(): show_breadcrumbs = ", $show_breadcrumbs);
 
 	$community_logo = (COMMUNITY == "Sunward" ? '/display/images/sunward_logo.png' : '/display/images/great_oak_logo.png');
 	$new_status .= userIsAdmin() ? "guest" : "admin";
@@ -55,6 +54,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1, $show_
 		$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF'], $_REQUEST['caller_url']);
 	}
 	// if (CRUMBS_QUERY) $breadcrumbs = CRUMBS_QUERY;  // Disabled because breadcrumbs.php is disabled
+	if (0) deb ("headline.renderHeadline(): breadcrumbs =", $breadcrumbs);
 	if ($breadcrumbs) {
 		$crumbs_display = '
 		<tr style="font-size:10pt; font-style:italic;">

@@ -50,10 +50,7 @@ function renderHeadline($text, $subhead="", $show_admin_dashboard_link=1, $show_
 
 	// Render breadcrumbs display
 	// $caller_url = $_REQUEST['caller_url'];
-<<<<<<< HEAD
-=======
 	if ($_GET['printable'] == 1) $show_breadcrumbs = 0;
->>>>>>> ff139bc6eb17d9c3a4d668fe467c2b7bba56980c
 	if ($show_breadcrumbs) {
 		$breadcrumbs = renderBreadcrumbs($_SERVER['PHP_SELF'], $_REQUEST['caller_url']);
 	}

@@ -507,9 +507,9 @@ function array_get($array, $key, $default=NULL) {
 // Get the current season or a specified attribute of it from the database
 function getSeason($attribute="") {
 	if ($attribute) {
-		return sqlSelect($attribute, "seasons", "id = " . SEASON_ID, "", (1), "utils.getSeason('id')")[0][$attribute];
+		return sqlSelect($attribute, "seasons", "id = " . SEASON_ID, "", (0), "utils.getSeason('id')")[0][$attribute];
 	} else {
-		return sqlSelect("*", "seasons", "id = " . SEASON_ID, "", (1), "utils.getSeason('id')")[0];
+		return sqlSelect("*", "seasons", "id = " . SEASON_ID, "", (0), "utils.getSeason('id')")[0];
 	}
 }
 

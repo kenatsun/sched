@@ -463,18 +463,18 @@ function saveChangesToSeason($post) {
 	if (0) deb("season_utils.saveChangesToSeason(): values =", $values);
 	if (0) deb("season_utils.saveChangesToSeason(): season_id =", $season_id);
 	
-	// If season_status is new, and no required fields are empty create a new season and generate its components
+	// If season_status is new, and no required fields are empty, create a new season and generate its components
 	if ($post['season_status'] == 'new' && !$required_fields_missing) {
 		if (0) deb("season.saveChangesToSeason(): columns =", $columns);
 		if (0) deb("season.saveChangesToSeason(): values =", $values);
-		$new_id = sqlSelect("max(id) as max_id", SEASONS_TABLE, "", "", (0))[0]['max_id'] + 1;
-		sqlInsert(SEASONS_TABLE, "id, " . $columns, $new_id . ", " . $values, (0), "seasons.saveChangesToSeason()");
+		$new_id = sqlSelect("max(id) as max_id", SEASONS_TABLE, "", "", (1))[0]['max_id'] + 1;
+		sqlInsert(SEASONS_TABLE, "id, " . $columns, $new_id . ", " . $values, (1), "seasons.saveChangesToSeason()");
 		$season_id = sqlSelect("max(id) as id", SEASONS_TABLE, "", "")[0]['id'];
 		sqlUpdate(SESSIONS_TABLE, "season_id = " . $season_id, "session_id = '" . SESSION_ID . "'");
 		if (0) deb("season_utils.saveChangesToSeason(): new season id: $season_id, new current season id: " . getSeason("id"));
 		
 		// Set new season as current_season
-		sqlUpdate(SEASONS_TABLE, "current_season = NULL", "", "", (0));
+		sqlUpdate(SEASONS_TABLE, "current_season = NULL", "", "", (1));
 		sqlUpdate(SEASONS_TABLE, "current_season = 1", "id = {$season_id}", "", (0), "season.saveChangesToSeason(): set new season as current_season");	
 
 		// Generate the admin processes for this new season
@@ -490,7 +490,7 @@ function saveChangesToSeason($post) {
 		generateLiaisonsForSeason($season_id);
 		
 		// Record the number of shifts this season for each job
-		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
+		$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (1), "season.generateJobsForSeason(): job types");
 		foreach($jobs as $i=>$job) {
 			$shift_count = sqlSelect("count(distinct id) as count", SCHEDULE_SHIFTS_TABLE, "job_id = " . $job['id'], "", (0), "season.saveChangesToSeason(): shifts count")[0]['count'];
 			$workers_count = $shift_count * $job['workers_per_shift'];
@@ -530,12 +530,14 @@ function date_postcol($year=0, $month=0, $day=999, $column_name="") {
 
 
 function generateJobsForSeason($season_id) {
-	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (0), "season.generateJobsForSeason(): job types");
+	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (1), "season.generateJobsForSeason(): job types");  
+		// 10/04/24: changed active = 1 to active = 't'  
+		// 12/16/24: changed active db col type to integer, and active = 't' back to active = 1
 	foreach ($job_types as $i=>$job_type) {
-		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $job_type['description'] . "'", "")[0]) {
+		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $job_type['description'] . "'", "", (1))[0]) { // 10/04/24: changed [1] to [0]
 			$columns = "season_id, active, description, display_order, constant_name, workers_per_shift, job_type_id";
 			$values = "$season_id, '{$job_type['active']}', '{$job_type['description']}', {$job_type['display_order']}, '{$job_type['constant_name']}', {$job_type['workers_per_shift']}, {$job_type['id']}";
-			sqlInsert(SURVEY_JOB_TABLE, $columns, $values, (0), "season.generateJobsForSeason(): insert new job");
+			sqlInsert(SURVEY_JOB_TABLE, $columns, $values, (1), "season.generateJobsForSeason(): insert new job");
 		}
 	}
 }
@@ -573,18 +575,18 @@ function saveChangesToMealsCalendar($post, $season_id) {
 	if (0) deb("season.saveChangesToMealsCalendar(): post=", $post);
 	if (0) deb("season.saveChangesToMealsCalendar(): season_id = $season_id");
 	$meals_table = MEALS_TABLE;
-	$meals = sqlSelect("*", $meals_table, "season_id = {$season_id}", "date", (0), "saveChangesToMealsCalendar(): meals");
+	$meals = sqlSelect("*", $meals_table, "season_id = {$season_id}", "date", (1), "saveChangesToMealsCalendar(): meals");
 
 	// Update and delete existing meals
 	foreach ($meals as $meal) {
 
 		// Update skip_indicator
 		$skip_indicator = (array_key_exists($meal['id'] . '_include', $post)) ? 0 : 1;
-		sqlUpdate($meals_table, "skip_indicator = " . $skip_indicator, "id = " . $meal['id'], (0), "saveChangesToMealsCalendar(): updating skip_indicator", TRUE);
+		sqlUpdate($meals_table, "skip_indicator = " . $skip_indicator, "id = " . $meal['id'], (1), "saveChangesToMealsCalendar(): updating skip_indicator", TRUE);
 
 		// Update skip_reason (set to null if skip_indicator = 0)
 		$skip_reason = ($skip_indicator == 1) ? $post[$meal['id'] . "_reason"] : ""; 
-		sqlUpdate($meals_table, "skip_reason = '" . $skip_reason . "'", "id = " . $meal['id'], (0), "saveChangesToMealsCalendar(): updating skip_reason", TRUE);
+		sqlUpdate($meals_table, "skip_reason = '" . $skip_reason . "'", "id = " . $meal['id'], (1), "saveChangesToMealsCalendar(): updating skip_reason", TRUE);
 
 		// Create and delete shifts for this meal
 		generateShiftsForMeal($season_id, $meal);
@@ -605,13 +607,13 @@ function saveChangesToMealsCalendar($post, $season_id) {
 
 
 function generateShiftsForMeal($season_id, $meal) {
-	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (0), "season.generateJobsForSeason(): job types");
+	$jobs = sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id, "display_order", (1), "season.generateJobsForSeason(): job types");
 	//if ($meal['skip_indicator']) {		// A skipped meal should have no shifts
 		// sqlDelete(SCHEDULE_SHIFTS_TABLE, "meal_id = {$meal['id']}", (0));
 	// } else {							// Create any missing shifts for this meal
 		foreach($jobs as $i=>$job) {
-			if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = {$job['id']} and meal_id = {$meal['id']}", "", (0))[0]) {
-				sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", "{$job['id']}, {$meal['id']}", (0), "generateShiftsForMeal()");
+			if (!sqlSelect("*", SCHEDULE_SHIFTS_TABLE, "job_id = {$job['id']} and meal_id = {$meal['id']}", "", (1))[0]) {
+				sqlInsert(SCHEDULE_SHIFTS_TABLE, "job_id, meal_id", "{$job['id']}, {$meal['id']}", (1), "generateShiftsForMeal()");
 			}
 		}
 	//}

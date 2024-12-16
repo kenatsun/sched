@@ -463,7 +463,7 @@ function saveChangesToSeason($post) {
 	if (0) deb("season_utils.saveChangesToSeason(): values =", $values);
 	if (0) deb("season_utils.saveChangesToSeason(): season_id =", $season_id);
 	
-	// If season_status is new, and no required fields are empty create a new season and generate its components
+	// If season_status is new, and no required fields are empty, create a new season and generate its components
 	if ($post['season_status'] == 'new' && !$required_fields_missing) {
 		if (0) deb("season.saveChangesToSeason(): columns =", $columns);
 		if (0) deb("season.saveChangesToSeason(): values =", $values);
@@ -530,14 +530,16 @@ function date_postcol($year=0, $month=0, $day=999, $column_name="") {
 
 
 function generateJobsForSeason($season_id) {
-	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (0), "season.generateJobsForSeason(): job types");
+	$job_types = sqlSelect("*", JOB_TYPES_TABLE, "active = 1", "display_order", (0), "season.generateJobsForSeason(): job types");  
+		// 10/04/24: changed active = 1 to active = 't'  
+		// 12/16/24: changed active db col type to integer, and active = 't' back to active = 1
 	foreach ($job_types as $i=>$job_type) {
-		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $job_type['description'] . "'", "")[0]) {
+		if (!sqlSelect("*", SURVEY_JOB_TABLE, "season_id = " . $season_id . " and description = '" . $job_type['description'] . "'", "", (0))[0]) { // 10/04/24: changed [1] to [0]
 			$columns = "season_id, active, description, display_order, constant_name, workers_per_shift, job_type_id";
 			$values = "$season_id, '{$job_type['active']}', '{$job_type['description']}', {$job_type['display_order']}, '{$job_type['constant_name']}', {$job_type['workers_per_shift']}, {$job_type['id']}";
 			sqlInsert(SURVEY_JOB_TABLE, $columns, $values, (0), "season.generateJobsForSeason(): insert new job");
 		}
-	}
+	} 
 }
 
 

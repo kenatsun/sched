@@ -125,8 +125,8 @@ function setSessionConstants() {
 	define('SEASON_ID', $season['id']);
 	if (0) deb("config.setSessionConstants(): SEASON_ID = " . SEASON_ID); 
 
-	define('SEASON_TYPE', $season['season_type']);
-	if (0) deb("config.setSessionConstants(): SEASON_TYPE = " . SEASON_TYPE);
+	// define('SEASON_TYPE', $season['season_type']);
+	// if (0) deb("config.setSessionConstants(): SEASON_TYPE = " . SEASON_TYPE);
 
 	if (0) deb("config.setSessionConstants(): season['start_date'] = " . $season['start_date']);
 	if ($season['start_date']) {

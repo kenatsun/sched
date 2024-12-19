@@ -56,8 +56,8 @@ class Survey1 {
 
 	public function renderOffersList() {
 		if (0) deb("survey1.renderOffersList(): _GET", $_GET);
-		if (1) deb("survey1.renderOffersList(): person id:", $this->person->name);
-		if (1) deb("survey1.renderOffersList(): offers:", $this->offers);
+		if (0) deb("survey1.renderOffersList(): person id:", $this->person->name);
+		if (0) deb("survey1.renderOffersList(): offers:", $this->offers);
 		if (0) deb("survey1.renderOffersList(): this->person->username:", $this->person->username);
 		if (0) deb("survey1.renderOffersList(): _GET['person']:", $_GET['person']);
 		if ($this->is_save_request) {

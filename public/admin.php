@@ -29,7 +29,7 @@ foreach ($stages as $stage) {
 }
 $page .= '<br><h3><em>Work on another season</em></h3>'; 
 $page .= renderNewSeasonLink("Create a new season");
-$page .= render_seasons_link("Select a season to work on");
+$page .= renderSeasonsLink("Select a season to work on");
 
 print $page;
 

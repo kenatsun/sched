@@ -24,13 +24,13 @@ function renderNewSeasonLink($text) {
 }
 
 
-function render_seasons_link($text) {
-	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderNewSeasonLink()")[0];
+function renderSeasonsLink($text) {
+	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderSeasonsLink()")[0];
 	return '<p class="summary_report"><a href="' . makeURI("/seasons.php", NEXT_CRUMBS_IDS, 'parent_process_id=' . SET_UP_SEASON_ID ) . '">' . $text . '</a></p>'; 
 }
 
-function render_update_admin_tasks_link($text) {
-	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderNewSeasonLink()")[0];
+function renderUpdateAdminTasksLink($text) {
+	$stage = sqlSelect("*", ADMIN_PROCESSES_TABLE, "process_id = " . SET_UP_SEASON_ID . " and season_id = " . SEASON_ID, "", (0), "index.renderUpdateAdminTasksLink()")[0];
 	return '<p class="summary_report"><a href="/admin.php?update_admin_tasks">' . $text . '</a></p>';
 }
 

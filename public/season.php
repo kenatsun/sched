@@ -34,7 +34,7 @@ if (array_key_exists('update_workers', $_POST)) saveChangesToWorkers($_POST, $se
 if (array_key_exists('update_liaisons', $_POST)) updateSeasonLiaisons($_POST, $season_id);
 
 // Get the season (if any) to display
-$season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (1), "season.php: season")[0];
+$season = sqlSelect("*", SEASONS_TABLE, "id = " . $season_id, "", (0), "season.php: season")[0];
 if (0) deb("season.php: season =", $season); 
 
 // Display the page 

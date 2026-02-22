@@ -103,8 +103,13 @@ function defineJobCategories() {
  * Get the list of the weekdays where meals are served.
  */
 function get_weekday_meal_days() {
-	$wmds = days_of_week("3 0", "number");
+	$wmds = sqlSelect("day_number", MEAL_TIMES_TABLE, "", "day_number");
+	$wmds = array_column($wmds, 'day_number');
 	if (0) deb("globals.get_weekday_meal_days(): wmds =", $wmds);
+	// $meal_day_nums = sqlSelect("day_number", MEAL_TIMES_TABLE, "", "day_number");
+	// if (0) deb("globals.get_weekday_meal_days(): meal_day_nums =", $meal_day_nums);
+	// $wmds = implode(" ", $meal_day_nums);
+	// $wmds = days_of_week("3 0", "number");
 	return $wmds; 
 	// return [THURSDAY, SUNDAY];
 }

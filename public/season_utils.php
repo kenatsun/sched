@@ -552,6 +552,7 @@ function generateMealsForSeason($season_id) {
 	$dates = new DatePeriod($start_date, $interval, $end_date); 
 	if (0) deb("season.generateMealsForSeason(): dates =", $dates);
 	$meal_dows = get_weekday_meal_days(); 
+	if (0) deb("season.generateMealsForSeason(): meal_dows =", $meal_dows);
 	foreach ($dates as $date) {
 		if (in_array(date_format($date, "w"), $meal_dows)) {
 			// Insert the meal if not already in database

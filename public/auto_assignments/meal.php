@@ -48,6 +48,7 @@ class Meal {
 				$this->assigned[$job_id][] = NULL;
 			}
 		}
+		if (0) deb("meal.addShifts(): meal_id = " . $this->id);
 		if (0) deb("meal.addShifts(): this->assigned = ", $this->assigned);
 	}
 
@@ -57,6 +58,7 @@ class Meal {
 	 * preference number.
 	 */
 	public function addWorkerPref($username, $job_id, $pref) {
+		if (0) deb("meal.addWorkerPref(): meal id = " . $this->id);
 		if (0) deb("meal.addWorkerPref(): username = $username, job_id = $job_id, pref = $pref ");
 		if (0) deb("meal.addWorkerPref(): this->assigned =", $this->assigned);
 		if (0) deb("meal.addWorkerPref(): this->assigned[job_id] =", $this->assigned[$job_id]);
@@ -74,7 +76,7 @@ class Meal {
 			$assn_out = print_r($this->assigned, TRUE);
 			echo <<<EOHTML
 The job "{$all_jobs[$job_id]}" isn't scheduled for the meal with id {$this->id}
-U:{$username} P:{$pref}
+Username:{$username} P:{$pref}
 all jobs: {$all_jobs_out}
 assigned: {$assn_out}
 EOHTML;

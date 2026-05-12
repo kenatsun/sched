@@ -150,7 +150,6 @@ class Schedule {
 	public function addPrefs($username, $job_id, $meal_id, $pref) {
 		if (0) deb("schedule.addPrefs(): meal_id =", $meal_id);
 		if (0) deb("schedule.addPrefs(): this->meals[0][id] =", $this->meals[0][$meal_id]);
-		if (0) deb("schedule.addPrefs(): this->meals =", $this->meals);
 		if (0) deb("schedule.addPrefs(): job_id = $job_id, meal_id = $meal_id, pref = $pref");
 		
 		// only add preferences for scheduled approved meals

@@ -209,9 +209,9 @@ function get_job_instances() {
 		// WEEKDAY_HEAD_COOK => array(1=>1, 2=>1, 3=>1, 4=>1),
 		// WEEKDAY_ASST_COOK => array(1=>2, 2=>2, 3=>2, 4=>2),
 		// WEEKDAY_CLEANER => array(1=>3, 2=>3, 3=>3, 4=>3),
-		WEEKDAY_HEAD_COOK => array(4=>1, 7=>1), 
-		WEEKDAY_ASST_COOK => array(4=>1, 7=>1), 
-		WEEKDAY_CLEANER => array(4=>2, 7=>2), 
+		WEEKDAY_HEAD_COOK => array(3=>1, 7=>1), 
+		WEEKDAY_ASST_COOK => array(3=>1, 7=>1), 
+		WEEKDAY_CLEANER => array(3=>2, 7=>2), 
 		// WEEKDAY_TABLE_SETTER => array(1=>1, 2=>1, 3=>1, 4=>1),
 	];
 }
